@@ -2,6 +2,8 @@ backend/vendor/
 backend/.env
 backend/.env.*
 !backend/.env.example
+backend/database/database.sqlite
+backend/storage/database.sqlite
 backend/bootstrap/cache/
 backend/storage/framework/cache/
 backend/storage/framework/sessions/
@@ -20,3 +22,5 @@ frontend/node_modules/.cache/
 access.log
 error.log
 *.log
+backend/config/database.php
+frontend/package.json
