@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.login-page {
+  min-height: 100vh;
+}
+
+.login-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(31, 176, 216, 0.18), transparent 26%),
+    linear-gradient(135deg, rgba(11, 79, 180, 0.96), rgba(31, 176, 216, 0.9));
+}
+
+.login-hero__logo {
+  display: block;
+  max-width: min(220px, 100%);
+  width: 100%;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 0.5rem;
+  box-shadow: 0 18px 40px rgba(11, 27, 73, 0.18);
+}
+
+.login-hero__card {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+}

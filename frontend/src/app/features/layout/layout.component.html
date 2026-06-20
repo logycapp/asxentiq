@@ -1,0 +1,158 @@
+<div class="app-shell">
+  <div
+    *ngIf="loadingService.isLoading()"
+    class="app-loading-overlay"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <div class="loading-card surface-card">
+      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+      <div>
+        <div class="fw-semibold">Cargando {{ pageHeading }}</div>
+        <div class="text-secondary small">Estamos preparando los datos del modulo.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-main" [class.app-main--sidebar]="menuLayout === 'left' && !isMobileView">
+    <app-layout-navbar
+      *ngIf="!isMobileView"
+      [userName]="userName"
+      [userEmail]="userEmail"
+      [userPhotoUrl]="userPhotoUrl"
+      [menuItems]="visibleMenuItems"
+      [showAdminAccess]="hasAdminAccess"
+      [showBrand]="false"
+      [showMenu]="false"
+      [showToggle]="false"
+      (logoutRequested)="logout()"
+    />
+
+    <ng-container *ngIf="menuLayout === 'top' || isMobileView">
+      <app-layout-navbar
+        [userName]="userName"
+        [userEmail]="userEmail"
+        [userPhotoUrl]="userPhotoUrl"
+        [isCollapsed]="isNavbarCollapsed"
+        [menuItems]="visibleMenuItems"
+        [showAdminAccess]="hasAdminAccess"
+        [menuLoading]="menuLoading"
+        [menuError]="menuError"
+        [showProfile]="isMobileView"
+        (toggleRequested)="toggleNavbar()"
+        (closeRequested)="closeNavbar()"
+        (logoutRequested)="logout()"
+      />
+    </ng-container>
+
+    <div *ngIf="menuLayout === 'left' && !isMobileView" class="app-sidebar-layout">
+      <aside class="app-sidebar surface-card">
+        <div class="app-sidebar__brand">
+          <img src="assets/logos/logo2.png" alt="Asxentiq" class="brand-logo app-sidebar__logo">
+        </div>
+
+        <div class="app-sidebar__menu" *ngIf="menuLoading">
+          <span class="text-secondary small">Cargando menu...</span>
+        </div>
+
+        <nav *ngIf="!menuLoading && visibleMenuItems.length" class="sidebar-links">
+          <ng-container *ngFor="let item of visibleMenuItems; trackBy: trackByRoute">
+            <ng-container *ngIf="hasChildren(item); else singleSidebarItem">
+              <div class="sidebar-group">
+                <button
+                  type="button"
+                  class="sidebar-link sidebar-link--toggle"
+                  [class.active]="isMenuRouteActive(item.route, item.exact) || isMenuGroupExpanded(item.route)"
+                  [attr.title]="item.label"
+                  [attr.aria-label]="item.label"
+                  (click)="toggleMenuGroup(item.route)"
+                >
+                  <span class="sidebar-link__icon" aria-hidden="true">
+                    <i [class]="menuIconClass(item)"></i>
+                  </span>
+                  <span class="sidebar-link__caret" [class.sidebar-link__caret--open]="isMenuGroupExpanded(item.route)" aria-hidden="true">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </span>
+                </button>
+
+                <div class="sidebar-submenu-flyout" *ngIf="isMenuGroupExpanded(item.route)">
+                  <a
+                    class="sidebar-submenu-flyout__parent"
+                    [routerLink]="item.route"
+                    [class.active]="isMenuRouteActive(item.route, item.exact)"
+                    (click)="closeNavbar()"
+                  >
+                    <i [ngClass]="[menuIconClass(item), 'me-2']"></i>
+                    {{ item.label }}
+                  </a>
+                  <a
+                    *ngFor="let child of item.children"
+                    class="sidebar-submenu-flyout__item"
+                    [routerLink]="child.route"
+                    [class.active]="isMenuRouteActive(child.route, child.exact)"
+                    (click)="closeNavbar()"
+                  >
+                    {{ child.label }}
+                  </a>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #singleSidebarItem>
+              <a
+                class="sidebar-link"
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.exact }"
+                (click)="closeNavbar()"
+                [attr.title]="item.label"
+                [attr.aria-label]="item.label"
+              >
+                <span class="sidebar-link__icon" aria-hidden="true">
+                  <i [class]="menuIconClass(item)"></i>
+                </span>
+              </a>
+            </ng-template>
+          </ng-container>
+        </nav>
+
+        <div *ngIf="!menuLoading && !visibleMenuItems.length" class="app-sidebar__menu">
+          <span class="text-secondary small">{{ menuError || 'No hay opciones de menu disponibles.' }}</span>
+        </div>
+      </aside>
+
+      <button
+        *ngIf="hasExpandedMenu()"
+        type="button"
+        class="sidebar-backdrop"
+        aria-label="Cerrar submenu"
+        (click)="closeSidebarMenus()"
+      ></button>
+
+      <div class="app-main__content">
+        <main class="app-content">
+          <router-outlet />
+        </main>
+
+        <footer class="app-footer">
+          <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+            <span>Asxentiq shell</span>
+            <span>&copy; {{ currentYear }}</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <ng-container *ngIf="menuLayout === 'top' || isMobileView">
+      <main class="app-content">
+        <router-outlet />
+      </main>
+
+      <footer class="app-footer">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+          <span>Asxentiq shell</span>
+          <span>&copy; {{ currentYear }}</span>
+        </div>
+      </footer>
+    </ng-container>
+  </div>
+</div>

@@ -1,0 +1,76 @@
+<section class="hero-card mb-4">
+  <div class="row align-items-end g-4">
+    <div class="col-lg-8">
+      <span class="soft-badge mb-3">Capacitacion ARL</span>
+      <h1 class="display-font mb-3">Hola, {{ userName }}. Este es tu panel limpio de control.</h1>
+      <p class="muted mb-4">
+        Dejamos fuera la plantilla heredada y construimos una base simple, moderna y mantenible para seguir creciendo
+        sobre una experiencia enfocada en aprendizaje, seguimiento y gestion de formacion.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a routerLink="/users" class="btn btn-light">Ver usuarios</a>
+        <a routerLink="/users/create" class="btn btn-outline-light">Crear usuario</a>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="surface-card p-4 bg-white text-dark">
+        <p class="muted mb-1">Estado general</p>
+        <h2 class="display-font mb-2">Listo para trabajar</h2>
+        <p class="mb-0 text-secondary">Sin dependencias visuales heredadas ni capas de CSS innecesarias.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-6 col-xl-3" *ngFor="let stat of stats">
+    <div class="surface-card stat-card">
+      <p class="muted mb-2">{{ stat.label }}</p>
+      <p class="stat-value">{{ stat.value }}</p>
+      <p class="mb-0 text-secondary">{{ stat.detail }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="surface-card p-4 h-100">
+      <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+        <div>
+          <h2 class="h4 mb-1">Flujo de trabajo</h2>
+          <p class="muted mb-0">Los pasos clave que ya quedaron cubiertos.</p>
+        </div>
+        <span class="soft-badge">Base estable</span>
+      </div>
+
+      <div class="d-grid gap-3">
+        <div class="d-flex gap-3 align-items-start" *ngFor="let step of steps; index as index">
+          <div class="brand-mark flex-shrink-0" style="width: 36px; height: 36px;">0{{ index + 1 }}</div>
+          <div>
+            <strong class="d-block mb-1">{{ step }}</strong>
+            <span class="text-secondary">Todo esto vive dentro de la plataforma, sin markup de la plantilla
+              anterior.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-5">
+    <div class="surface-card p-4 h-100">
+      <h2 class="h4 mb-3">Acciones rapidas</h2>
+      <div class="d-grid gap-2">
+        <a routerLink="/users" class="btn btn-outline-primary">Ir al listado de usuarios</a>
+        <a routerLink="/users/create" class="btn btn-primary">Registrar usuario nuevo</a>
+        <a routerLink="/test" class="btn btn-outline-secondary">Abrir formulario de prueba</a>
+      </div>
+      <hr class="my-4">
+      <p class="muted mb-2">Lo que sigue</p>
+      <ul class="mb-0 ps-3">
+        <li>Conectar esta UI a datos reales del backend.</li>
+        <li>Agregar notificaciones con toasts integrados en la interfaz.</li>
+        <li>Expandir con nuevas vistas sin arrastrar la plantilla vieja.</li>
+      </ul>
+    </div>
+  </div>
+</div>

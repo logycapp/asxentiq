@@ -1,0 +1,53 @@
+<section class="surface-card p-4 p-xl-5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 mb-4">
+    <div>
+      <span class="soft-badge mb-3">Administracion</span>
+      <h1 class="h2 mb-2">Panel de administracion</h1>
+      <p class="text-secondary mb-0">
+        Los accesos a Usuarios y Roles dependen de los permisos del rol actual.
+      </p>
+    </div>
+
+    <div *ngIf="roleId" class="text-lg-end">
+      <div class="text-secondary small">Rol actual</div>
+      <div class="fw-semibold">{{ roleName }}</div>
+      <a class="btn btn-outline-primary btn-sm mt-2" [routerLink]="['/roles', roleId, 'menu-permissions']">
+        Configurar permisos del rol
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div class="row g-3">
+    <div class="col-md-6" *ngIf="!loading && canShowUserAccess">
+      <a routerLink="/users" class="text-decoration-none">
+        <div class="surface-card mini-card h-100">
+          <div class="soft-badge mb-3">Usuarios</div>
+          <h2 class="h5 mb-2">Gestionar usuarios</h2>
+          <p class="text-secondary mb-0">Abrir listado, crear, editar y ajustar permisos de usuario.</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-6" *ngIf="!loading && canShowRoleAccess">
+      <a routerLink="/roles" class="text-decoration-none">
+        <div class="surface-card mini-card h-100">
+          <div class="soft-badge mb-3">Roles</div>
+          <h2 class="h5 mb-2">Gestionar roles</h2>
+          <p class="text-secondary mb-0">Abrir listado, crear, editar y ajustar permisos de menu.</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-12" *ngIf="!loading && !canShowUserAccess && !canShowRoleAccess">
+      <div class="surface-card mini-card">
+        <div class="text-secondary">No hay accesos internos habilitados por ahora.</div>
+      </div>
+    </div>
+
+    <div class="col-12" *ngIf="loading">
+      <div class="text-secondary">Cargando permisos...</div>
+    </div>
+  </div>
+</section>

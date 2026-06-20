@@ -1,0 +1,13 @@
+<div class="container py-5 min-vh-100 d-flex align-items-center">
+  <div class="surface-card p-4 p-xl-5 text-center w-100">
+    <span class="soft-badge mb-3">404</span>
+    <h1 class="display-font display-4 mb-3">Pagina no encontrada</h1>
+    <p class="text-secondary mb-4">
+      La ruta solicitada no existe o fue movida. Puedes volver al tablero principal para seguir navegando.
+    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+      <a routerLink="/dashboard" class="btn btn-primary">Ir al dashboard</a>
+      <button type="button" class="btn btn-outline-secondary" (click)="goBack()">Volver</button>
+    </div>
+  </div>
+</div>
