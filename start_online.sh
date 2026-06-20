@@ -8,10 +8,11 @@ BACKEND_ENV="$BACKEND_DIR/.env"
 BACKEND_ENV_EXAMPLE="$BACKEND_DIR/.env.example"
 BACKEND_PID=""
 FRONTEND_PID=""
+SQLITE_DB="$BACKEND_DIR/storage/database.sqlite"
 PHP_BIN="${PHP_BIN:-}"
-BACKEND_HOST="${BACKEND_HOST:-0.0.0.0}"
+BACKEND_HOST="${BACKEND_HOST:-127.0.0.1}"
 BACKEND_PORT="${BACKEND_PORT:-8000}"
-FRONTEND_HOST="${FRONTEND_HOST:-0.0.0.0}"
+FRONTEND_HOST="${FRONTEND_HOST:-127.0.0.1}"
 FRONTEND_PORT="${FRONTEND_PORT:-4200}"
 
 cleanup() {
@@ -112,6 +113,34 @@ value_for_env() {
   printf '%s' "$default_value"
 }
 
+prepare_sqlite_env() {
+  mkdir -p "$(dirname "$SQLITE_DB")"
+  touch "$SQLITE_DB"
+  chmod 666 "$SQLITE_DB"
+
+  upsert_env "$BACKEND_ENV" "DB_CONNECTION" "sqlite"
+  upsert_env "$BACKEND_ENV" "DB_DATABASE" "$SQLITE_DB"
+  upsert_env "$BACKEND_ENV" "DB_FOREIGN_KEYS" "true"
+  upsert_env "$BACKEND_ENV" "DB_HOST" ""
+  upsert_env "$BACKEND_ENV" "DB_PORT" ""
+  upsert_env "$BACKEND_ENV" "DB_USERNAME" ""
+  upsert_env "$BACKEND_ENV" "DB_PASSWORD" ""
+}
+
+ensure_backend_writable_dirs() {
+  mkdir -p \
+    "$BACKEND_DIR/storage/logs" \
+    "$BACKEND_DIR/storage/framework/cache/data" \
+    "$BACKEND_DIR/storage/framework/sessions" \
+    "$BACKEND_DIR/storage/framework/views" \
+    "$BACKEND_DIR/storage/app/public" \
+    "$BACKEND_DIR/bootstrap/cache"
+
+  chmod -R a+rwX \
+    "$BACKEND_DIR/storage" \
+    "$BACKEND_DIR/bootstrap/cache"
+}
+
 prepare_backend_env() {
   if [[ ! -f "$BACKEND_ENV" ]]; then
     cp "$BACKEND_ENV_EXAMPLE" "$BACKEND_ENV"
@@ -140,7 +169,13 @@ prepare_backend_env() {
   upsert_env "$BACKEND_ENV" "SESSION_DOMAIN" "$(value_for_env "$BACKEND_ENV" "SESSION_DOMAIN" "$session_domain_default")"
   upsert_env "$BACKEND_ENV" "SANCTUM_STATEFUL_DOMAINS" "$(value_for_env "$BACKEND_ENV" "SANCTUM_STATEFUL_DOMAINS" "$sanctum_default")"
 
-  grep -q '^DB_CONNECTION=mysql$' "$BACKEND_ENV" || { echo 'DB_CONNECTION debe ser mysql'; exit 1; }
+  case "$(env_file_value "$BACKEND_ENV" "DB_CONNECTION")" in
+    mysql|sqlite) ;;
+    *)
+      echo 'DB_CONNECTION debe ser mysql o sqlite' >&2
+      exit 1
+      ;;
+  esac
 }
 
 ensure_app_key() {
@@ -150,7 +185,21 @@ ensure_app_key() {
 }
 
 ensure_database() {
+  local db_connection
   local db_host db_port db_name db_user db_pass
+  db_connection="$(env_file_value "$BACKEND_ENV" "DB_CONNECTION")"
+
+  if [[ "$db_connection" == "sqlite" ]]; then
+    prepare_sqlite_env
+    return 0
+  fi
+
+  if ! command -v mysql >/dev/null 2>&1; then
+    echo "No se encontró el comando mysql; usando SQLite local como respaldo." >&2
+    prepare_sqlite_env
+    return 0
+  fi
+
   db_host="$(env_file_value_unquoted "$(env_file_value "$BACKEND_ENV" "DB_HOST")")"
   db_port="$(env_file_value_unquoted "$(env_file_value "$BACKEND_ENV" "DB_PORT")")"
   db_name="$(env_file_value_unquoted "$(env_file_value "$BACKEND_ENV" "DB_DATABASE")")"
@@ -167,6 +216,12 @@ ensure_database() {
   fi
 
   if mysql "${mysql_args[@]}" -e "CREATE DATABASE IF NOT EXISTS \`${db_name}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if [[ "${SQLITE_FALLBACK:-true}" != "false" ]]; then
+    echo "No fue posible conectar con MySQL; usando SQLite local como respaldo." >&2
+    prepare_sqlite_env
     return 0
   fi
 
@@ -220,11 +275,11 @@ main() {
   fi
   require_cmd "$PHP_BIN"
   require_cmd composer
-  require_cmd mysql
   require_cmd node
   require_cmd npm
 
   prepare_backend_env
+  ensure_backend_writable_dirs
   install_backend_dependencies
   ensure_app_key
   ensure_database
