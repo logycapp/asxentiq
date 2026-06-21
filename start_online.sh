@@ -244,6 +244,14 @@ install_frontend_dependencies() {
   fi
 }
 
+build_frontend() {
+  echo "Compilando frontend Angular..."
+  (
+    cd "$FRONTEND_DIR"
+    npm run build
+  )
+}
+
 start_backend() {
   echo "Iniciando Laravel API en ${BACKEND_HOST}:${BACKEND_PORT}"
   (
@@ -285,6 +293,7 @@ main() {
   ensure_database
   start_backend
   install_frontend_dependencies
+  build_frontend
   start_frontend
 
   echo "Servicios iniciados. Presiona CTRL + C para detenerlos."
