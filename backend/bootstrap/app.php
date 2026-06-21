@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
+            'auth.participant' => \App\Http\Middleware\AuthParticipant::class,
             'menu.access' => \App\Http\Middleware\EnsureMenuAccess::class,
         ]);
     })

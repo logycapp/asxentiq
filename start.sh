@@ -8,6 +8,8 @@ BACKEND_ENV="$BACKEND_DIR/.env"
 BACKEND_ENV_EXAMPLE="$BACKEND_DIR/.env.example"
 BACKEND_PID=""
 FRONTEND_PID=""
+PHP_BIN=""
+INSTALL_PACKAGES=()
 
 cleanup() {
   echo
@@ -37,6 +39,84 @@ require_cmd() {
     echo "No se encontró el comando requerido: $cmd" >&2
     exit 1
   fi
+}
+
+cmd_works() {
+  local cmd="$1"
+  shift
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    return 1
+  fi
+  "$cmd" "$@" >/dev/null 2>&1
+}
+
+need_package() {
+  local package="$1"
+  case " ${INSTALL_PACKAGES[*]} " in
+    *" ${package} "*) return 0 ;;
+  esac
+  INSTALL_PACKAGES+=("$package")
+}
+
+install_packages_if_needed() {
+  if [[ ${#INSTALL_PACKAGES[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  require_cmd apt-get
+
+  echo "Instalando dependencias faltantes: ${INSTALL_PACKAGES[*]}"
+
+  if [[ ${EUID:-$(id -u)} -eq 0 ]]; then
+    apt-get update
+    apt-get install -y "${INSTALL_PACKAGES[@]}"
+  else
+    require_cmd sudo
+    sudo apt-get update
+    sudo apt-get install -y "${INSTALL_PACKAGES[@]}"
+  fi
+}
+
+ensure_system_dependencies() {
+  if ! cmd_works php -v && ! cmd_works php8.2 -v; then
+    need_package php
+    need_package php-cli
+    need_package php-mysql
+    need_package php-xml
+    need_package php-mbstring
+    need_package php-curl
+    need_package php-zip
+  fi
+
+  if ! cmd_works composer --version; then
+    need_package composer
+  fi
+
+  if ! cmd_works mysql --version; then
+    need_package default-mysql-client
+  fi
+
+  if ! cmd_works node -v || ! cmd_works npm -v; then
+    need_package nodejs
+    need_package npm
+  fi
+
+  install_packages_if_needed
+}
+
+resolve_php_cmd() {
+  if command -v php >/dev/null 2>&1; then
+    PHP_BIN="php"
+    return 0
+  fi
+
+  if command -v php8.2 >/dev/null 2>&1; then
+    PHP_BIN="php8.2"
+    return 0
+  fi
+
+  echo "No se encontró el comando requerido: php o php8.2" >&2
+  exit 1
 }
 
 upsert_env() {
@@ -77,7 +157,7 @@ prepare_backend_env() {
 
 ensure_app_key() {
   if ! grep -q '^APP_KEY=base64:' "$BACKEND_ENV"; then
-    (cd "$BACKEND_DIR" && php artisan key:generate --ansi)
+    (cd "$BACKEND_DIR" && "$PHP_BIN" artisan key:generate --ansi)
   fi
 }
 
@@ -106,18 +186,26 @@ install_backend_dependencies() {
 }
 
 install_frontend_dependencies() {
-  if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
-    echo "Instalando dependencias de Angular..."
-    (cd "$FRONTEND_DIR" && npm install)
+  local ng_bin="$FRONTEND_DIR/node_modules/.bin/ng"
+
+  if [[ -x "$ng_bin" ]]; then
+    return 0
   fi
+
+  echo "Instalando dependencias de Angular..."
+  (
+    cd "$FRONTEND_DIR"
+    rm -rf node_modules
+    npm ci
+  )
 }
 
 start_backend() {
   echo "Iniciando Laravel API en http://localhost:8000"
   (
     cd "$BACKEND_DIR"
-    php artisan migrate --seed --force
-    php artisan serve --host=127.0.0.1 --port=8000
+    "$PHP_BIN" artisan migrate --seed --force
+    "$PHP_BIN" artisan serve --host=127.0.0.1 --port=8000
   ) &
   BACKEND_PID=$!
 }
@@ -134,11 +222,8 @@ start_frontend() {
 main() {
   require_dir "$BACKEND_DIR"
   require_dir "$FRONTEND_DIR"
-  require_cmd php
-  require_cmd composer
-  require_cmd mysql
-  require_cmd node
-  require_cmd npm
+  ensure_system_dependencies
+  resolve_php_cmd
 
   prepare_backend_env
   install_backend_dependencies

@@ -51,6 +51,23 @@ import { ParticipantFormComponent } from './participant-form.component';
             <i class="fa-solid fa-user-plus me-2"></i>
             Nuevo participante
           </button>
+          <div class="table-actions empty-actions mt-4">
+            <div class="table-actions-help text-start">
+              <strong>Carga masiva:</strong>
+              descarga el Excel, complétalo y vuelve a subirlo para crear o actualizar participantes.
+            </div>
+            <div class="table-actions-buttons">
+              <input #emptyParticipantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
+              <button class="btn btn-success btn-lg table-success-action" (click)="emptyParticipantsFileInput.click()" [disabled]="importing">
+                <i class="fa-solid fa-file-excel me-2"></i>
+                {{ importing ? 'Cargando...' : 'Cargar Excel' }}
+              </button>
+              <button class="btn btn-success btn-lg table-success-action" (click)="downloadReport()" [disabled]="exporting">
+                <i class="fa-solid fa-file-arrow-down me-2"></i>
+                {{ exporting ? 'Generando...' : 'Descargar Excel' }}
+              </button>
+            </div>
+          </div>
         </section>
 
         <section *ngIf="!loading && participants.length > 0" class="table-card">
@@ -94,6 +111,24 @@ import { ParticipantFormComponent } from './participant-form.component';
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div class="table-actions">
+            <div class="table-actions-help">
+              <strong>Carga masiva:</strong>
+              descarga el Excel, complétalo y vuelve a subirlo para crear o actualizar participantes.
+            </div>
+            <div class="table-actions-buttons">
+              <input #participantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
+              <button class="btn btn-success btn-lg table-success-action" (click)="participantsFileInput.click()" [disabled]="importing">
+                <i class="fa-solid fa-file-excel me-2"></i>
+                {{ importing ? 'Cargando...' : 'Cargar Excel' }}
+              </button>
+              <button class="btn btn-success btn-lg table-success-action" (click)="downloadReport()" [disabled]="exporting">
+                <i class="fa-solid fa-file-arrow-down me-2"></i>
+                {{ exporting ? 'Generando...' : 'Descargar Excel' }}
+              </button>
+            </div>
           </div>
         </section>
       </div>
@@ -146,6 +181,14 @@ import { ParticipantFormComponent } from './participant-form.component';
         linear-gradient(135deg, rgba(20, 98, 255, 0.11), rgba(29, 187, 214, 0.08), rgba(255, 255, 255, 0.97)),
         rgba(255, 255, 255, 0.92);
       border-top: 4px solid var(--brand-blue);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .hero-eyebrow {
@@ -298,14 +341,52 @@ import { ParticipantFormComponent } from './participant-form.component';
       box-shadow: none;
     }
 
+    .table-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.35rem 1.25rem;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      background: linear-gradient(180deg, rgba(247, 255, 250, 0.98), rgba(241, 251, 244, 0.98));
+    }
+
+    .table-actions-help {
+      color: var(--brand-muted);
+      max-width: 700px;
+    }
+
+    .table-actions-help strong {
+      color: #157347;
+    }
+
+    .table-actions-buttons {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .table-success-action {
+      white-space: nowrap;
+      border-radius: 999px;
+      box-shadow: 0 12px 26px rgba(25, 135, 84, 0.18);
+    }
+
     @media (max-width: 992px) {
       .hero-card,
-      .table-card-header {
+      .table-card-header,
+      .table-actions {
         flex-direction: column;
         align-items: flex-start;
       }
 
-      .hero-action {
+      .hero-action,
+      .table-success-action {
+        width: 100%;
+      }
+
+      .hero-secondary-action {
         width: 100%;
       }
 
@@ -329,6 +410,8 @@ export class ParticipantListComponent implements OnInit {
   message = '';
   errorMessage = '';
   saving = false;
+  exporting = false;
+  importing = false;
 
   ngOnInit(): void {
     this.loadParticipants();
@@ -358,6 +441,59 @@ export class ParticipantListComponent implements OnInit {
   refreshAfterSave(): void {
     this.message = 'Participante guardado correctamente.';
     this.loadParticipants();
+  }
+
+  downloadReport(): void {
+    if (this.exporting) {
+      return;
+    }
+
+    this.errorMessage = '';
+    this.exporting = true;
+
+    this.loadingService.track(this.trainingService.downloadParticipantsReport())
+      .pipe(finalize(() => (this.exporting = false)))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'reporte-participantes.xlsx';
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.message = 'Reporte Excel descargado correctamente.';
+        },
+        error: () => (this.errorMessage = 'Error al descargar el reporte Excel.')
+      });
+  }
+
+  importReport(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file || this.importing) {
+      input.value = '';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.importing = true;
+
+    this.loadingService.track(this.trainingService.importParticipantsReport(file))
+      .pipe(finalize(() => {
+        this.importing = false;
+        input.value = '';
+      }))
+      .subscribe({
+        next: (result) => {
+          this.message = `Carga procesada: ${result.created} creados, ${result.updated} actualizados y ${result.skipped} omitidos.`;
+          if (result.errors.length > 0) {
+            this.errorMessage = `Se omitieron ${result.skipped} filas por errores de validación.`;
+          }
+          this.loadParticipants();
+        },
+        error: () => (this.errorMessage = 'Error al cargar el Excel de participantes.')
+      });
   }
 
   remove(p: TrainingParticipant): void {

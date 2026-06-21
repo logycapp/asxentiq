@@ -47,6 +47,19 @@ export interface QuestionOption {
   order: number;
 }
 
+export interface QuestionSaveOption {
+  option_text: string;
+  is_correct: boolean;
+  order: number;
+}
+
+export interface QuestionSavePayload {
+  question_text?: string;
+  type?: string;
+  order?: number;
+  options?: QuestionSaveOption[];
+}
+
 export interface TrainingMaterial {
   id: number;
   trainable_type: string;
@@ -72,6 +85,7 @@ export interface TrainingParticipant {
     training_participant_id?: number;
     attended: boolean | null;
     score: number | null;
+    passed?: boolean | null;
     observations?: string | null;
     attendance_date?: string | null;
     completed_at: string | null;
@@ -118,8 +132,37 @@ export interface SubmitResponse {
 export interface TrainingResult {
   training: Training;
   score: number | null;
-  passed: boolean;
+  passed: boolean | null;
   completed_at: string;
+}
+
+export interface ParticipantReviewAnswer {
+  answer_text?: string | null;
+  selected_option_id?: number | null;
+  selected_option_text?: string | null;
+  is_correct?: boolean | null;
+  score?: number | null;
+  answered_at?: string | null;
+}
+
+export interface ParticipantReviewQuestion {
+  id: number;
+  question_text: string;
+  type: string;
+  order: number;
+  options: QuestionOption[];
+  answer: ParticipantReviewAnswer | null;
+}
+
+export interface ParticipantReview {
+  participant: TrainingParticipant;
+  pivot: TrainingParticipant['pivot'];
+  questions: ParticipantReviewQuestion[];
+}
+
+export interface ParticipantReviewUpdateAnswer {
+  question_id: number;
+  score: number | null;
 }
 
 export interface TrainingListMeta {
@@ -142,6 +185,17 @@ export interface TrainingListResponse {
   data: Training[];
   meta: TrainingListMeta;
   summary: TrainingListSummary;
+}
+
+export interface ParticipantsImportResult {
+  message: string;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: Array<{
+    row: number;
+    errors: string[];
+  }>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -214,11 +268,11 @@ export class TrainingService {
     return this.http.get<Question[]>(`${this.apiUrl}/${trainingId}/questions`);
   }
 
-  createQuestion(trainingId: number, payload: Partial<Question>): Observable<{ message: string; question: Question }> {
+  createQuestion(trainingId: number, payload: QuestionSavePayload): Observable<{ message: string; question: Question }> {
     return this.http.post<{ message: string; question: Question }>(`${this.apiUrl}/${trainingId}/questions`, payload);
   }
 
-  updateQuestion(questionId: number, payload: Partial<Question>): Observable<{ message: string; question: Question }> {
+  updateQuestion(questionId: number, payload: QuestionSavePayload): Observable<{ message: string; question: Question }> {
     return this.http.put<{ message: string; question: Question }>(`/api/questions/${questionId}`, payload);
   }
 
@@ -281,6 +335,19 @@ export class TrainingService {
     return this.http.delete<{ message: string }>(`${environment.apiUrl}/participants/${id}`);
   }
 
+  downloadParticipantsReport(): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/participants/export`, {
+      responseType: 'blob'
+    });
+  }
+
+  importParticipantsReport(file: File): Observable<ParticipantsImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<ParticipantsImportResult>(`${environment.apiUrl}/participants/import`, formData);
+  }
+
   getAssignedParticipants(trainingId: number): Observable<TrainingParticipant[]> {
     return this.http.get<TrainingParticipant[]>(`${this.apiUrl}/${trainingId}/participants`);
   }
@@ -291,6 +358,22 @@ export class TrainingService {
 
   removeParticipant(trainingId: number, participantId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${trainingId}/participants/${participantId}`);
+  }
+
+  getParticipantReview(trainingId: number, participantId: number): Observable<ParticipantReview> {
+    return this.http.get<ParticipantReview>(`${this.apiUrl}/${trainingId}/participants/${participantId}/review`);
+  }
+
+  updateParticipantReview(
+    trainingId: number,
+    participantId: number,
+    payload: { answers: ParticipantReviewUpdateAnswer[]; observations: string | null }
+  ): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/${trainingId}/participants/${participantId}/review`, payload);
+  }
+
+  resetParticipantAttempt(trainingId: number, participantId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/${trainingId}/participants/${participantId}/reset`, {});
   }
 
   // Public

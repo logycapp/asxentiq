@@ -17,7 +17,7 @@ class TrainingParticipant extends Model
     public function trainings(): BelongsToMany
     {
         return $this->belongsToMany(Training::class, 'training_participant')
-            ->withPivot(['attended', 'score', 'observations', 'attendance_date', 'completed_at'])
+            ->withPivot(['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'])
             ->withTimestamps();
     }
 }

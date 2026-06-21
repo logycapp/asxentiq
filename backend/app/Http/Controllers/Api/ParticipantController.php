@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\ParticipantsExport;
+use App\Imports\ParticipantsImport;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingParticipant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ParticipantController extends Controller
 {
@@ -14,6 +17,31 @@ class ParticipantController extends Controller
         $participants = TrainingParticipant::query()->orderBy('full_name')->get();
 
         return response()->json($participants);
+    }
+
+    public function export()
+    {
+        return Excel::download(new ParticipantsExport(), 'reporte-participantes.xlsx');
+    }
+
+    public function import(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        $import = new ParticipantsImport();
+        Excel::import($import, $request->file('file'));
+
+        $summary = $import->summary();
+
+        return response()->json([
+            'message' => 'Carga masiva procesada correctamente.',
+            'created' => $summary['created'],
+            'updated' => $summary['updated'],
+            'skipped' => $summary['skipped'],
+            'errors' => $summary['errors'],
+        ]);
     }
 
     public function store(Request $request): JsonResponse

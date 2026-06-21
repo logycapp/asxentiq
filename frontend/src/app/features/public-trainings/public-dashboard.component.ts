@@ -68,9 +68,15 @@ import { TrainingService, Training, PublicUser } from '../../core/services/train
                 <small class="text-muted">{{ typeLabel(t.type) }}</small>
               </div>
               <div class="text-end">
-              <div *ngIf="t.participants && t.participants[0]" class="mb-1">
-                  <span [class]="'badge ' + ($any(t.participants[0].pivot).score >= t.passing_score ? 'bg-success' : 'bg-danger')">
-                    {{ $any(t.participants[0].pivot).score ?? 'N/A' }}%
+                <div *ngIf="t.participants && t.participants[0]" class="mb-1">
+                  <span
+                    *ngIf="$any(t.participants[0].pivot).score !== null"
+                    [class]="'badge ' + ($any(t.participants[0].pivot).score >= t.passing_score ? 'bg-success' : 'bg-danger')"
+                  >
+                    {{ $any(t.participants[0].pivot).score }}%
+                  </span>
+                  <span *ngIf="$any(t.participants[0].pivot).score === null" class="badge bg-warning text-dark">
+                    Pendiente de revision
                   </span>
                   <span *ngIf="$any(t.participants[0].pivot).completed_at" class="d-block small text-muted">
                     {{ $any(t.participants[0].pivot).completed_at | date:'shortDate' }}

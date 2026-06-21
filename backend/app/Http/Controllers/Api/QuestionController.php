@@ -9,6 +9,7 @@ use App\Models\Training;
 use App\Models\TrainingMaterial;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class QuestionController extends Controller
@@ -26,13 +27,27 @@ class QuestionController extends Controller
             'question_text' => ['required', 'string'],
             'type' => ['required', 'string', 'in:open,multiple_choice,yes_no'],
             'order' => ['nullable', 'integer', 'min:0'],
+            'options' => ['nullable', 'array'],
+            'options.*.option_text' => ['nullable', 'string', 'max:255'],
+            'options.*.is_correct' => ['nullable', 'boolean'],
+            'options.*.order' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $question = $training->questions()->create($data);
+        $question = DB::transaction(function () use ($training, $data): Question {
+            $question = $training->questions()->create([
+                'question_text' => $data['question_text'],
+                'type' => $data['type'],
+                'order' => $data['order'] ?? 0,
+            ]);
+
+            $this->syncOptions($question, $data['options'] ?? []);
+
+            return $question->load('options', 'materials');
+        });
 
         return response()->json([
             'message' => 'Pregunta creada correctamente.',
-            'question' => $question->load('options', 'materials'),
+            'question' => $question,
         ], 201);
     }
 
@@ -49,9 +64,21 @@ class QuestionController extends Controller
             'question_text' => ['required', 'string'],
             'type' => ['required', 'string', 'in:open,multiple_choice,yes_no'],
             'order' => ['nullable', 'integer', 'min:0'],
+            'options' => ['nullable', 'array'],
+            'options.*.option_text' => ['nullable', 'string', 'max:255'],
+            'options.*.is_correct' => ['nullable', 'boolean'],
+            'options.*.order' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $question->update($data);
+        DB::transaction(function () use ($question, $data): void {
+            $question->update([
+                'question_text' => $data['question_text'],
+                'type' => $data['type'],
+                'order' => $data['order'] ?? 0,
+            ]);
+
+            $this->syncOptions($question, $data['options'] ?? []);
+        });
 
         return response()->json([
             'message' => 'Pregunta actualizada correctamente.',
@@ -116,6 +143,32 @@ class QuestionController extends Controller
         return response()->json([
             'message' => 'Opcion eliminada correctamente.',
         ]);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $options
+     */
+    private function syncOptions(Question $question, array $options): void
+    {
+        $question->options()->delete();
+
+        if ($question->type === 'open') {
+            return;
+        }
+
+        foreach (array_values($options) as $index => $optionData) {
+            $optionText = trim((string) ($optionData['option_text'] ?? ''));
+
+            if ($optionText === '') {
+                continue;
+            }
+
+            $question->options()->create([
+                'option_text' => $optionText,
+                'is_correct' => (bool) ($optionData['is_correct'] ?? false),
+                'order' => (int) ($optionData['order'] ?? $index),
+            ]);
+        }
     }
 
     public function uploadMaterial(Request $request, Question $question): JsonResponse

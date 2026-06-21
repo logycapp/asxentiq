@@ -60,7 +60,8 @@ class PublicTrainingController extends Controller
         }
 
         $trainings = Training::query()
-            ->where('status', 'scheduled')
+            // La visibilidad del examen publico debe depender de la asignacion del participante
+            // y no del estado global de la capacitacion.
             ->whereHas('participants', function ($q) use ($participantId): void {
                 $q->where('training_participant_id', $participantId)->whereNull('completed_at');
             })
@@ -160,10 +161,12 @@ class PublicTrainingController extends Controller
                 }
 
                 $isCorrect = null;
+                $questionScore = null;
 
                 if ($question->type === 'multiple_choice' && isset($answerData['selected_option_id'])) {
                     $selectedOption = $question->options->firstWhere('id', $answerData['selected_option_id']);
                     $isCorrect = $selectedOption && $selectedOption->is_correct;
+                    $questionScore = $isCorrect ? 100 : 0;
                     $autogradeQuestions++;
                     if ($isCorrect) {
                         $correctAnswers++;
@@ -172,6 +175,7 @@ class PublicTrainingController extends Controller
                     $correctOption = $question->options()->where('is_correct', true)->first();
                     $selectedOption = $question->options()->find($answerData['selected_option_id']);
                     $isCorrect = $selectedOption && $correctOption && $selectedOption->id === $correctOption->id;
+                    $questionScore = $isCorrect ? 100 : 0;
                     $autogradeQuestions++;
                     if ($isCorrect) {
                         $correctAnswers++;
@@ -187,19 +191,25 @@ class PublicTrainingController extends Controller
                         'answer_text' => $answerData['answer_text'] ?? null,
                         'selected_option_id' => $answerData['selected_option_id'] ?? null,
                         'is_correct' => $isCorrect,
+                        'score' => $questionScore,
                         'answered_at' => now(),
                     ]
                 );
             }
 
-            $score = $autogradeQuestions > 0
-                ? round(($correctAnswers / $autogradeQuestions) * 100, 2)
+            $answerScores = DB::table('participant_answers')
+                ->where('training_participant_id', $trainingParticipantPivot->id)
+                ->pluck('score');
+
+            $score = $answerScores->count() === $questions->count() && ! $answerScores->contains(fn ($value): bool => $value === null)
+                ? round((float) $answerScores->avg(), 2)
                 : null;
 
-            DB::table('training_participant')
+                DB::table('training_participant')
                 ->where('id', $trainingParticipantPivot->id)
                 ->update([
                     'score' => $score,
+                    'passed' => $score !== null ? $score >= $training->passing_score : null,
                     'attended' => true,
                     'attendance_date' => now()->toDateString(),
                     'completed_at' => now(),
@@ -208,7 +218,9 @@ class PublicTrainingController extends Controller
 
         return response()->json([
             'message' => 'Respuestas enviadas correctamente.',
-            'score' => $autogradeQuestions > 0 ? round(($correctAnswers / $autogradeQuestions) * 100, 2) : null,
+            'score' => DB::table('training_participant')
+                ->where('id', $trainingParticipantPivot->id)
+                ->value('score'),
             'total_questions' => $totalQuestions,
             'autograded' => $autogradeQuestions,
             'correct' => $correctAnswers,
@@ -230,7 +242,9 @@ class PublicTrainingController extends Controller
 
         $training->load('questions');
 
-        $passed = $pivot->pivot->score !== null && $pivot->pivot->score >= $training->passing_score;
+        $passed = $pivot->pivot->passed !== null
+            ? (bool) $pivot->pivot->passed
+            : ($pivot->pivot->score !== null ? $pivot->pivot->score >= $training->passing_score : null);
 
         return response()->json([
             'training' => $training,

@@ -66,6 +66,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/trainings/{training}/participants', [TrainingController::class, 'participants']);
         Route::post('/trainings/{training}/assign-participants', [TrainingController::class, 'assignParticipants']);
         Route::delete('/trainings/{training}/participants/{participant}', [TrainingController::class, 'removeParticipant']);
+        Route::get('/trainings/{training}/participants/{participant}/review', [TrainingController::class, 'participantReview']);
+        Route::put('/trainings/{training}/participants/{participant}/review', [TrainingController::class, 'updateParticipantReview']);
+        Route::post('/trainings/{training}/participants/{participant}/reset', [TrainingController::class, 'resetParticipantAttempt']);
 
         // Training materials
         Route::post('/trainings/{training}/materials', [TrainingController::class, 'uploadMaterial']);
@@ -93,6 +96,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Participants CRUD
     Route::middleware('menu.access:/trainings')->group(function (): void {
         Route::get('/participants', [ParticipantController::class, 'index']);
+        Route::get('/participants/export', [ParticipantController::class, 'export']);
+        Route::post('/participants/import', [ParticipantController::class, 'import']);
         Route::post('/participants', [ParticipantController::class, 'store']);
         Route::get('/participants/{trainingParticipant}', [ParticipantController::class, 'show']);
         Route::put('/participants/{trainingParticipant}', [ParticipantController::class, 'update']);

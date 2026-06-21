@@ -71,7 +71,11 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
           <div *ngIf="editForm.type === 'multiple_choice'" class="mt-3">
             <label class="form-label">Opciones</label>
             <div *ngFor="let opt of editingOptions; let i = index" class="input-group mb-2">
-              <input class="form-control form-control-sm" [(ngModel)]="opt.option_text" placeholder="Opcion {{ i + 1 }}" />
+              <input
+                class="form-control form-control-sm"
+                [(ngModel)]="opt.option_text"
+                placeholder="Opcion {{ i + 1 }}"
+              />
               <div class="input-group-text">
                 <input type="radio" [name]="'correct_' + i" [checked]="opt.is_correct" (change)="setCorrectOption(i)" />
                 <span class="ms-1 small">Correcta</span>
@@ -359,10 +363,24 @@ export class TrainingQuestionsComponent implements OnInit {
   }
 
   saveQuestion(): void {
+    const normalizedOptions = this.editingOptions
+      .map((opt, index) => ({
+        option_text: (opt.option_text ?? '').trim(),
+        is_correct: !!opt.is_correct,
+        order: opt.order ?? index
+      }))
+      .filter((opt) => opt.option_text !== '');
+
+    if ((this.editForm.type === 'multiple_choice' || this.editForm.type === 'yes_no') && normalizedOptions.length < 2) {
+      this.errorMessage = 'La pregunta debe tener al menos 2 opciones.';
+      return;
+    }
+
     const payload = {
       question_text: this.editForm.question_text,
       type: this.editForm.type,
-      order: this.editForm.order ?? 0
+      order: this.editForm.order ?? 0,
+      options: this.editForm.type === 'multiple_choice' || this.editForm.type === 'yes_no' ? normalizedOptions : []
     };
 
     const saveObs = this.editingQuestionId
