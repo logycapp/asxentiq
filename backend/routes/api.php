@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ParticipantController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\TrainingController;
 use App\Http\Controllers\Api\UserController;
@@ -17,6 +18,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::get('/storage/{path}', [StorageController::class, 'show'])->where('path', '.*');
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/me', [AuthController::class, 'me']);

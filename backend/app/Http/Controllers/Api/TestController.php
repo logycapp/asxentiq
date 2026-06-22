@@ -13,7 +13,7 @@ class TestController extends Controller
         $data = $request->validate([
             'dato1' => ['required', 'string', 'max:255'],
             'dato2' => ['required', 'string', 'max:255'],
-            'adjunto' => ['required', 'file', 'max:10240'],
+            'adjunto' => ['required', 'file', 'max:102400'],
         ]);
 
         $file = $request->file('adjunto');

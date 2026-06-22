@@ -37,7 +37,7 @@ class ProfileController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'menu_layout' => ['required', Rule::in(['top', 'left'])],
-            'photo' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
+            'photo' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png', 'max:102400'],
         ]);
 
         $photoPath = $user->profile_photo_path;

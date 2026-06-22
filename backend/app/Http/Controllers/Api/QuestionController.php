@@ -174,7 +174,7 @@ class QuestionController extends Controller
     public function uploadMaterial(Request $request, Question $question): JsonResponse
     {
         $data = $request->validate([
-            'file' => ['required', 'file', 'max:51200'],
+            'file' => ['required', 'file', 'max:102400'],
             'type' => ['required', 'string', 'in:video,pdf,spreadsheet,other'],
         ]);
 

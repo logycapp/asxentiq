@@ -68,6 +68,57 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
             <input type="number" class="form-control form-control-sm" [(ngModel)]="editForm.order" style="width: 80px" />
           </div>
 
+          <div class="mt-3 border rounded-3 p-3 bg-light">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+              <div>
+                <label class="form-label mb-1">Material adicional opcional</label>
+                <div class="text-muted small">
+                  Este archivo se mostrara al participante junto con esta pregunta. No es obligatorio.
+                </div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis">Opcional</span>
+            </div>
+
+            <div class="row g-2 align-items-end">
+              <div class="col-lg-7">
+                <label class="form-label small text-muted">Archivo</label>
+                <input type="file" class="form-control" (change)="onQuestionMaterialSelected($event)" />
+              </div>
+              <div class="col-lg-3">
+                <label class="form-label small text-muted">Tipo</label>
+                <select class="form-select" [(ngModel)]="questionMaterialType" name="questionMaterialType">
+                  <option value="pdf">PDF</option>
+                  <option value="video">Video</option>
+                  <option value="spreadsheet">Hoja de calculo</option>
+                  <option value="other">Otro</option>
+                </select>
+              </div>
+              <div class="col-lg-2">
+                <button type="button" class="btn btn-outline-secondary w-100" (click)="clearQuestionMaterial()">
+                  Limpiar
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="editingQuestionId && editingQuestionMaterials.length > 0" class="mt-3">
+              <div class="small text-muted mb-2">Material ya cargado:</div>
+              <ul class="list-group list-group-flush">
+                <li *ngFor="let material of editingQuestionMaterials" class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none">
+                      <i class="fa-solid fa-paperclip me-1 text-primary"></i>
+                      {{ material.filename }}
+                    </a>
+                    <span class="badge bg-light text-dark text-uppercase">{{ material.type }}</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeQuestionMaterial(material)">
+                    Eliminar
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <div *ngIf="editForm.type === 'multiple_choice'" class="mt-3">
             <label class="form-label">Opciones</label>
             <div *ngFor="let opt of editingOptions; let i = index" class="input-group mb-2">
@@ -110,6 +161,16 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
                   <i [class]="opt.is_correct ? 'fa-solid fa-circle-check text-success' : 'fa-regular fa-circle text-muted'"></i>
                   <span class="ms-1">{{ opt.option_text }}</span>
                 </span>
+              </div>
+            </div>
+            <div *ngIf="q.materials && q.materials.length > 0" class="mt-3 ms-4">
+              <div class="small text-muted mb-2">Material adjunto</div>
+              <div *ngFor="let material of q.materials" class="d-flex justify-content-between align-items-center gap-2 small mb-2">
+                <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none">
+                  <i class="fa-solid fa-paperclip me-1 text-primary"></i>
+                  {{ material.filename }}
+                </a>
+                <span class="badge bg-light text-dark text-uppercase">{{ material.type }}</span>
               </div>
             </div>
           </div>
@@ -295,6 +356,9 @@ export class TrainingQuestionsComponent implements OnInit {
   editingQuestionId: number | null = null;
   editForm: Partial<Question> = { question_text: '', type: 'open', order: 0 };
   editingOptions: Partial<QuestionOption & { _tempId?: number }>[] = [];
+  editingQuestionMaterials: NonNullable<Question['materials']> = [];
+  questionMaterialFile: File | null = null;
+  questionMaterialType = 'pdf';
 
   ngOnInit(): void {
     this.trainingId = this.trainingIdInput ?? +(this.route.snapshot.paramMap.get('id') ?? 0);
@@ -323,6 +387,8 @@ export class TrainingQuestionsComponent implements OnInit {
     this.editingQuestionId = null;
     this.editForm = { question_text: '', type: 'open', order: this.questions.length + 1 };
     this.editingOptions = [];
+    this.editingQuestionMaterials = [];
+    this.clearQuestionMaterial();
   }
 
   editQuestion(q: Question): void {
@@ -330,12 +396,16 @@ export class TrainingQuestionsComponent implements OnInit {
     this.editingQuestionId = q.id;
     this.editForm = { question_text: q.question_text, type: q.type, order: q.order };
     this.editingOptions = (q.options || []).map((o) => ({ ...o }));
+    this.editingQuestionMaterials = q.materials ?? [];
+    this.clearQuestionMaterial();
   }
 
   cancelEdit(): void {
     this.editingQuestion = false;
     this.editingQuestionId = null;
     this.editingOptions = [];
+    this.editingQuestionMaterials = [];
+    this.clearQuestionMaterial();
   }
 
   onTypeChange(): void {
@@ -389,12 +459,58 @@ export class TrainingQuestionsComponent implements OnInit {
 
     this.loadingService.track(saveObs).subscribe({
       next: (res) => {
-        this.message = res.message;
-        this.saved.emit();
-        this.cancelEdit();
-        this.loadQuestions();
+        const savedQuestion = res.question;
+
+        if (!this.questionMaterialFile) {
+          this.message = res.message;
+          this.saved.emit();
+          this.cancelEdit();
+          this.loadQuestions();
+          return;
+        }
+
+        const materialFile = this.questionMaterialFile;
+        const materialType = this.questionMaterialType;
+
+        this.loadingService.track(this.trainingService.uploadQuestionMaterial(savedQuestion.id, materialFile, materialType))
+          .subscribe({
+            next: () => {
+              this.message = `${res.message} Material cargado correctamente.`;
+              this.saved.emit();
+              this.cancelEdit();
+              this.loadQuestions();
+            },
+            error: () => {
+              this.errorMessage = 'La pregunta se guardo, pero no se pudo cargar el material.';
+            }
+          });
       },
       error: () => (this.errorMessage = 'Error al guardar la pregunta.')
+    });
+  }
+
+  onQuestionMaterialSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.questionMaterialFile = input.files?.[0] ?? null;
+  }
+
+  clearQuestionMaterial(): void {
+    this.questionMaterialFile = null;
+    this.questionMaterialType = 'pdf';
+  }
+
+  removeQuestionMaterial(material: NonNullable<Question['materials']>[number]): void {
+    if (!this.editingQuestionId || !window.confirm(`Eliminar ${material.filename}?`)) {
+      return;
+    }
+
+    this.loadingService.track(this.trainingService.deleteQuestionMaterial(this.editingQuestionId, material.id)).subscribe({
+      next: () => {
+        this.editingQuestionMaterials = this.editingQuestionMaterials.filter((item) => item.id !== material.id);
+      },
+      error: () => {
+        this.errorMessage = 'No se pudo eliminar el material.';
+      }
     });
   }
 

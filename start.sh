@@ -10,6 +10,8 @@ BACKEND_PID=""
 FRONTEND_PID=""
 PHP_BIN=""
 INSTALL_PACKAGES=()
+PHP_REQUEST_LIMIT="128M"
+PHP_MEMORY_LIMIT="256M"
 
 cleanup() {
   echo
@@ -205,7 +207,11 @@ start_backend() {
   (
     cd "$BACKEND_DIR"
     "$PHP_BIN" artisan migrate --seed --force
-    "$PHP_BIN" artisan serve --host=127.0.0.1 --port=8000
+    "$PHP_BIN" \
+      -d "post_max_size=${PHP_REQUEST_LIMIT}" \
+      -d "upload_max_filesize=${PHP_REQUEST_LIMIT}" \
+      -d "memory_limit=${PHP_MEMORY_LIMIT}" \
+      artisan serve --host=127.0.0.1 --port=8000
   ) &
   BACKEND_PID=$!
 }

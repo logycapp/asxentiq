@@ -67,6 +67,26 @@ DB_USERNAME=root
 DB_PASSWORD=1234
 ```
 
+## Tamaño de peticiones y archivos
+
+El backend valida algunos archivos con límites propios, pero el servidor debe permitir un cuerpo de petición mayor que esos límites.
+
+- Foto de perfil: hasta `100 MB`
+- Materiales de capacitación o preguntas: hasta `100 MB`
+
+Si ves `Illuminate\Http\Exceptions\PostTooLargeException`, ajusta al menos estos valores en PHP:
+
+- `post_max_size=128M`
+- `upload_max_filesize=128M`
+
+Si publicas con Nginx, también revisa:
+
+- `client_max_body_size 128M;`
+
+Ejemplo de config de Nginx en [deploy/nginx/asxentiq.conf](/home/asus/software/asxentiq/deploy/nginx/asxentiq.conf).
+
+Después de aplicar los cambios, reinicia Nginx y PHP-FPM para que tomen los nuevos límites.
+
 ## Inicio rápido
 
 ```bash

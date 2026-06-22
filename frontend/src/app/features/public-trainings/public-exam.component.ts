@@ -29,7 +29,7 @@ import { TrainingService, Training, SubmitAnswer } from '../../core/services/tra
           <p>Revise el siguiente material antes de realizar el examen:</p>
           <div *ngFor="let m of training.materials" class="mb-2">
             <span class="badge bg-info me-2">{{ m.type }}</span>
-            <a [href]="'/storage/' + m.filepath" target="_blank" class="text-primary">
+            <a [href]="'/api/storage/' + m.filepath" target="_blank" class="text-primary">
               {{ m.filename }}
             </a>
           </div>
@@ -46,16 +46,26 @@ import { TrainingService, Training, SubmitAnswer } from '../../core/services/tra
       <div *ngIf="step === 'exam' && training" class="card">
         <div class="card-header">
           <h5 class="mb-0">{{ training.title }}</h5>
-          <small class="text-muted">Responda todas las preguntas</small>
+          <small class="text-muted">Responda una pregunta a la vez</small>
         </div>
         <div class="card-body">
           <div *ngIf="resultMessage" class="alert alert-info">{{ resultMessage }}</div>
 
-          <div *ngFor="let q of training.questions; let i = index" class="mb-4 p-3 border rounded">
+          <div *ngIf="currentQuestion() as q" class="mb-4 p-3 border rounded">
             <div class="d-flex justify-content-between">
-              <strong class="mb-2 d-block">Pregunta {{ i + 1 }}:</strong>
+              <strong class="mb-2 d-block">Pregunta {{ currentQuestionNumber() }} de {{ totalQuestions() }}:</strong>
             </div>
             <p>{{ q.question_text }}</p>
+
+            <div *ngIf="q.materials && q.materials.length > 0" class="mb-3 p-3 bg-light border rounded">
+              <div class="small text-muted mb-2">Material de apoyo de esta pregunta</div>
+              <div *ngFor="let m of q.materials" class="mb-2">
+                <span class="badge bg-info me-2">{{ m.type }}</span>
+                <a [href]="'/api/storage/' + m.filepath" target="_blank" class="text-primary">
+                  {{ m.filename }}
+                </a>
+              </div>
+            </div>
 
             <!-- Open question -->
             <div *ngIf="q.type === 'open'">
@@ -82,16 +92,22 @@ import { TrainingService, Training, SubmitAnswer } from '../../core/services/tra
             <div *ngIf="q.type === 'multiple_choice' && q.options">
               <div *ngFor="let opt of q.options" class="form-check">
                 <input class="form-check-input" type="radio" [name]="'q_' + q.id" [value]="opt.id"
-                  (change)="answers[q.id] = opt.id" />
+                  [(ngModel)]="answers[q.id]" />
                 <label class="form-check-label">{{ opt.option_text }}</label>
               </div>
             </div>
           </div>
 
-          <div class="mt-4">
-            <button class="btn btn-success" (click)="submitExam()" [disabled]="submitting">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4">
+            <button class="btn btn-outline-secondary" (click)="previousQuestion()" [disabled]="submitting || isFirstQuestion()">
+              Anterior
+            </button>
+            <div class="text-muted small">
+              {{ currentQuestionNumber() }} / {{ totalQuestions() }}
+            </div>
+            <button class="btn btn-success" (click)="nextOrFinish()" [disabled]="submitting">
               <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
-              Enviar Respuestas
+              {{ isLastQuestion() ? 'Finalizar' : 'Siguiente' }}
             </button>
           </div>
         </div>
@@ -112,6 +128,7 @@ export class PublicExamComponent implements OnInit {
   answers: Record<number, any> = {};
   submitting = false;
   resultMessage = '';
+  currentQuestionIndex = 0;
 
   ngOnInit(): void {
     const id = +(this.route.snapshot.paramMap.get('id') ?? 0);
@@ -127,6 +144,7 @@ export class PublicExamComponent implements OnInit {
           if (!training.materials || training.materials.length === 0) {
             this.step = 'exam';
           }
+          this.currentQuestionIndex = 0;
         },
         error: (err) => {
           this.error = err.error?.message || 'Error al cargar el examen.';
@@ -144,13 +162,75 @@ export class PublicExamComponent implements OnInit {
     }
   }
 
+  currentQuestion(): Training['questions'] extends (infer Q)[] ? Q | null : any {
+    return this.training?.questions?.[this.currentQuestionIndex] ?? null;
+  }
+
+  totalQuestions(): number {
+    return this.training?.questions?.length ?? 0;
+  }
+
+  currentQuestionNumber(): number {
+    return this.currentQuestionIndex + 1;
+  }
+
+  isFirstQuestion(): boolean {
+    return this.currentQuestionIndex <= 0;
+  }
+
+  isLastQuestion(): boolean {
+    return this.currentQuestionIndex >= this.totalQuestions() - 1;
+  }
+
+  previousQuestion(): void {
+    if (this.isFirstQuestion()) {
+      return;
+    }
+
+    this.currentQuestionIndex--;
+  }
+
+  nextOrFinish(): void {
+    if (!this.training) return;
+
+    const q = this.currentQuestion();
+
+    if (!q) {
+      return;
+    }
+
+    if (!this.isQuestionAnswered(q)) {
+      this.resultMessage = 'Debes responder la pregunta actual antes de continuar.';
+      return;
+    }
+
+    this.resultMessage = '';
+
+    if (!this.isLastQuestion()) {
+      this.currentQuestionIndex++;
+      return;
+    }
+
+    this.submitExam();
+  }
+
+  isQuestionAnswered(question: any): boolean {
+    const value = this.answers[question.id];
+
+    if (question.type === 'open') {
+      return typeof value === 'string' && value.trim() !== '';
+    }
+
+    return value !== undefined && value !== null && value !== '';
+  }
+
   submitExam(): void {
     if (!this.training) return;
 
     const submitAnswers: SubmitAnswer[] = (this.training.questions ?? []).map(q => ({
       question_id: q.id,
-      answer_text: q.type === 'open' ? (this.answers[q.id] as string || '') : undefined,
-      selected_option_id: q.type !== 'open' ? (this.answers[q.id] as number) : undefined,
+      answer_text: q.type === 'open' ? String(this.answers[q.id] ?? '').trim() : undefined,
+      selected_option_id: q.type !== 'open' ? Number(this.answers[q.id]) : undefined,
     }));
 
     this.submitting = true;

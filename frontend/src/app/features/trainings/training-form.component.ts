@@ -112,6 +112,56 @@ import { TrainingService, Training } from '../../core/services/training.service'
               <label class="form-label">Instructor</label>
               <input class="form-control" [(ngModel)]="model.instructor" name="instructor" />
             </div>
+
+            <div class="col-12">
+              <div class="border rounded-3 p-3 bg-light-subtle">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                  <div>
+                    <label class="form-label mb-1">Material general opcional</label>
+                    <div class="text-muted small">
+                      Se mostrara al participante antes de iniciar la prueba. No es obligatorio.
+                    </div>
+                  </div>
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis">Opcional</span>
+                </div>
+
+                <div class="row g-2 align-items-end">
+                  <div class="col-lg-7">
+                    <label class="form-label small text-muted">Archivo</label>
+                    <input type="file" class="form-control" (change)="onTrainingMaterialSelected($event)" />
+                  </div>
+                  <div class="col-lg-3">
+                    <label class="form-label small text-muted">Tipo</label>
+                    <select class="form-select" [(ngModel)]="trainingMaterialType" name="trainingMaterialType">
+                      <option value="pdf">PDF</option>
+                      <option value="video">Video</option>
+                      <option value="spreadsheet">Hoja de calculo</option>
+                      <option value="other">Otro</option>
+                    </select>
+                  </div>
+                  <div class="col-lg-2">
+                    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearTrainingMaterial()">
+                      Limpiar
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="trainingMaterials.length > 0" class="mt-3">
+                  <div class="small text-muted mb-2">Material ya cargado:</div>
+                  <ul class="list-group list-group-flush">
+                    <li *ngFor="let material of trainingMaterials" class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                      <div class="d-flex align-items-center gap-2">
+                        <span>{{ material.filename }}</span>
+                        <span class="badge bg-light text-dark text-uppercase">{{ material.type }}</span>
+                      </div>
+                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeTrainingMaterial(material)">
+                        Eliminar
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>
@@ -161,6 +211,9 @@ export class TrainingFormComponent implements OnInit {
   loading = true;
   saving = false;
   errorMessage = '';
+  trainingMaterials: NonNullable<Training['materials']> = [];
+  trainingMaterialFile: File | null = null;
+  trainingMaterialType = 'pdf';
 
   model: Partial<Training> = {
     title: '',
@@ -206,7 +259,9 @@ export class TrainingFormComponent implements OnInit {
             mandatory: training.mandatory,
             status: training.status,
             passing_score: training.passing_score,
+            materials: training.materials,
           };
+          this.trainingMaterials = training.materials ?? [];
         },
         error: () => {
           this.errorMessage = 'Error al cargar la capacitacion.';
@@ -223,20 +278,73 @@ export class TrainingFormComponent implements OnInit {
       ? this.trainingService.update(this.trainingId!, this.model)
       : this.trainingService.create(this.model);
 
-    this.loadingService.track(obs)
-      .pipe(finalize(() => (this.saving = false)))
-      .subscribe({
-        next: () => {
-          this.saved.emit();
-          if (this.activeModal) {
-            this.activeModal.close('saved');
+    this.loadingService.track(obs).subscribe({
+        next: (res) => {
+          const training = res.training;
+          this.trainingId = training.id;
+
+          if (!this.trainingMaterialFile) {
+            this.finishSave();
             return;
           }
 
-          this.router.navigate(['/trainings']);
+          const materialFile = this.trainingMaterialFile;
+          const materialType = this.trainingMaterialType;
+
+          this.loadingService.track(this.trainingService.uploadTrainingMaterial(training.id, materialFile, materialType))
+            .subscribe({
+              next: (materialRes) => {
+                this.trainingMaterials = [...this.trainingMaterials, materialRes.material];
+                this.trainingMaterialFile = null;
+                this.finishSave();
+              },
+              error: () => {
+                this.saving = false;
+                this.errorMessage = 'La capacitacion se guardo, pero no se pudo cargar el material.';
+              }
+            });
         },
-        error: () => (this.errorMessage = 'Error al guardar la capacitacion.')
+        error: () => {
+          this.saving = false;
+          this.errorMessage = 'Error al guardar la capacitacion.';
+        }
       });
+  }
+
+  onTrainingMaterialSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.trainingMaterialFile = input.files?.[0] ?? null;
+  }
+
+  clearTrainingMaterial(): void {
+    this.trainingMaterialFile = null;
+    this.trainingMaterialType = 'pdf';
+  }
+
+  removeTrainingMaterial(material: NonNullable<Training['materials']>[number]): void {
+    if (!this.trainingId || !window.confirm(`Eliminar ${material.filename}?`)) {
+      return;
+    }
+
+    this.loadingService.track(this.trainingService.deleteTrainingMaterial(this.trainingId, material.id)).subscribe({
+      next: () => {
+        this.trainingMaterials = this.trainingMaterials.filter((item) => item.id !== material.id);
+      },
+      error: () => {
+        this.errorMessage = 'No se pudo eliminar el material.';
+      }
+    });
+  }
+
+  finishSave(): void {
+    this.saving = false;
+    this.saved.emit();
+    if (this.activeModal) {
+      this.activeModal.close('saved');
+      return;
+    }
+
+    this.router.navigate(['/trainings']);
   }
 
   closeModal(): void {

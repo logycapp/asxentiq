@@ -407,7 +407,7 @@ class TrainingController extends Controller
     public function uploadMaterial(Request $request, Training $training): JsonResponse
     {
         $data = $request->validate([
-            'file' => ['required', 'file', 'max:51200'], // 50MB max
+            'file' => ['required', 'file', 'max:102400'], // 100MB max
             'type' => ['required', 'string', 'in:video,pdf,spreadsheet,other'],
         ]);
 
