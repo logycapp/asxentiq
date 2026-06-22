@@ -42,44 +42,58 @@ import { TrainingResultsComponent } from './training-results.component';
   ],
   template: `
     <div class="container-fluid py-4 trainings-page">
-      <div class="page-shell">
-        <section class="hero-card">
-          <div>
-            <p class="hero-eyebrow mb-2">Modulo SST</p>
-            <h4 class="hero-title mb-2">Capacitaciones</h4>
-            <p class="hero-description mb-0">
-              Crea, organiza y controla las capacitaciones con una vista mas clara para
-              seguimiento rapido.
+      <div class="trainings-shell">
+        <section class="trainings-hero">
+          <div class="trainings-hero__copy">
+            <p class="trainings-eyebrow mb-2">Modulo de seguridad</p>
+            <h1 class="trainings-title mb-3">Capacitaciones SST</h1>
+            <p class="trainings-description mb-0">
+              Gestiona, monitorea y certifica el crecimiento profesional de tus colaboradores
+              con una vista clara para seguimiento rapido.
             </p>
           </div>
-          <div class="hero-actions">
-            <a routerLink="/trainings/create" class="btn btn-primary btn-lg hero-action">
-              <i class="fa-solid fa-plus me-2"></i>
-              Nueva capacitacion
-            </a>
-          </div>
+
+          <a routerLink="/trainings/create" class="btn btn-primary btn-lg trainings-cta">
+            <i class="fa-solid fa-plus trainings-cta__icon" aria-hidden="true"></i>
+            Nueva capacitacion
+          </a>
         </section>
 
-        <section class="row g-3 mb-3" *ngIf="!loading">
-          <div class="col-12 col-md-4">
+        <section class="row g-3 mb-4" *ngIf="!loading">
+          <div class="col-12 col-lg-4">
             <div class="metric-card metric-card-primary">
-              <span class="metric-label">Total</span>
+              <div class="metric-card__top">
+                <span class="metric-icon metric-icon--primary">
+                  <i class="fa-solid fa-layer-group"></i>
+                </span>
+                <span class="metric-badge">Acumulado</span>
+              </div>
               <span class="metric-value">{{ summary.total }}</span>
-              <span class="metric-help">capacitaciones registradas</span>
+              <span class="metric-help">Capacitaciones totales</span>
             </div>
           </div>
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-lg-4">
             <div class="metric-card metric-card-warning">
-              <span class="metric-label">Programadas</span>
+              <div class="metric-card__top">
+                <span class="metric-icon metric-icon--warning">
+                  <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+                </span>
+                <span class="metric-badge">Próximas</span>
+              </div>
               <span class="metric-value">{{ summary.scheduled }}</span>
-              <span class="metric-help">pendientes por ejecutar</span>
+              <span class="metric-help">Pendientes por ejecutar</span>
             </div>
           </div>
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-lg-4">
             <div class="metric-card metric-card-success">
-              <span class="metric-label">Realizadas</span>
+              <div class="metric-card__top">
+                <span class="metric-icon metric-icon--success">
+                  <i class="fa-solid fa-circle-check"></i>
+                </span>
+                <span class="metric-badge">Completado</span>
+              </div>
               <span class="metric-value">{{ summary.completed }}</span>
-              <span class="metric-help">cerradas correctamente</span>
+              <span class="metric-help">Cerradas exitosamente</span>
             </div>
           </div>
         </section>
@@ -116,35 +130,33 @@ import { TrainingResultsComponent } from './training-results.component';
 
         <section *ngIf="!loading && trainings.length > 0" class="table-card">
           <div class="table-card-header">
-            <div>
-              <h5 class="mb-1">Listado</h5>
-              <p class="text-muted mb-0">Resumen operativo de capacitaciones activas e historicas.</p>
+            <div class="table-card-header__copy">
+              <h2 class="table-title mb-2">Listado Maestro</h2>
+              <p class="table-subtitle mb-0">{{ meta.total }} registros activos en la base de datos</p>
             </div>
             <div class="table-toolbar">
-              <span class="table-counter">{{ meta.total }} registros</span>
-              <mat-form-field appearance="outline" class="search-field">
-                <mat-label>Buscar</mat-label>
+              <div class="search-shell">
+                <i class="fa-solid fa-magnifying-glass search-shell__icon" aria-hidden="true"></i>
                 <input
-                  matInput
+                  class="search-shell__input"
                   name="searchTerm"
                   [(ngModel)]="searchTerm"
                   (keyup.enter)="applyFilters()"
-                  placeholder="Titulo, estado, tipo..."
+                  placeholder="Filtrar por titulo, tipo o fecha..."
+                  aria-label="Filtrar capacitaciones"
                 />
                 <button
                   *ngIf="searchTerm"
-                  matSuffix
-                  mat-icon-button
                   type="button"
+                  class="search-shell__clear"
                   aria-label="Limpiar busqueda"
                   (click)="clearSearch()"
                 >
                   <i class="fa-solid fa-xmark"></i>
                 </button>
-              </mat-form-field>
-              <button mat-flat-button color="primary" type="button" (click)="applyFilters()">
-                <i class="fa-solid fa-magnifying-glass me-2"></i>
-                Buscar
+              </div>
+              <button type="button" class="btn btn-dark trainings-filter-btn" (click)="applyFilters()">
+                Filtrar
               </button>
             </div>
           </div>
@@ -210,21 +222,21 @@ import { TrainingResultsComponent } from './training-results.component';
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="text-end">Acciones</th>
                 <td mat-cell *matCellDef="let t" class="text-end">
-                  <div class="btn-group btn-group-sm action-group">
-                    <button type="button" class="btn btn-outline-primary" title="Editar" (click)="openEditModal(t)">
-                      <i class="fa-solid fa-pen-to-square"></i>
+                  <div class="action-group">
+                    <button type="button" class="action-btn action-btn--edit" title="Editar" (click)="openEditModal(t)">
+                      <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-info" title="Preguntas" (click)="openQuestionsModal(t)">
-                      <i class="fa-solid fa-circle-question"></i>
+                    <button type="button" class="action-btn action-btn--questions" title="Preguntas" (click)="openQuestionsModal(t)">
+                      <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-success" title="Asignar usuarios" (click)="openAssignModal(t)">
-                      <i class="fa-solid fa-user-plus"></i>
+                    <button type="button" class="action-btn action-btn--assign" title="Asignar usuarios" (click)="openAssignModal(t)">
+                      <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" title="Resultados" (click)="openResultsModal(t)">
-                      <i class="fa-solid fa-chart-column"></i>
+                    <button type="button" class="action-btn action-btn--results" title="Resultados" (click)="openResultsModal(t)">
+                      <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
                     </button>
-                    <button class="btn btn-outline-danger" (click)="remove(t)" title="Eliminar">
-                      <i class="fa-solid fa-trash-can"></i>
+                    <button type="button" class="action-btn action-btn--delete" (click)="remove(t)" title="Eliminar">
+                      <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                     </button>
                   </div>
                 </td>
@@ -249,129 +261,214 @@ import { TrainingResultsComponent } from './training-results.component';
   `,
   styles: [`
     :host {
-      --brand-navy: #08162f;
-      --brand-blue: #1462ff;
-      --brand-cyan: #1dbbd6;
-      --brand-teal: #2fd0b0;
-      --brand-green: #42d483;
-      --brand-ink: #0f172a;
-      --brand-muted: #5b6b84;
+      --brand-navy: #071632;
+      --brand-blue: #2349a8;
+      --brand-cyan: #4f83e8;
+      --brand-green: #3f6f15;
+      --brand-ink: #1d2430;
+      --brand-muted: #5d6375;
+      display: block;
     }
 
     .trainings-page {
-      background:
-        radial-gradient(circle at top left, rgba(20, 98, 255, 0.13), transparent 30%),
-        radial-gradient(circle at top right, rgba(29, 187, 214, 0.12), transparent 24%),
-        radial-gradient(circle at 50% 110%, rgba(66, 212, 131, 0.1), transparent 30%),
-        linear-gradient(180deg, #f8fbff 0%, #edf3f8 100%);
       min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(35, 73, 168, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(79, 131, 232, 0.14), transparent 26%),
+        linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
     }
 
-    .page-shell {
-      max-width: 1400px;
+    .trainings-shell {
+      width: 100%;
+      max-width: none;
       margin: 0 auto;
     }
 
-    .hero-card,
+    .trainings-hero,
+    .metric-card,
     .table-card,
     .empty-card,
-    .metric-card,
     .loading-panel {
       border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 1.25rem;
+      border-radius: 32px;
       background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 55px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(12px);
     }
 
-    .hero-card {
+    .trainings-hero {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
+      gap: 1.5rem;
+      padding: 2rem 2.25rem;
+      margin-bottom: 1.5rem;
       background:
-        linear-gradient(135deg, rgba(20, 98, 255, 0.11), rgba(29, 187, 214, 0.08), rgba(255, 255, 255, 0.97)),
-        rgba(255, 255, 255, 0.92);
-      border-top: 4px solid var(--brand-blue);
+        radial-gradient(circle at top right, rgba(79, 131, 232, 0.16), transparent 26%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.92));
     }
 
-    .hero-eyebrow {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--brand-cyan);
-    }
-
-    .hero-title {
-      font-size: 1.7rem;
+    .trainings-eyebrow {
+      color: var(--brand-blue);
+      font-size: 0.9rem;
       font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+    }
+
+    .trainings-title {
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
       color: var(--brand-ink);
     }
 
-    .hero-description {
+    .trainings-description {
+      max-width: 700px;
       color: var(--brand-muted);
-      max-width: 760px;
+      font-size: 1.06rem;
+      line-height: 1.6;
     }
 
-    .hero-action {
-      white-space: nowrap;
-      border-radius: 999px;
+    .trainings-cta {
+      flex: 0 0 auto;
+      min-width: 320px;
+      min-height: 72px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
       border: 0;
-      background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan));
-      box-shadow: 0 12px 26px rgba(20, 98, 255, 0.26);
+      border-radius: 22px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2349a8, #2f4ea4 55%, #1f78d6);
+      box-shadow: 0 20px 35px rgba(35, 73, 168, 0.28);
+    }
+
+    .trainings-cta__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.4rem;
+      height: 1.4rem;
+      font-size: 1.05rem;
+      line-height: 1;
+      flex: 0 0 auto;
     }
 
     .metric-card {
-      padding: 1.15rem 1.25rem;
+      position: relative;
       height: 100%;
-      border-top: 4px solid transparent;
+      min-height: 170px;
+      padding: 1rem 1.2rem 1.05rem;
+      overflow: hidden;
     }
 
-    .metric-label {
-      display: block;
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      inset: auto -10% -40% auto;
+      width: 11rem;
+      height: 11rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 68%);
+      pointer-events: none;
+    }
+
+    .metric-card__top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.7rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric-icon {
+      width: 58px;
+      height: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 17px;
+      font-size: 1.05rem;
+      color: #fff;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.18);
+    }
+
+    .metric-icon i,
+    .action-btn i,
+    .trainings-cta__icon {
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .metric-icon--primary {
+      background: linear-gradient(135deg, #2349a8, #2b55c8);
+    }
+
+    .metric-icon--warning {
+      background: linear-gradient(135deg, #3e77d8, #5b90ea);
+    }
+
+    .metric-icon--success {
+      background: linear-gradient(135deg, #4b7716, #2f5d0f);
+    }
+
+    .metric-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.42rem 0.9rem;
+      border-radius: 999px;
+      background: #eef0f5;
+      color: #505664;
       font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 800;
+      letter-spacing: 0.11em;
       text-transform: uppercase;
-      color: var(--brand-muted);
-      margin-bottom: 0.35rem;
+      white-space: nowrap;
     }
 
     .metric-value {
       display: block;
-      font-size: 2rem;
-      font-weight: 800;
-      line-height: 1;
+      margin-top: 0.2rem;
+      font-size: 3rem;
+      line-height: 0.95;
+      font-weight: 700;
       color: var(--brand-ink);
+      position: relative;
+      z-index: 1;
     }
 
     .metric-help {
       display: block;
-      margin-top: 0.35rem;
-      color: var(--brand-muted);
-      font-size: 0.92rem;
+      margin-top: 0.2rem;
+      font-size: 0.98rem;
+      color: #4d5566;
+      position: relative;
+      z-index: 1;
     }
 
     .metric-card-primary {
-      background: linear-gradient(135deg, rgba(20, 98, 255, 0.13), rgba(255, 255, 255, 0.97));
-      border-top-color: var(--brand-blue);
+      background: linear-gradient(135deg, rgba(35, 73, 168, 0.07), rgba(255, 255, 255, 0.98));
     }
 
     .metric-card-warning {
-      background: linear-gradient(135deg, rgba(29, 187, 214, 0.16), rgba(255, 255, 255, 0.97));
-      border-top-color: var(--brand-cyan);
+      background: linear-gradient(135deg, rgba(79, 131, 232, 0.12), rgba(255, 255, 255, 0.98));
     }
 
     .metric-card-success {
-      background: linear-gradient(135deg, rgba(66, 212, 131, 0.16), rgba(255, 255, 255, 0.97));
-      border-top-color: var(--brand-green);
+      background: linear-gradient(135deg, rgba(75, 119, 22, 0.12), rgba(255, 255, 255, 0.98));
     }
 
     .soft-alert {
-      border-radius: 1rem;
+      border-radius: 20px;
     }
 
     .loading-panel {
@@ -380,7 +477,7 @@ import { TrainingResultsComponent } from './training-results.component';
 
     .loading-text {
       color: var(--brand-muted);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .empty-card {
@@ -395,77 +492,106 @@ import { TrainingResultsComponent } from './training-results.component';
       align-items: center;
       justify-content: center;
       margin-bottom: 1rem;
-      background: linear-gradient(135deg, rgba(20, 98, 255, 0.12), rgba(29, 187, 214, 0.12));
+      background: linear-gradient(135deg, rgba(35, 73, 168, 0.12), rgba(79, 131, 232, 0.12));
       color: var(--brand-blue);
       font-size: 1.75rem;
     }
 
     .table-card {
       overflow: hidden;
-      border-top: 4px solid var(--brand-cyan);
+      border-radius: 34px;
     }
 
     .table-card-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       gap: 1rem;
-      padding: 1.25rem 1.35rem;
+      padding: 1.65rem 1.8rem 1.45rem;
       border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-      background: linear-gradient(180deg, rgba(248, 251, 255, 0.98), rgba(241, 246, 250, 0.98));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 252, 0.98));
+    }
+
+    .table-card-header__copy {
+      min-width: 0;
+    }
+
+    .table-title {
+      margin: 0;
+      font-size: clamp(1.7rem, 2vw, 2.05rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--brand-ink);
+    }
+
+    .table-subtitle {
+      color: var(--brand-muted);
+      font-size: 1rem;
     }
 
     .table-toolbar {
       display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      flex-wrap: nowrap;
+      align-items: center;
+      gap: 1rem;
       justify-content: flex-end;
-      width: 100%;
+      flex: 1 1 auto;
+      min-width: 0;
     }
 
-    .table-counter {
-      display: inline-flex;
+    .search-shell {
+      display: flex;
       align-items: center;
-      padding: 0.55rem 0.8rem;
-      border-radius: 999px;
-      background: rgba(20, 98, 255, 0.1);
-      color: var(--brand-blue);
-      font-weight: 700;
-      white-space: nowrap;
-      height: 56px;
+      gap: 0.8rem;
+      flex: 1 1 500px;
+      max-width: 500px;
+      min-width: 0;
+      padding: 0.2rem 0.2rem 0.2rem 1rem;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .search-shell__icon {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .search-shell__input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--brand-ink);
+      font-size: 1rem;
+      padding: 1rem 0;
+    }
+
+    .search-shell__input::placeholder {
+      color: #a7afbf;
+    }
+
+    .search-shell__clear {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.06);
+      color: #6b7280;
       flex: 0 0 auto;
     }
 
-    .search-field {
-      width: min(19rem, 100%);
-      flex: 0 1 19rem;
-    }
-
-    .search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-
-    .search-field ::ng-deep .mat-mdc-text-field-wrapper {
-      background: #fff;
-      border-radius: 16px;
-    }
-
-    .search-field ::ng-deep .mat-mdc-form-field-flex {
-      min-height: 56px;
-      align-items: center;
-    }
-
-    .search-field ::ng-deep .mat-mdc-form-field-infix {
-      padding-top: 0.9rem;
-      padding-bottom: 0.9rem;
-      min-height: 56px;
-    }
-
-    .search-field ::ng-deep .mat-mdc-icon-button {
-      width: 40px;
-      height: 40px;
-      padding: 0;
+    .trainings-filter-btn {
+      min-width: 138px;
+      min-height: 66px;
+      padding-inline: 1.5rem;
+      border-radius: 20px;
+      font-size: 1rem;
+      font-weight: 800;
+      background: #1f2328;
+      border-color: #1f2328;
+      box-shadow: 0 16px 28px rgba(15, 23, 42, 0.18);
     }
 
     .training-table {
@@ -474,19 +600,18 @@ import { TrainingResultsComponent } from './training-results.component';
     }
 
     .training-table ::ng-deep .mat-mdc-header-row {
-      background: #e4e4e4ff;
+      background: #f1f3f6;
       border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     }
-      
 
     .training-table ::ng-deep .mat-mdc-header-cell {
       background: transparent;
       color: var(--brand-ink);
       border-bottom-color: rgba(15, 23, 42, 0.08);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 700;
+      letter-spacing: 0.07em;
+      font-weight: 800;
     }
 
     .training-table ::ng-deep .mat-sort-header-arrow {
@@ -494,13 +619,13 @@ import { TrainingResultsComponent } from './training-results.component';
     }
 
     .training-table ::ng-deep .mat-mdc-row:hover {
-      background: rgba(20, 98, 255, 0.035);
+      background: rgba(35, 73, 168, 0.03);
     }
 
     .training-table ::ng-deep .mat-mdc-cell,
     .training-table ::ng-deep .mat-mdc-header-cell {
-      padding-left: 0.85rem;
-      padding-right: 0.85rem;
+      padding-left: 0.9rem;
+      padding-right: 0.9rem;
       border-bottom-color: rgba(15, 23, 42, 0.08);
     }
 
@@ -515,68 +640,144 @@ import { TrainingResultsComponent } from './training-results.component';
       align-items: center;
       justify-content: center;
       min-width: 5.5rem;
-      padding: 0.4rem 0.75rem;
+      padding: 0.42rem 0.8rem;
       border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 700;
+      font-size: 0.84rem;
+      font-weight: 800;
     }
 
     .count-pill {
+      min-width: 3rem;
       background: rgba(15, 23, 42, 0.06);
       color: var(--brand-ink);
-      min-width: 3rem;
     }
 
     .status-scheduled {
-      background: rgba(20, 98, 255, 0.12);
+      background: rgba(35, 73, 168, 0.12);
       color: var(--brand-blue);
     }
 
     .status-completed {
-      background: rgba(66, 212, 131, 0.15);
-      color: #11875b;
+      background: rgba(63, 111, 21, 0.14);
+      color: #31610f;
     }
 
     .status-cancelled {
-      background: rgba(29, 187, 214, 0.14);
-      color: #b02a37;
+      background: rgba(239, 68, 68, 0.14);
+      color: #b42318;
     }
 
     .action-group .btn {
       box-shadow: none;
     }
 
-    @media (max-width: 992px) {
-      .hero-card,
-      .table-card-header {
-        flex-direction: column;
+    .action-group {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.4rem;
+      flex-wrap: nowrap;
+    }
+
+    .action-btn {
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 13px;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(15, 23, 42, 0.16);
+      filter: brightness(1.02);
+    }
+
+    .action-btn--edit {
+      background: linear-gradient(135deg, #3657d4, #2b4ebd);
+    }
+
+    .action-btn--questions {
+      background: linear-gradient(135deg, #3d84e8, #2f6fd3);
+    }
+
+    .action-btn--assign {
+      background: linear-gradient(135deg, #3f8e57, #2f7747);
+    }
+
+    .action-btn--results {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+
+    .action-btn--delete {
+      background: linear-gradient(135deg, #ee5d5d, #d63d3d);
+    }
+
+    @media (max-width: 1199.98px) {
+      .trainings-hero {
         align-items: flex-start;
+        flex-direction: column;
       }
 
-      .hero-action {
+      .trainings-cta {
         width: 100%;
+        min-width: 0;
+      }
+
+      .action-group {
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      .table-card-header {
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .table-toolbar {
         width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: stretch;
       }
 
-      .search-field {
+      .search-shell {
+        max-width: none;
+        flex-basis: auto;
+      }
+
+      .trainings-filter-btn {
         width: 100%;
-        flex: 1 1 100%;
       }
     }
 
     @media (max-width: 575.98px) {
-      .table-toolbar {
-        gap: 0.5rem;
+      .trainings-page {
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
       }
 
-      .table-counter {
-        width: 100%;
-        justify-content: center;
+      .trainings-hero,
+      .table-card-header {
+        padding: 1.25rem;
+      }
+
+      .metric-card {
+        min-height: 152px;
+        padding: 0.95rem 1rem 1rem;
+      }
+
+      .metric-value {
+        font-size: 2.5rem;
+      }
+
+      .metric-help {
+        font-size: 0.92rem;
       }
     }
   `]

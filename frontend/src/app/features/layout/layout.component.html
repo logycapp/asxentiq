@@ -47,9 +47,11 @@
 
     <div *ngIf="menuLayout === 'left' && !isMobileView" class="app-sidebar-layout">
       <aside class="app-sidebar surface-card">
-        <div class="app-sidebar__brand">
-          <img src="assets/logos/logo2.png" alt="Asxentiq" class="brand-logo app-sidebar__logo">
-        </div>
+        <a class="app-sidebar__brand" routerLink="/dashboard" (click)="closeNavbar()" aria-label="Ir al dashboard">
+          <span class="app-sidebar__brand-badge">
+            <img src="assets/logos/logo2.png" alt="Asxentiq" class="app-sidebar__logo">
+          </span>
+        </a>
 
         <div class="app-sidebar__menu" *ngIf="menuLoading">
           <span class="text-secondary small">Cargando menu...</span>
@@ -70,6 +72,7 @@
                   <span class="sidebar-link__icon" aria-hidden="true">
                     <i [class]="menuIconClass(item)"></i>
                   </span>
+                  <span class="sidebar-link__label">{{ item.label }}</span>
                   <span class="sidebar-link__caret" [class.sidebar-link__caret--open]="isMenuGroupExpanded(item.route)" aria-hidden="true">
                     <i class="fa-solid fa-chevron-right"></i>
                   </span>
@@ -110,6 +113,7 @@
                 <span class="sidebar-link__icon" aria-hidden="true">
                   <i [class]="menuIconClass(item)"></i>
                 </span>
+                <span class="sidebar-link__label">{{ item.label }}</span>
               </a>
             </ng-template>
           </ng-container>
@@ -117,6 +121,18 @@
 
         <div *ngIf="!menuLoading && !visibleMenuItems.length" class="app-sidebar__menu">
           <span class="text-secondary small">{{ menuError || 'No hay opciones de menu disponibles.' }}</span>
+        </div>
+
+        <div class="app-sidebar__footer">
+          <a
+            routerLink="/profile"
+            class="sidebar-utility"
+            title="Ajustes del perfil"
+            aria-label="Ajustes del perfil"
+            (click)="closeNavbar()"
+          >
+            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+          </a>
         </div>
       </aside>
 
