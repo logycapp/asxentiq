@@ -5,6 +5,7 @@ import { guestGuard } from './core/guards/guest.guard';
 import { LoginComponent } from './features/auth/login.component';
 import { AdminPanelComponent } from './features/admin/admin-panel.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { LandingComponent } from './features/landing/landing.component';
 import { LayoutComponent } from './features/layout/layout.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { PasswordRecoveryComponent } from './features/auth/password-recovery.component';
@@ -28,6 +29,12 @@ import { UserListComponent } from './features/users/user-list.component';
 import { UserMenuPermissionsComponent } from './features/users/user-menu-permissions.component';
 
 export const appRoutes: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [guestGuard],
+    component: LandingComponent
+  },
   {
     path: 'login',
     canActivate: [guestGuard],
