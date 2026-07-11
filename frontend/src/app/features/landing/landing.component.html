@@ -1,1 +1,390 @@
-<div #mount class="landing-mount"></div>
+<div class="landing-page" #landingRoot>
+<!-- ── PANEL LATERAL DE STATS ───────────────────────────────────── -->
+<div class="side-stats" #sideStats id="sideStats">
+  <div class="side-stats__item">
+    <a routerLink="/login" class="side-stats__label" style="margin:0;font-size:20px;text-decoration:none;color:#FFFFFF;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
+      🔐 Ingresar
+    </a>
+  </div>
+</div>
+
+
+<!-- ── PORTADA ─────────────────────────────────────────────── -->
+<div class="cover" #cover>
+
+  <!-- Firma visual: líneas caóticas → flujos ordenados -->
+  <svg class="flow" viewBox="0 0 1440 900" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#2E86EB"/>
+        <stop offset="100%" stop-color="#2BC48A"/>
+      </linearGradient>
+    </defs>
+    <!-- complejidad (izquierda del nodo, enredado) -->
+    <path class="tangle draw"    d="M700,120 C820,190 760,320 880,300 C1000,280 940,420 1010,400"/>
+    <path class="tangle draw d2" d="M740,760 C830,700 790,560 900,560 C990,560 950,460 1010,452"/>
+    <path class="tangle draw d3" d="M660,420 C760,380 800,480 890,440 C960,410 970,430 1010,426"/>
+    <path class="tangle draw d4" d="M720,250 C790,310 850,270 900,340 C950,405 980,410 1010,413"/>
+    <path class="tangle draw d5" d="M700,620 C790,640 830,520 910,505 C970,494 985,470 1010,465"/>
+    <!-- nodo de transformación -->
+    <circle cx="1022" cy="435" r="7" fill="url(#flowGrad)"/>
+    <circle cx="1022" cy="435" r="16" fill="none" stroke="url(#flowGrad)" stroke-width="1.4" opacity=".55"/>
+    <circle cx="1022" cy="435" r="27" fill="none" stroke="url(#flowGrad)" stroke-width="1" opacity=".22"/>
+    <!-- eficiencia (derecha del nodo, flujos paralelos) -->
+    <path class="order draw d3" stroke="url(#flowGrad)" opacity=".95" d="M1040,435 H1440"/>
+    <path class="order draw d4" stroke="url(#flowGrad)" opacity=".55" d="M1040,435 C1090,435 1100,385 1160,385 H1440"/>
+    <path class="order draw d5" stroke="url(#flowGrad)" opacity=".55" d="M1040,435 C1090,435 1100,485 1160,485 H1440"/>
+    <path class="order draw d5" stroke="url(#flowGrad)" opacity=".28" d="M1040,435 C1080,435 1110,335 1180,335 H1440"/>
+    <path class="order draw d5" stroke="url(#flowGrad)" opacity=".28" d="M1040,435 C1080,435 1110,535 1180,535 H1440"/>
+  </svg>
+
+  <main class="content">
+    <p class="eyebrow rise">Portafolio de servicios</p>
+    <img class="mark rise r2" src="/assets/landing/brand-mark.png" alt="Isotipo Asxentiq">
+    <h1 class="rise r3">Convertimos la complejidad en <span class="grad">eficiencia digital</span>.</h1>
+    <p class="tagline rise r4">Transformamos procesos en valor. Lo hacemos <strong>simple, medible y confiable</strong>.</p>
+  </main>
+
+  <footer class="meta">
+    <span class="brand">Asxentiq&nbsp;SAS</span>
+    <span class="values">Simple<i>·</i><span>Medible</span><i>·</i>Confiable</span>
+    <span>Consultoría&nbsp;&amp;&nbsp;Eficiencia&nbsp;Digital</span>
+  </footer>
+</div>
+
+<!-- ── QUIÉNES SOMOS ─────────────────────────────────────────── -->
+<section class="about">
+  <div class="container">
+    <div class="about__grid">
+      <div>
+        <div class="tag reveal">Quiénes somos</div>
+        <h2 class="reveal d1">Especialistas en soluciones tecnológicas y prevención de riesgos laborales</h2>
+        <p class="about__body reveal d2" style="margin-top:20px;">Somos una empresa especializada en brindar soluciones integrales en Seguridad y Salud en el Trabajo, combinando experiencia técnica, metodologías innovadoras y herramientas tecnológicas para fortalecer la gestión de riesgos en organizaciones.</p>
+        <div class="pillars">
+          <div class="pillar reveal d2">
+            <span class="pillar__icon">⚖️</span>
+            <div class="pillar__text">
+              <strong>Cumplimiento normativo</strong>
+              <span>Alineación con la regulación colombiana vigente</span>
+            </div>
+          </div>
+          <div class="pillar reveal d3">
+            <span class="pillar__icon">💻</span>
+            <div class="pillar__text">
+              <strong>Transformación digital en SST</strong>
+              <span>Procesos automatizados e indicadores en tiempo real</span>
+            </div>
+          </div>
+          <div class="pillar reveal d4">
+            <span class="pillar__icon">🎓</span>
+            <div class="pillar__text">
+              <strong>Formación práctica y aplicada</strong>
+              <span>Programas certificados con instructores licenciados</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="quote-block reveal d3">
+          <blockquote>"En Asxentiq SAS creemos que en cada cambio surge una nueva oportunidad para crecer."</blockquote>
+          <cite>Formación · Auditoría · Tecnología ·<br>pilares que impulsan tu empresa al siguiente nivel.</cite>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVICIOS ─────────────────────────────────────────────── -->
+<section class="services">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="tag">Nuestros servicios</div>
+      <h2>Tres pilares para proteger y hacer crecer tu organización</h2>
+    </div>
+
+    <!-- Servicio 1 -->
+    <div class="service-block reveal">
+      <div class="service-left">
+        <div class="service-label">Servicio 1 de 3</div>
+        <img src="/assets/landing/service-training.png" alt="Formaciones" style="height:350px;width:350px;object-fit:contain;margin:0 auto;display:block;"/>
+        <h3>Formaciones</h3>
+        <p class="tagline">"No solo capacitamos equipos, diseñamos experiencias de aprendizaje para dominar los desafíos del mañana."</p>
+      </div>
+      <div>
+        <div class="cols">
+          <div class="col-group">
+            <h4>Formaciones Básicas</h4>
+            <ul>
+              <li>Formación virtual</li>
+              <li>E-learning interactivo</li>
+              <li>Formaciones presenciales</li>
+            </ul>
+          </div>
+          <div class="col-group">
+            <h4>Diferenciadores</h4>
+            <ul>
+              <li class="check">Entrenamiento práctico certificado</li>
+              <li class="check">Instructores con licencia vigente</li>
+              <li class="check">Evaluación de competencias incluida</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-group" style="margin-top:24px;">
+          <h4>Formaciones Avanzadas</h4>
+          <ul>
+            <li>Formación en emergencias (Primeros Auxilios, Control de incendios y Evacuación)</li>
+            <li>Simulacros de Alto Impacto con evaluación de tiempos de respuesta</li>
+            <li>Manejo de emergencias empresariales personalizados</li>
+          </ul>
+        </div>
+        <div class="stat-banner" style="margin-top:20px;">
+          <strong>Resultado:</strong> Mayor cultura de seguridad en su equipo, con aprendizaje medible y certificable.
+        </div>
+      </div>
+    </div>
+
+    <!-- Servicio 2 -->
+    <div class="service-block reveal">
+      <div class="service-left">
+        <div class="service-label">Servicio 2 de 3</div>
+        <img src="/assets/landing/service-analytics.png" alt="Auditorías" style="height:350px;width:350px;object-fit:contain;margin:0 auto;display:block;"/>
+        <h3>Auditorías SST: "Blindaje 360°"</h3>
+        <p class="tagline">¿Su SG-SST cumple realmente con la normativa y protege a su empresa? Cumplir con el Decreto 1072 de 2015 y la Resolución 0312 de 2019 nunca había sido tan claro.</p>
+      </div>
+      <div>
+        <div class="cols">
+          <div class="col-group">
+            <h4>Auditoría Integral SG-SST</h4>
+            <ul>
+              <li>Diagnóstico inicial y evaluación de estándares mínimos</li>
+              <li>Revisión documental y cumplimiento legal</li>
+              <li>Verificación de la implementación real en campo</li>
+              <li>Identificación de hallazgos y oportunidades de mejora</li>
+              <li>Elaboración de plan de acción correctivo y preventivo</li>
+            </ul>
+          </div>
+          <div class="col-group">
+            <h4>Beneficios</h4>
+            <ul>
+              <li class="check">Preparación para visitas del Ministerio de Trabajo</li>
+              <li class="check">Reducción de riesgos laborales y legales</li>
+              <li class="check">Optimización de procesos SST</li>
+            </ul>
+          </div>
+        </div>
+        <div class="stat-banner">
+          Transformamos la auditoría en una herramienta de gestión, combinando experiencia, metodologías ágiles y herramientas tecnológicas para generar <strong>resultados prácticos y medibles</strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Servicio 3 -->
+    <div class="service-block reveal">
+      <div class="service-left">
+        <div class="service-label">Servicio 3 de 3</div>
+        <img src="/assets/landing/service-technology.png" alt="Tecnología" style="height:350px;width:350px;object-fit:contain;margin:0 auto;display:block;"/>
+        <h3>Ecosistema Tecnológico + Soluciones Digitales</h3>
+        <p style="font-size:14.5px; color:var(--muted); margin-top:14px; line-height:1.6;">Unimos Capacitación + Datos + Inteligencia Artificial en una sola plataforma integrada.</p>
+      </div>
+      <div>
+        <div class="tech-grid">
+          <div class="tech-card reveal d1">
+            <div class="tech-card__icon">📚</div>
+            <div class="tech-card__title">Plataforma eLearning</div>
+            <ul>
+              <li>Gestión centralizada de cursos</li>
+              <li>Seguimiento individual y grupal</li>
+              <li>Certificaciones y evaluaciones</li>
+            </ul>
+          </div>
+          <div class="tech-card reveal d2">
+            <div class="tech-card__icon">📊</div>
+            <div class="tech-card__title">Analítica de Datos</div>
+            <ul>
+              <li>Información consolidada en tiempo real</li>
+              <li>Indicadores de desempeño</li>
+              <li>Reportes de cumplimiento</li>
+            </ul>
+          </div>
+          <div class="tech-card reveal d3">
+            <div class="tech-card__icon">🤖</div>
+            <div class="tech-card__title">Inteligencia Artificial</div>
+            <ul>
+              <li>Predicción de deserción</li>
+              <li>Recomendación de rutas de aprendizaje</li>
+              <li>Optimización continua</li>
+            </ul>
+          </div>
+        </div>
+        <div class="stat-banner">
+          Capacitación medible, controlada y orientada a resultados.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ROI ───────────────────────────────────────────────────── -->
+<section class="roi">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="tag">Por qué elegirnos</div>
+      <h2>Su ROI con Asxentiq SAS</h2>
+      <p>Cinco dimensiones de valor que impactan directamente la operación y la rentabilidad de su empresa.</p>
+    </div>
+    <table class="roi-table">
+      <thead>
+        <tr>
+          <th>Beneficio</th>
+          <th>Nuestra Solución</th>
+          <th>Impacto en su Empresa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Beneficio">Cumplimiento</td>
+          <td data-label="Nuestra Solución">Garantía de alineación con Decreto 1072 + Res. 0312 vigente</td>
+          <td data-label="Impacto"><span class="impact-chip reveal d1">✦ Evita multas y sanciones legales</span></td>
+        </tr>
+        <tr>
+          <td data-label="Beneficio">Eficiencia</td>
+          <td data-label="Nuestra Solución">Automatización de procesos administrativos SST en la nube</td>
+          <td data-label="Impacto"><span class="impact-chip reveal d2">✦ Ahorro en tiempo operativo</span></td>
+        </tr>
+        <tr>
+          <td data-label="Beneficio">Cultura</td>
+          <td data-label="Nuestra Solución">Metodologías lúdicas, tecnológicas y adaptadas a cada sector</td>
+          <td data-label="Impacto"><span class="impact-chip reveal d3">✦ Mayor compromiso y menor accidentalidad</span></td>
+        </tr>
+        <tr>
+          <td data-label="Beneficio">Integración</td>
+          <td data-label="Nuestra Solución">Capacitación + Auditoría + Tecnología en un solo aliado</td>
+          <td data-label="Impacto"><span class="impact-chip reveal d4">✦ Gestión SST unificada y sin fricciones</span></td>
+        </tr>
+        <tr>
+          <td data-label="Beneficio">Acompañamiento</td>
+          <td data-label="Nuestra Solución">Soporte continuo presencial y virtual cuando lo necesite</td>
+          <td data-label="Impacto"><span class="impact-chip reveal d5">✦ Tranquilidad operativa permanente</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── METODOLOGÍA ───────────────────────────────────────────── -->
+<section class="method">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="tag">Cómo trabajamos</div>
+      <h2>Metodología de Trabajo</h2>
+      <p>Combinamos visitas presenciales con soporte virtual para garantizar el cumplimiento permanente.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal d1">
+        <div class="step__num">01</div>
+        <div class="step__title">Diagnóstico Inicial</div>
+        <p class="step__body">Evaluamos su estado frente a normatividad e identificamos brechas críticas.</p>
+      </div>
+      <div class="step reveal d2">
+        <div class="step__num">02</div>
+        <div class="step__title">Diseño Personalizado</div>
+        <p class="step__body">Solución a medida para su sector, tamaño y nivel de riesgo.</p>
+      </div>
+      <div class="step reveal d3">
+        <div class="step__num">03</div>
+        <div class="step__title">Implementación</div>
+        <p class="step__body">Ejecutamos el plan con visitas presenciales y soporte virtual continuo.</p>
+      </div>
+      <div class="step reveal d4">
+        <div class="step__num">04</div>
+        <div class="step__title">Seguimiento y Mejora</div>
+        <p class="step__body">Medimos indicadores, ajustamos y garantizamos la mejora continua del SG-SST.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── AUTORIDAD ─────────────────────────────────────────────── -->
+<section class="authority">
+  <div class="container">
+    <div class="authority__grid">
+      <div class="reveal">
+        <div class="tag" style="color:#0298E2;border-color:#0298E2;">⚡ Respaldo profesional</div>
+        <h2>Los mejores profesionales del sector con experiencia comprobada</h2>
+        <p>Nuestro equipo está conformado por profesionales en SST con licencia vigente, ingenieros especializados, auditores certificados y expertos en transformación digital. Combinamos años de experiencia en campo con tecnología de punta para ofrecer un servicio que ningún consultor independiente puede igualar.</p>
+        <div class="authority-note">
+          📌 En 2026, la seguridad ya no es un gasto — es la infraestructura sobre la cual se construye la continuidad de su negocio. <strong>La pregunta no es si puede costear la seguridad, sino si puede costear ignorarla.</strong>
+        </div>
+      </div>
+      <div class="creds">
+        <div class="cred reveal d1">
+          <span class="cred__icon">🏅</span>
+          <div>
+            <div class="cred__title">Licencias vigentes SST</div>
+            <div class="cred__desc">Todos nuestros instructores y auditores cuentan con licencia profesional activa.</div>
+          </div>
+        </div>
+        <div class="cred reveal d2">
+          <span class="cred__icon">🔬</span>
+          <div>
+            <div class="cred__title">Metodologías ágiles</div>
+            <div class="cred__desc">Diagnóstico, diseño e implementación con enfoque en resultados medibles.</div>
+          </div>
+        </div>
+        <div class="cred reveal d3">
+          <span class="cred__icon">🌐</span>
+          <div>
+            <div class="cred__title">Cobertura nacional</div>
+            <div class="cred__desc">Presencia en todo el territorio colombiano con soporte virtual permanente.</div>
+          </div>
+        </div>
+        <div class="cred reveal d4">
+          <span class="cred__icon">💡</span>
+          <div>
+            <div class="cred__title">Tecnología de punta</div>
+            <div class="cred__desc">Plataforma eLearning + IA + analítica integrada en un único ecosistema.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ───────────────────────────────────────────────────── -->
+<section class="cta" #cta>
+  <div class="container">
+    <div class="tag tag--green reveal">Contáctenos hoy</div>
+    <h2 class="reveal d1">Transforme la seguridad<br>de su empresa hoy</h2>
+    <p class="cta__sub reveal d2">Solicite un diagnóstico y conozca cómo podemos ayudarle.<br>Respondemos en menos de 2 horas.</p>
+    <div class="cta__grid reveal d3">
+      <a href="https://asxentiq.com" target="_blank" class="btn btn--primary">🌐 Visitar Sitio Web</a>
+      <a href="https://wa.me/573118269330" target="_blank" class="btn btn--outline">💬 Solicitar por WhatsApp</a>
+    </div>
+    <div class="contacts">
+      <div class="contact-item">
+        <span>📱</span>
+        <span>+57 311 826 9330</span>
+      </div>
+      <div class="contact-item">
+        <span>📧</span>
+        <span>comercial&#64;asxentiq.com</span>
+      </div>
+      <div class="contact-item">
+        <span>🌐</span>
+        <span>www.asxentiq.com</span>
+      </div>
+      <div class="contact-item">
+        <span>📍</span>
+        <span>Bogotá — Cobertura Nacional</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <strong style="color:var(--white);">ASXENTIQ SAS</strong> — Portafolio de Servicios SST · Vigencia <span>2026</span> · Todos los derechos reservados.
+  </div>
+</footer>
+</div>
