@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/menu', [MenuController::class, 'index']);
     Route::post('/test', [TestController::class, 'store']);
+    Route::post('/test/extract-audio', [TestController::class, 'extractAudio']);
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar/generate', [ProfileController::class, 'generateAvatar']);
