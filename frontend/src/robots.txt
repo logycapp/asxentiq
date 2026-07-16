@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /roles
+Disallow: /users
+Disallow: /trainings
+Disallow: /test
+Disallow: /video_indexaction
+Disallow: /public/trainings/
+
+Sitemap: https://asxentiq.com/sitemap.xml

@@ -1,5 +1,7 @@
 # Módulo Landing
 
+Este módulo corresponde a la pagina web principal publica de la empresa.
+
 ## Ubicación
 - `frontend/src/app/features/landing/`
 
