@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -62,5 +63,10 @@ class Training extends Model
     public function materials(): MorphMany
     {
         return $this->morphMany(TrainingMaterial::class, 'trainable');
+    }
+
+    public function audioIndexation(): HasOne
+    {
+        return $this->hasOne(TrainingAudioIndexation::class);
     }
 }

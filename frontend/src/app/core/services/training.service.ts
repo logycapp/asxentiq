@@ -24,8 +24,19 @@ export interface Training {
   updated_at?: string;
   questions?: Question[];
   materials?: TrainingMaterial[];
+  audioIndexation?: TrainingAudioIndexation | null;
   users?: any[];
   participants?: TrainingParticipant[];
+}
+
+export interface TrainingAudioIndexation {
+  id: number;
+  training_id: number;
+  audio_path: string;
+  result_data: VideoIndexAnalysisResponse;
+  indexed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Question {
@@ -195,6 +206,30 @@ export interface ParticipantsImportResult {
   errors: Array<{
     row: number;
     errors: string[];
+  }>;
+}
+
+export interface VideoIndexAnalysisResponse {
+  titulo_detectado: string;
+  idioma: string;
+  duracion_aproximada_segundos: number;
+  resumen_general: string;
+  temas_detectados: Array<{
+    orden: number;
+    tema: string;
+    inicio: number;
+    fin: number;
+  }>;
+  segmentos: Array<{
+    orden: number;
+    inicio: number;
+    fin: number;
+    tema: string;
+    subtema: string;
+    resumen: string;
+    texto: string;
+    palabras_clave: string[];
+    preguntas_posibles: string[];
   }>;
 }
 

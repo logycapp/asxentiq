@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\TestController;
+use App\Http\Controllers\Api\VideoIndexActionController;
 use App\Http\Controllers\Api\TrainingController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/test', [TestController::class, 'store']);
     Route::post('/test/extract-audio', [TestController::class, 'extractAudio']);
     Route::post('/test/analyze-audio', [TestController::class, 'analyzeAudio']);
+    Route::get('/video-indexaction/trainings/{training}/indexation', [VideoIndexActionController::class, 'showIndexation']);
+    Route::post('/video-indexaction/extract-audio', [VideoIndexActionController::class, 'extractAudio']);
+    Route::post('/video-indexaction/trainings/{training}/analyze-audio', [VideoIndexActionController::class, 'analyzeAudio']);
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar/generate', [ProfileController::class, 'generateAvatar']);

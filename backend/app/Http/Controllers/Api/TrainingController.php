@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class TrainingController extends Controller
 {
@@ -107,7 +108,13 @@ class TrainingController extends Controller
 
     public function show(Training $training): JsonResponse
     {
-        $training->load(['questions.options', 'materials', 'users', 'participants']);
+        $relations = ['questions.options', 'materials', 'users', 'participants'];
+
+        if (Schema::hasTable('training_audio_indexations')) {
+            $relations[] = 'audioIndexation';
+        }
+
+        $training->load($relations);
 
         return response()->json($training);
     }
@@ -131,9 +138,15 @@ class TrainingController extends Controller
 
         $training->update($data);
 
+        $relations = ['questions.options', 'materials'];
+
+        if (Schema::hasTable('training_audio_indexations')) {
+            $relations[] = 'audioIndexation';
+        }
+
         return response()->json([
             'message' => 'Capacitacion actualizada correctamente.',
-            'training' => $training->fresh()->load(['questions.options', 'materials']),
+            'training' => $training->fresh()->load($relations),
         ]);
     }
 

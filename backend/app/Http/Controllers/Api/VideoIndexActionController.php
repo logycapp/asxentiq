@@ -3,36 +3,48 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Training;
+use App\Models\TrainingAudioIndexation;
 use App\Services\GeminiAudioIndexService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-class TestController extends Controller
+class VideoIndexActionController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function showIndexation(Training $training): JsonResponse
     {
-        $data = $request->validate([
-            'titulo' => ['required', 'string', 'max:255'],
-            'video' => ['required', 'file', 'mimes:mp4,mov,avi,webm,mkv', 'max:102400'],
-        ]);
+        if (! Schema::hasTable('training_audio_indexations')) {
+            return response()->json([
+                'training_id' => $training->id,
+                'audio_path' => null,
+                'indexed_at' => null,
+                'cached' => false,
+                'result_data' => null,
+            ]);
+        }
 
-        $file = $request->file('video');
-        $path = $file?->store('test-videos', 'public');
+        $training->load('audioIndexation');
+
+        if (! $training->audioIndexation) {
+            return response()->json([
+                'training_id' => $training->id,
+                'audio_path' => null,
+                'indexed_at' => null,
+                'cached' => false,
+                'result_data' => null,
+            ]);
+        }
 
         return response()->json([
-            'message' => 'Video subido correctamente.',
-            'data' => [
-                'titulo' => $data['titulo'],
-            ],
-            'video' => [
-                'original_name' => $file?->getClientOriginalName(),
-                'mime_type' => $file?->getMimeType(),
-                'size_bytes' => $file?->getSize(),
-                'path' => $path,
-                'url' => $path ? $this->publicStorageApiUrl($path) : null,
-            ],
+            'training_id' => $training->id,
+            'audio_path' => $training->audioIndexation->audio_path,
+            'indexed_at' => optional($training->audioIndexation->indexed_at)->toIso8601String(),
+            'cached' => true,
+            'result_data' => $training->audioIndexation->result_data,
         ]);
     }
 
@@ -42,7 +54,7 @@ class TestController extends Controller
             'video_path' => ['required', 'string', 'max:1024'],
         ]);
 
-        $relativePath = $this->normalizePublicPath($data['video_path'], ['test-videos/', 'trainings/']);
+        $relativePath = $this->normalizePublicPath($data['video_path'], ['trainings/']);
 
         if (! $relativePath) {
             return response()->json([
@@ -66,7 +78,7 @@ class TestController extends Controller
             ], 500);
         }
 
-        $audioDirectory = str_starts_with($relativePath, 'trainings/') ? 'training-audio' : 'test-audio';
+        $audioDirectory = 'training-audio';
         Storage::disk('public')->makeDirectory($audioDirectory);
 
         $baseName = pathinfo($relativePath, PATHINFO_FILENAME);
@@ -105,13 +117,17 @@ class TestController extends Controller
         ]);
     }
 
-    public function analyzeAudio(Request $request, GeminiAudioIndexService $audioIndexService): JsonResponse
+    public function analyzeAudio(
+        Request $request,
+        Training $training,
+        GeminiAudioIndexService $audioIndexService
+    ): JsonResponse
     {
         $data = $request->validate([
             'audio_path' => ['required', 'string', 'max:1024'],
         ]);
 
-        $relativePath = $this->normalizePublicPath($data['audio_path'], ['test-audio/', 'training-audio/']);
+        $relativePath = $this->normalizePublicPath($data['audio_path'], ['training-audio/']);
 
         if (! $relativePath) {
             return response()->json([
@@ -125,6 +141,13 @@ class TestController extends Controller
             ], 404);
         }
 
+        $canPersist = Schema::hasTable('training_audio_indexations');
+        $existingIndexation = $canPersist ? $training->audioIndexation : null;
+
+        if ($existingIndexation && $existingIndexation->audio_path === $relativePath) {
+            return response()->json($this->formatAnalysisResponse($training, $existingIndexation, true));
+        }
+
         $analysis = $audioIndexService->analyzeFromAudio($relativePath);
 
         if (! $analysis) {
@@ -133,7 +156,27 @@ class TestController extends Controller
             ], 502);
         }
 
-        return response()->json($analysis);
+        if (! $canPersist) {
+            return response()->json(array_merge($analysis, [
+                'training_id' => $training->id,
+                'audio_path' => $relativePath,
+                'indexed_at' => null,
+                'cached' => false,
+            ]));
+        }
+
+        $indexation = TrainingAudioIndexation::query()->updateOrCreate(
+            ['training_id' => $training->id],
+            [
+                'audio_path' => $relativePath,
+                'result_data' => $analysis,
+                'indexed_at' => Carbon::now(),
+            ]
+        );
+
+        $training->setRelation('audioIndexation', $indexation);
+
+        return response()->json($this->formatAnalysisResponse($training, $indexation, false));
     }
 
     private function normalizePublicPath(string $path, array|string $requiredPrefixes): ?string
@@ -198,5 +241,18 @@ class TestController extends Controller
     private function publicStorageApiUrl(string $path): string
     {
         return '/api/storage/'.ltrim($path, '/');
+    }
+
+    private function formatAnalysisResponse(
+        Training $training,
+        TrainingAudioIndexation $indexation,
+        bool $cached
+    ): array {
+        return array_merge($indexation->result_data ?? [], [
+            'training_id' => $training->id,
+            'audio_path' => $indexation->audio_path,
+            'indexed_at' => optional($indexation->indexed_at)->toIso8601String(),
+            'cached' => $cached,
+        ]);
     }
 }
