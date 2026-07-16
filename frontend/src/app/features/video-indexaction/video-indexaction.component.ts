@@ -277,7 +277,7 @@ export class VideoIndexActionComponent implements OnInit {
   }
 
   get currentVideoUrl(): string {
-    return this.currentMaterial ? `/api/storage/${this.currentMaterial.filepath}` : '';
+    return this.currentMaterial?.url ?? '';
   }
 
   loadTrainings(preselectedTrainingId: number | null = null, preselectedMaterialId: number | null = null): void {
@@ -397,7 +397,7 @@ export class VideoIndexActionComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.extractedAudio = response;
-          this.extractedAudioUrl = this.resolveStorageUrl(response.audio.url);
+          this.extractedAudioUrl = response.audio.url;
         },
         error: (error) => {
           this.extractErrorMessage = error?.error?.message || 'No fue posible extraer el audio.';
@@ -458,19 +458,28 @@ export class VideoIndexActionComponent implements OnInit {
     this.analysisErrorMessage = '';
   }
 
-  private resolveStorageUrl(url: string | null | undefined): string | null {
-    if (!url) {
-      return null;
-    }
-
-    return url.startsWith('/') ? url : `/${url}`;
-  }
-
   private loadStoredIndexation(trainingId: number): void {
     this.videoIndexActionService.getIndexation(trainingId).subscribe({
       next: (response: VideoIndexStoredResponse) => {
         this.analysisResponse = response.result_data ?? null;
         this.selectedTemaIndex = 0;
+
+        if (response.audio_path && response.audio_url) {
+          const originalName = response.audio_path.split('/').pop() ?? 'audio.mp3';
+          this.extractedAudio = {
+            message: 'Audio extraido correctamente.',
+            source: {
+              video_path: this.currentMaterial?.filepath ?? '',
+              video_url: this.currentMaterial?.url ?? this.currentVideoUrl
+            },
+            audio: {
+              original_name: originalName,
+              path: response.audio_path,
+              url: response.audio_url
+            }
+          };
+          this.extractedAudioUrl = response.audio_url;
+        }
       },
       error: () => {
         this.analysisResponse = null;

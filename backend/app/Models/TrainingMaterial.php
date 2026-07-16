@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class TrainingMaterial extends Model
 {
+    protected $appends = [
+        'url',
+    ];
+
     protected $fillable = [
         'trainable_type',
         'trainable_id',
@@ -20,5 +24,16 @@ class TrainingMaterial extends Model
     public function trainable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function getUrlAttribute(): string
+    {
+        $path = '/api/storage/'.ltrim($this->filepath, '/');
+
+        if (app()->runningInConsole()) {
+            return $path;
+        }
+
+        return rtrim(request()->getSchemeAndHttpHost(), '/').$path;
     }
 }

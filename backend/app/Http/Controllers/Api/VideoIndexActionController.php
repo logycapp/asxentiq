@@ -21,6 +21,7 @@ class VideoIndexActionController extends Controller
             return response()->json([
                 'training_id' => $training->id,
                 'audio_path' => null,
+                'audio_url' => null,
                 'indexed_at' => null,
                 'cached' => false,
                 'result_data' => null,
@@ -33,6 +34,7 @@ class VideoIndexActionController extends Controller
             return response()->json([
                 'training_id' => $training->id,
                 'audio_path' => null,
+                'audio_url' => null,
                 'indexed_at' => null,
                 'cached' => false,
                 'result_data' => null,
@@ -42,6 +44,7 @@ class VideoIndexActionController extends Controller
         return response()->json([
             'training_id' => $training->id,
             'audio_path' => $training->audioIndexation->audio_path,
+            'audio_url' => $this->publicStorageApiUrl($training->audioIndexation->audio_path),
             'indexed_at' => optional($training->audioIndexation->indexed_at)->toIso8601String(),
             'cached' => true,
             'result_data' => $training->audioIndexation->result_data,
@@ -160,6 +163,7 @@ class VideoIndexActionController extends Controller
             return response()->json(array_merge($analysis, [
                 'training_id' => $training->id,
                 'audio_path' => $relativePath,
+                'audio_url' => $this->publicStorageApiUrl($relativePath),
                 'indexed_at' => null,
                 'cached' => false,
             ]));
@@ -240,7 +244,7 @@ class VideoIndexActionController extends Controller
 
     private function publicStorageApiUrl(string $path): string
     {
-        return '/api/storage/'.ltrim($path, '/');
+        return rtrim(request()->getSchemeAndHttpHost(), '/').'/api/storage/'.ltrim($path, '/');
     }
 
     private function formatAnalysisResponse(
@@ -251,6 +255,7 @@ class VideoIndexActionController extends Controller
         return array_merge($indexation->result_data ?? [], [
             'training_id' => $training->id,
             'audio_path' => $indexation->audio_path,
+            'audio_url' => $this->publicStorageApiUrl($indexation->audio_path),
             'indexed_at' => optional($indexation->indexed_at)->toIso8601String(),
             'cached' => $cached,
         ]);

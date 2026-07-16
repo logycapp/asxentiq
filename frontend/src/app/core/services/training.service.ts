@@ -77,6 +77,7 @@ export interface TrainingMaterial {
   trainable_id: number;
   filename: string;
   filepath: string;
+  url?: string;
   mime_type: string;
   filesize?: number;
   type: string;

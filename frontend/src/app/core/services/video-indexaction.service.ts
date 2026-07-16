@@ -43,6 +43,7 @@ export interface VideoIndexAnalysisResponse {
 export interface VideoIndexStoredResponse {
   training_id: number;
   audio_path: string | null;
+  audio_url: string | null;
   indexed_at: string | null;
   cached: boolean;
   result_data: VideoIndexAnalysisResponse | null;
