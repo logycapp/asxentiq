@@ -30,9 +30,14 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
   - `/roles/create`
   - `/roles/:id/edit`
   - `/roles/:id/menu-permissions`
+  - `/empresas`
+  - `/empresas/create`
+  - `/empresas/:id/edit`
   - `/test`
   - `/users`
   - `/users/create`
+  - `/users/create/:empresaId`
+  - `/users/:empresaId`
   - `/users/:id/edit`
   - `/users/:id/menu-permissions`
 - Fallback:
@@ -48,6 +53,8 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - `RoleListComponent`
 - `RoleFormComponent`
 - `RoleMenuPermissionsComponent`
+- `EmpresaListComponent`
+- `EmpresaFormComponent`
 - `UserListComponent`
 - `UserFormComponent`
 - `UserMenuPermissionsComponent`
@@ -60,7 +67,9 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - `MenuService`: menu dinamico del usuario autenticado.
 - `ProfileService`: carga y guarda el perfil del usuario autenticado.
 - `RoleService`: CRUD de roles y permisos de menu.
+- `EmpresaService`: CRUD de empresas.
 - `UserService`: CRUD de usuarios, activacion, desactivacion y permisos de menu.
+- Los usuarios incluyen `empresa_id` y pueden listarse filtrados por empresa.
 - `TestService`: envio de formulario con archivo.
 - `LoadingService`: conteo de peticiones activas.
 
@@ -83,6 +92,7 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - Menu contra `GET /api/menu`.
 - Perfil contra `GET /api/profile` y `POST /api/profile`.
 - CRUD de roles contra `/api/roles`.
+- CRUD de empresas contra `/api/empresas`.
 - CRUD de usuarios contra `/api/users`.
 - Formulario de prueba contra `POST /api/test`.
 
@@ -94,6 +104,7 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - Antes de tocar varios archivos, decir cuales y por que.
 - Si un flujo no se puede confirmar, dejarlo como `No determinado`.
 - El menu superior no debe exponer accesos directos a Usuarios y Roles.
+- El menu superior no debe exponer accesos directos a Empresas salvo que el rol tenga permiso.
 - La pantalla de perfil debe permitir editar nombre, correo y fotografia JPG/PNG.
 - Para cualquier modulo, componente, formulario o estilo nuevo, usar exactamente la estetica, estructura y patrones visuales de `frontend/template`.
 - No improvisar estilos nuevos ni variar el lenguaje visual del template.

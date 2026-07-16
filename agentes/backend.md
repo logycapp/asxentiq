@@ -33,6 +33,12 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
   - `GET /api/roles/{role}/menu-permissions`
   - `PUT /api/roles/{role}/menu-permissions`
   - `DELETE /api/roles/{role}`
+- Empresas:
+  - `GET /api/empresas`
+  - `POST /api/empresas`
+  - `GET /api/empresas/{empresa}`
+  - `PUT /api/empresas/{empresa}`
+  - `DELETE /api/empresas/{empresa}`
 - Users:
   - `GET /api/users`
   - `POST /api/users`
@@ -49,13 +55,15 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
 - `AuthController`: login, perfil actual y logout.
 - `MenuController`: menu visible para el usuario autenticado.
 - `RoleController`: CRUD de roles y permisos de menu por rol.
+- `EmpresaController`: CRUD de empresas.
 - `UserController`: CRUD de usuarios, activacion/inactivacion y permisos de menu por usuario.
 - `TestController`: recibe `dato1`, `dato2` y un archivo adjunto.
 
 ## Modelos
 
-- `User`: relacion con `Role` y `MenuItem`, token API con Sanctum, atributo calculado `role`.
+- `User`: relacion con `Role`, `Empresa` y `MenuItem`, token API con Sanctum, atributo calculado `role`.
 - `Role`: relacion muchos a muchos con `MenuItem`.
+- `Empresa`: tabla simple de empresas con estado activo.
 - `MenuItem`: relacion con rol directo, roles y usuarios.
 - `User`: incluye fotografia de perfil via `profile_photo_path`.
 
@@ -66,6 +74,7 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
 - `menu_items`
 - `menu_item_role`
 - `user_menu_item`
+- `empresas`
 - `personal_access_tokens`
 - migraciones de ajuste de `role` a `role_id`
 
@@ -77,6 +86,8 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
 - Al iniciar sesion se borran tokens anteriores y se crea un token nuevo.
 - `GET /api/me` devuelve el usuario autenticado con su rol relacionado.
 - La visibilidad de Usuarios y Roles se controla por permisos de menu del rol actual.
+- La visibilidad de Empresas se controla por permisos de menu del rol actual.
+- Los usuarios pueden filtrar por empresa y cada usuario guarda `empresa_id`.
 - El perfil del usuario autenticado se actualiza por sus propias rutas de perfil.
 
 ## Reglas para modificar backend

@@ -12,7 +12,61 @@ import { ProfileService } from '../../core/services/profile.service';
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './profile.component.html'
+  templateUrl: './profile.component.html',
+  styles: [`
+    .profile-media-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 1rem;
+      background: rgba(15, 23, 42, 0.03);
+      overflow: hidden;
+    }
+
+    .profile-media-card--main {
+      min-height: 200px;
+      aspect-ratio: 1 / 1;
+      max-width: 100%;
+    }
+
+    .profile-media-card--compact {
+      min-height: 160px;
+      aspect-ratio: 1 / 1;
+      width: 100%;
+    }
+
+    .profile-media-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 10px;
+      display: block;
+    }
+
+    .profile-media-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(100, 116, 139, 0.9);
+      font-weight: 700;
+    }
+
+    .profile-avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 767.98px) {
+      .profile-avatar-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `]
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
@@ -67,9 +121,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           });
           this.currentPhotoUrl = response.user.profile_photo_url ?? '';
           this.currentAvatarUrl = response.user.avatar_photo_url ?? '';
-          this.authService.me().subscribe({
-            error: () => undefined
-          });
+          this.authService.setCurrentUser(response.user);
         },
         error: () => {
           this.errorMessage = 'No fue posible cargar el perfil.';
@@ -124,9 +176,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.selectedPhoto = null;
           this.previewUrl = '';
           this.form.controls.photo.setValue(null);
-          this.authService.me().subscribe({
-            error: () => undefined
-          });
+          this.authService.setCurrentUser(response.user);
         },
         error: (error) => {
           this.errorMessage = error?.error?.message || this.extractValidationError(error?.error?.errors) || 'No fue posible guardar el perfil.';
@@ -151,9 +201,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.message = response.message;
           this.currentAvatarUrl = response.user.avatar_photo_url ?? '';
-          this.authService.me().subscribe({
-            error: () => undefined
-          });
+          this.authService.setCurrentUser(response.user);
         },
         error: (error) => {
           this.errorMessage = error?.error?.message || 'No fue posible generar el avatar.';

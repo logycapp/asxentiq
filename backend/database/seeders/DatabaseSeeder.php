@@ -87,6 +87,19 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $empresasItem = MenuItem::query()->updateOrCreate(
+            ['route' => '/empresas'],
+            [
+                'label' => 'Empresas',
+                'icon' => 'building',
+                'sort_order' => 10,
+                'parent_id' => $adminItem->id,
+                'role_id' => null,
+                'enabled' => true,
+                'exact' => false,
+            ]
+        );
+
         $trainingsItem = MenuItem::query()->updateOrCreate(
             ['route' => '/trainings'],
             [
@@ -115,6 +128,7 @@ class DatabaseSeeder extends Seeder
         $dashboardItem->roles()->sync([$adminRole->id, $userRole->id]);
         $usersItem->roles()->sync([$adminRole->id]);
         $rolesItem->roles()->sync([$adminRole->id]);
+        $empresasItem->roles()->sync([$adminRole->id]);
         $adminItem->roles()->sync([$adminRole->id]);
         $trainingsItem->roles()->sync([$adminRole->id]);
         $participantsItem->roles()->sync([$adminRole->id]);

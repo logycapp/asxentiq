@@ -1,18 +1,21 @@
-<section class="surface-card p-4 p-xl-5">
+<section class="glass-card p-4 p-xl-5">
   <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 mb-4">
     <div>
       <span class="soft-badge mb-3">Perfil</span>
       <h1 class="h2 mb-2">Ajustes del perfil</h1>
-      <p class="text-secondary mb-0">Actualiza tus datos basicos y la fotografia original sobre la que puedes generar tu avatar cuando quieras.</p>
+      <p class="text-secondary mb-0">Actualiza tus datos basicos y la fotografia original sobre la que puedes generar tu
+        avatar cuando quieras.</p>
     </div>
 
     <a routerLink="/dashboard" class="btn btn-outline-primary">Volver al panel</a>
   </div>
 
-  <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
+  <div *ngIf="message" class="alert alert-success alert-dismissible mb-3"> <button type="button" class="btn-close"
+      aria-label="Close" (click)="message = ''"></button>
     {{ message }}
   </div>
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3"> <button type="button" class="btn-close"
+      aria-label="Close" (click)="errorMessage = ''"></button>
     {{ errorMessage }}
   </div>
 
@@ -20,54 +23,55 @@
 
   <div *ngIf="!loading" class="row g-4">
     <div class="col-lg-4">
-      <div class="surface-card p-4 h-100">
-        <div class="profile-photo-preview mb-3">
-          <img *ngIf="displayOriginalUrl; else avatarPlaceholder" [src]="displayOriginalUrl" [alt]="form.controls.name.value || 'Foto original'">
+      <div class="glass-card p-4 h-100">
+        <div class="profile-media-card profile-media-card--main mb-3 mx-auto">
+          <img *ngIf="displayOriginalUrl; else avatarPlaceholder" [src]="displayOriginalUrl"
+            [alt]="form.controls.name.value || 'Foto original'">
           <ng-template #avatarPlaceholder>
-            <div class="profile-photo-placeholder">{{ (form.controls.name.value || 'U').charAt(0).toUpperCase() }}</div>
+            <div class="profile-media-placeholder">{{ (form.controls.name.value || 'U').charAt(0).toUpperCase() }}</div>
           </ng-template>
         </div>
         <p class="muted mb-1">Fotografia original</p>
         <h2 class="h5 mb-2">JPG o PNG</h2>
-        <p class="text-secondary mb-0">Usa una imagen clara. Luego podras pulsar generar avatar tantas veces como quieras usando esta foto guardada.</p>
+        <p class="text-secondary mb-0">Usa una imagen clara. Luego podras pulsar generar avatar tantas veces como
+          quieras usando esta foto guardada.</p>
       </div>
     </div>
 
     <div class="col-lg-8">
-      <div class="surface-card p-4 mb-4">
+      <div class="glass-card p-4 mb-4">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div>
             <p class="muted mb-1">Avatar generado</p>
-            <p class="text-secondary mb-0">Puedes crear o regenerar el avatar en cualquier momento sin volver a subir la fotografia original.</p>
+            <p class="text-secondary mb-0">Puedes crear o regenerar el avatar en cualquier momento sin volver a subir la
+              fotografia original.</p>
           </div>
 
-          <button
-            class="btn btn-outline-primary"
-            type="button"
-            (click)="generateAvatar()"
-            [disabled]="generatingAvatar || !hasOriginalPhoto"
-          >
+          <button class="btn btn-outline-primary" type="button" (click)="generateAvatar()"
+            [disabled]="generatingAvatar || !hasOriginalPhoto">
             {{ generatingAvatar ? 'Generando...' : 'Generar avatar' }}
           </button>
         </div>
 
-        <div class="avatar-comparison mt-4">
+        <div class="profile-avatar-grid mt-4">
           <div class="avatar-panel">
             <p class="muted mb-2">Original</p>
-            <div class="avatar-panel__frame">
-              <img *ngIf="displayOriginalUrl; else originalFallback" [src]="displayOriginalUrl" [alt]="form.controls.name.value || 'Foto original'">
+            <div class="profile-media-card profile-media-card--compact">
+              <img *ngIf="displayOriginalUrl; else originalFallback" [src]="displayOriginalUrl"
+                [alt]="form.controls.name.value || 'Foto original'">
               <ng-template #originalFallback>
-                <div class="profile-photo-placeholder">U</div>
+                <div class="profile-media-placeholder">U</div>
               </ng-template>
             </div>
           </div>
 
           <div class="avatar-panel">
             <p class="muted mb-2">Avatar</p>
-            <div class="avatar-panel__frame">
-              <img *ngIf="displayAvatarUrl; else avatarFallback" [src]="displayAvatarUrl" [alt]="form.controls.name.value || 'Avatar generado'">
+            <div class="profile-media-card profile-media-card--compact">
+              <img *ngIf="displayAvatarUrl; else avatarFallback" [src]="displayAvatarUrl"
+                [alt]="form.controls.name.value || 'Avatar generado'">
               <ng-template #avatarFallback>
-                <div class="avatar-empty">
+                <div class="profile-media-placeholder">
                   <span>Sin avatar generado</span>
                 </div>
               </ng-template>
@@ -76,7 +80,7 @@
         </div>
       </div>
 
-      <form class="surface-card p-4" [formGroup]="form" (ngSubmit)="submit()">
+      <form class="glass-card p-4" [formGroup]="form" (ngSubmit)="submit()">
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label" for="name">Nombre</label>
@@ -107,13 +111,8 @@
 
           <div class="col-12">
             <label class="form-label" for="photo">Fotografia</label>
-            <input
-              id="photo"
-              class="form-control"
-              type="file"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-              (change)="onPhotoSelected($event)"
-            >
+            <input id="photo" class="form-control" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              (change)="onPhotoSelected($event)">
             <div class="text-secondary small mt-2">
               Formatos permitidos: JPG, JPEG o PNG. Tamano maximo: 4 MB.
             </div>

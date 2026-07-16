@@ -14,6 +14,7 @@ export class ProfilePanelComponent {
   @Input() userName = 'Shaun Park';
   @Input() userEmail = 'shaun@mail.com';
   @Input() userPhotoUrl = '';
+  @Input() companyLogoUrl = '';
   @Input() showAdminAccess = false;
   @Output() close = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();

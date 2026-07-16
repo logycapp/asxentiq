@@ -9,6 +9,7 @@ Gestiona el listado, alta, edicion, activacion, desactivacion, eliminacion y per
 - El backend expone CRUD y acciones de estado.
 - El frontend usa formularios reactivos y lista los usuarios con acciones directas.
 - Los permisos de menu por usuario se manejan como asignacion directa de items.
+- Cada usuario puede quedar vinculado a una empresa mediante `empresa_id`.
 
 ## Flujo operativo
 
@@ -16,7 +17,8 @@ Gestiona el listado, alta, edicion, activacion, desactivacion, eliminacion y per
 2. Se puede crear o editar un usuario.
 3. Se puede activar o desactivar.
 4. Se puede asignar menu directo a un usuario.
-5. El backend devuelve el estado con el rol relacionado.
+5. Se puede filtrar o crear usuarios dentro del contexto de una empresa.
+6. El backend devuelve el estado con el rol relacionado y la empresa asociada.
 
 ## Backend relacionado
 
@@ -54,6 +56,7 @@ Gestiona el listado, alta, edicion, activacion, desactivacion, eliminacion y per
 - La contrasena es opcional en edicion pero obligatoria en creacion.
 - La desactivacion elimina tokens activos.
 - El formulario usa un rol por slug, no por nombre visible.
+- El formulario usa una empresa obligatoria en alta y edicion.
 
 ## Estado actual
 

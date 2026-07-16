@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -9,8 +9,17 @@ export interface User {
   email: string;
   active: boolean;
   role?: string;
+  empresa_id?: number | null;
+  empresa_relation?: {
+    id: number;
+    name: string;
+  } | null;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface UserListParams {
+  empresa_id?: number;
 }
 
 export interface UserPayload {
@@ -20,6 +29,7 @@ export interface UserPayload {
   password_confirmation?: string;
   active: boolean;
   role?: string;
+  empresa_id: number;
 }
 
 export interface UserRoleSummary {
@@ -52,8 +62,14 @@ export class UserService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/users`;
 
-  list(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
+  list(params?: UserListParams): Observable<User[]> {
+    let httpParams = new HttpParams();
+
+    if (params?.empresa_id !== undefined) {
+      httpParams = httpParams.set('empresa_id', String(params.empresa_id));
+    }
+
+    return this.http.get<User[]>(this.apiUrl, { params: httpParams });
   }
 
   get(id: number): Observable<User> {

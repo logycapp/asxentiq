@@ -1,0 +1,115 @@
+<app-page-header
+  title="Empresas"
+  subtitle="Administra las empresas registradas en el sistema."
+  [showDateFilter]="false"
+/>
+
+<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
+  {{ message }}
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+  {{ errorMessage }}
+</div>
+
+<div class="card glass-card border-0 rounded-4 p-4 mb-4">
+  <div class="row g-3 align-items-center justify-content-between">
+    <div class="col-12 col-xl-auto">
+      <a routerLink="/empresas/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Nueva empresa
+      </a>
+    </div>
+    <div class="col-12 col-xl-auto">
+      <div style="width: min(100%, 360px);">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
+            <span class="material-symbols-outlined text-[18px]">search</span>
+          </span>
+          <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="empresaSearch" type="search" placeholder="Buscar empresa..." (input)="onSearch($event)" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">Cargando empresas...</div>
+</div>
+
+<div *ngIf="!loading" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 dashboard-table">
+      <thead class="empresa-table-head">
+        <tr class="border-bottom border-white/10">
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">#</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Logo</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">NIT</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Telefono</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Correo</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Estado</th>
+          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end empresa-table-th">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let empresa of filteredEmpresas; trackBy: trackById">
+          <td class="ps-4 py-3 font-mono text-on-surface">{{ empresa.id }}</td>
+          <td class="py-3">
+            <div class="d-flex align-items-center gap-2">
+              <div
+                class="empresa-logo-thumb d-flex align-items-center justify-content-center rounded-2 border border-white/10 overflow-hidden bg-transparent"
+                style="width: 36px; height: 36px; min-width: 36px;"
+              >
+                <img *ngIf="hasLogo(empresa); else noLogo" [src]="logoUrl(empresa)" alt="Logo de {{ empresa.name }}" style="width: 100%; height: 100%; object-fit: cover;" />
+                <ng-template #noLogo>
+                  <span class="text-on-surface-variant small">--</span>
+                </ng-template>
+              </div>
+            </div>
+          </td>
+          <td class="py-3">
+            <span class="text-on-surface fw-semibold">{{ empresa.name }}</span>
+          </td>
+          <td class="py-3 text-on-surface-variant">{{ empresa.tax_id || 'No registrado' }}</td>
+          <td class="py-3 text-on-surface-variant">{{ empresa.phone || 'No registrado' }}</td>
+          <td class="py-3 text-on-surface-variant">{{ empresa.email || 'No registrado' }}</td>
+          <td class="py-3">
+            <span [class]="statusBadgeClass(empresa)">{{ statusLabel(empresa) }}</span>
+          </td>
+          <td class="pe-4 py-3 text-end">
+            <div class="dashboard-action-group">
+              <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/users', empresa.id]">
+                <span class="material-symbols-outlined">group</span>
+              </a>
+              <a class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/empresas', empresa.id, 'edit']">
+                <span class="material-symbols-outlined">edit</span>
+              </a>
+              <button
+                class="btn btn-sm fw-semibold d-inline-flex align-items-center gap-1"
+                [class.btn-outline-success]="!empresa.active"
+                [class.btn-outline-secondary]="empresa.active"
+                type="button"
+                (click)="toggleStatus(empresa)"
+                [attr.title]="empresa.active ? 'Desactivar empresa' : 'Activar empresa'"
+              >
+                <span class="material-symbols-outlined">{{ empresa.active ? 'toggle_off' : 'toggle_on' }}</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="!loading && filteredEmpresas.length === 0" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">No se encontraron empresas.</div>
+</div>
+
+<div *ngIf="!loading" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ filteredEmpresas.length }} de {{ empresas.length }} empresas</p>
+</div>

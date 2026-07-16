@@ -39,6 +39,17 @@
       </div>
 
       <div class="col-lg-6">
+        <label class="form-label" for="empresa_id">Empresa</label>
+        <select id="empresa_id" class="form-select" formControlName="empresa_id" [disabled]="!!empresaIdFromRoute && !isEditMode()">
+          <option [ngValue]="null">Selecciona una empresa</option>
+          <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
+        </select>
+        <div class="text-danger small mt-1" *ngIf="form.controls.empresa_id.touched && form.controls.empresa_id.invalid">
+          Selecciona una empresa valida.
+        </div>
+      </div>
+
+      <div class="col-lg-6">
         <label class="form-label" for="password">Contrasena {{ isEditMode() ? '(opcional)' : '' }}</label>
         <input id="password" class="form-control" type="password" formControlName="password">
         <div class="text-danger small mt-1" *ngIf="form.controls.password.touched && form.controls.password.value && (form.controls.password.value?.length ?? 0) < 8">

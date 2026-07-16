@@ -16,20 +16,28 @@
     </button>
   </div>
   <div class="p-xl flex flex-col items-center text-center">
-    <div class="relative mb-lg">
-      <div class="w-24 h-24 rounded-full border-2 border-primary/30 p-1 glow-accent-cyan relative">
-        <img
-          *ngIf="userPhotoUrl; else avatarFallback"
-          [src]="userPhotoUrl"
-          [alt]="userName"
-          class="w-full h-full rounded-full object-cover"
-        />
-        <ng-template #avatarFallback>
-          <div class="w-full h-full rounded-full bg-primary/20 flex items-center justify-center">
-            <span class="text-3xl font-bold text-primary">{{ userInitial }}</span>
-          </div>
+    <div class="d-flex align-items-center justify-content-center gap-3 mb-lg profile-brand-avatar-row">
+      <div class="profile-company-logo-frame">
+        <img *ngIf="companyLogoUrl; else companyLogoFallback" [src]="companyLogoUrl" alt="Logo de la empresa" class="profile-company-logo-img" />
+        <ng-template #companyLogoFallback>
+          <span class="material-symbols-outlined profile-company-logo-icon">domain</span>
         </ng-template>
-        <div class="absolute bottom-0 right-0 w-6 h-6 bg-chart-green border-4 border-surface-container rounded-full status-pulse"></div>
+      </div>
+      <div class="relative">
+        <div class="w-24 h-24 rounded-full border-2 border-primary/30 p-1 glow-accent-cyan relative">
+          <img
+            *ngIf="userPhotoUrl; else avatarFallback"
+            [src]="userPhotoUrl"
+            [alt]="userName"
+            class="w-full h-full rounded-full object-cover"
+          />
+          <ng-template #avatarFallback>
+            <div class="w-full h-full rounded-full bg-primary/20 flex items-center justify-center">
+              <span class="text-3xl font-bold text-primary">{{ userInitial }}</span>
+            </div>
+          </ng-template>
+          <div class="absolute bottom-0 right-0 w-6 h-6 bg-chart-green border-4 border-surface-container rounded-full status-pulse"></div>
+        </div>
       </div>
     </div>
     <h3 class="font-headline-md text-on-surface font-bold tracking-tight">{{ userName }}</h3>
@@ -62,7 +70,7 @@
   </div>
   <div class="p-lg border-t border-white/5 bg-white/2">
     <button
-      class="w-full py-3 bg-error-container/10 hover:bg-error-container/20 text-error rounded-lg font-label-md transition-all border border-error/20 flex items-center justify-center gap-2"
+      class="w-full py-3 profile-logout-btn rounded-lg font-label-md transition-all flex items-center justify-center gap-2"
       type="button"
       (click)="logout.emit()"
     >

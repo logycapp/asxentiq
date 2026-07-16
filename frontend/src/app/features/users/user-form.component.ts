@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleService } from '../../core/services/role.service';
 import { UserPayload, UserService } from '../../core/services/user.service';
@@ -19,6 +20,7 @@ export class UserFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
   private readonly roleService = inject(RoleService);
+  private readonly empresaService = inject(EmpresaService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -31,6 +33,8 @@ export class UserFormComponent implements OnInit {
   message = '';
   errorMessage = '';
   roles: Role[] = [];
+  empresas: Empresa[] = [];
+  empresaIdFromRoute: number | null = null;
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
@@ -38,11 +42,20 @@ export class UserFormComponent implements OnInit {
     password: [''],
     password_confirmation: [''],
     active: [true, [Validators.required]],
-    role: ['user', [Validators.required]]
+    role: ['user', [Validators.required]],
+    empresa_id: [null as number | null, [Validators.required]]
   });
 
   ngOnInit(): void {
     this.loadRoles();
+    this.loadEmpresas();
+
+    const empresaId = Number(this.route.snapshot.paramMap.get('empresaId'));
+    this.empresaIdFromRoute = Number.isFinite(empresaId) && empresaId > 0 ? empresaId : null;
+
+    if (this.empresaIdFromRoute) {
+      this.form.controls.empresa_id.setValue(this.empresaIdFromRoute);
+    }
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
@@ -62,7 +75,8 @@ export class UserFormComponent implements OnInit {
             name: user.name,
             email: user.email,
             active: user.active,
-            role: user.role ?? 'user'
+            role: user.role ?? 'user',
+            empresa_id: user.empresa_id ?? null
           });
         },
         error: () => (this.errorMessage = 'No fue posible cargar el usuario.')
@@ -80,6 +94,21 @@ export class UserFormComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = 'No fue posible cargar los roles.';
+      }
+    });
+  }
+
+  private loadEmpresas(): void {
+    this.loadingService.track(this.empresaService.list()).subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+
+        if (!this.form.controls.empresa_id.value) {
+          this.form.controls.empresa_id.setValue(this.empresaIdFromRoute ?? this.empresas[0]?.id ?? null);
+        }
+      },
+      error: () => {
+        this.errorMessage = 'No fue posible cargar las empresas.';
       }
     });
   }
@@ -116,7 +145,8 @@ export class UserFormComponent implements OnInit {
       name: raw.name ?? '',
       email: raw.email ?? '',
       active: Boolean(raw.active),
-      role: raw.role ?? 'user'
+      role: raw.role ?? 'user',
+      empresa_id: raw.empresa_id ?? 0
     };
 
     if (raw.password) {

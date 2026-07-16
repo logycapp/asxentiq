@@ -14,6 +14,12 @@ export interface AuthUser {
   menu_layout?: 'top' | 'left' | string | null;
   theme_mode?: 'dark' | 'light';
   sidebar_collapsed?: boolean | number;
+  empresa_id?: number | null;
+  empresa_relation?: {
+    id: number;
+    name: string;
+    logo_url?: string | null;
+  } | null;
   role_relation?: {
     id: number;
     name: string;
@@ -78,8 +84,7 @@ export class AuthService {
   me(): Observable<{ user: AuthUser }> {
     return this.http.get<{ user: AuthUser }>(`${this.apiUrl}/me`).pipe(
       tap((response) => {
-        localStorage.setItem('asxentiq_user', JSON.stringify(response.user));
-        this.userSubject.next(response.user);
+        this.setCurrentUser(response.user);
       })
     );
   }
@@ -99,7 +104,23 @@ export class AuthService {
   clearSession(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('asxentiq_user');
+    localStorage.removeItem('asxentiq_theme');
     this.userSubject.next(null);
+  }
+
+  setCurrentUser(user: AuthUser): void {
+    const current = this.userSubject.value;
+    const merged: AuthUser = {
+      ...(current ?? {}),
+      ...user,
+      theme_mode: user.theme_mode ?? current?.theme_mode,
+      sidebar_collapsed: user.sidebar_collapsed ?? current?.sidebar_collapsed,
+      empresa_relation: user.empresa_relation ?? current?.empresa_relation ?? null,
+      role_relation: user.role_relation ?? current?.role_relation ?? null,
+    };
+
+    localStorage.setItem('asxentiq_user', JSON.stringify(merged));
+    this.userSubject.next(merged);
   }
 
   private readUser(): AuthUser | null {

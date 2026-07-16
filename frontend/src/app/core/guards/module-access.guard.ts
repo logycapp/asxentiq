@@ -17,6 +17,10 @@ function resolveProtectedRoute(path?: string | null): string | null {
     return '/roles';
   }
 
+  if (path.startsWith('empresas')) {
+    return '/empresas';
+  }
+
   if (path.startsWith('trainings')) {
     return '/trainings';
   }

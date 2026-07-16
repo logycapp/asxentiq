@@ -42,14 +42,14 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login exitoso.',
             'token' => $token,
-            'user' => $user->fresh()->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user()?->load('roleRelation'),
+            'user' => $request->user()?->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 

@@ -15,7 +15,13 @@ class UserController extends Controller
 {
     public function index(): JsonResponse
     {
-        $users = User::query()->with('roleRelation')->orderBy('id')->get();
+        $empresaId = request()->integer('empresa_id');
+
+        $users = User::query()
+            ->with(['roleRelation', 'empresaRelation'])
+            ->when($empresaId, fn ($query) => $query->where('empresa_id', $empresaId))
+            ->orderBy('id')
+            ->get();
 
         return response()->json($users);
     }
@@ -28,6 +34,7 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'active' => ['sometimes', 'boolean'],
             'role' => ['sometimes', 'string', 'max:255', Rule::exists('roles', 'slug')],
+            'empresa_id' => ['required', 'integer', Rule::exists('empresas', 'id')],
         ]);
 
         $user = User::query()->create([
@@ -36,6 +43,7 @@ class UserController extends Controller
             'password' => $data['password'],
             'active' => $data['active'] ?? true,
             'role' => $data['role'] ?? 'user',
+            'empresa_id' => $data['empresa_id'],
         ]);
 
         return response()->json([
@@ -46,7 +54,7 @@ class UserController extends Controller
 
     public function show(User $user): JsonResponse
     {
-        $user->load('roleRelation');
+        $user->load(['roleRelation', 'empresaRelation']);
 
         return response()->json($user);
     }
@@ -65,6 +73,7 @@ class UserController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'active' => ['required', 'boolean'],
             'role' => ['sometimes', 'string', 'max:255', Rule::exists('roles', 'slug')],
+            'empresa_id' => ['required', 'integer', Rule::exists('empresas', 'id')],
         ]);
 
         $payload = [
@@ -72,6 +81,7 @@ class UserController extends Controller
             'email' => $data['email'],
             'active' => $data['active'],
             'role' => $data['role'] ?? $user->role ?? 'user',
+            'empresa_id' => $data['empresa_id'],
         ];
 
         if (! empty($data['password'])) {
@@ -82,7 +92,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario actualizado correctamente.',
-            'user' => $user->fresh()->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 
@@ -92,7 +102,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario activado correctamente.',
-            'user' => $user->fresh()->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 
@@ -103,7 +113,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario inactivado correctamente.',
-            'user' => $user->fresh()->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 

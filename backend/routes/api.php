@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ParticipantController;
@@ -44,6 +45,16 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/roles/{role}/menu-permissions', [RoleController::class, 'menuPermissions']);
         Route::put('/roles/{role}/menu-permissions', [RoleController::class, 'updateMenuPermissions']);
         Route::delete('/roles/{role}', [RoleController::class, 'destroy']);
+    });
+
+    Route::middleware('menu.access:/empresas')->group(function (): void {
+        Route::get('/empresas', [EmpresaController::class, 'index']);
+        Route::post('/empresas', [EmpresaController::class, 'store']);
+        Route::get('/empresas/{empresa}', [EmpresaController::class, 'show']);
+        Route::put('/empresas/{empresa}', [EmpresaController::class, 'update']);
+        Route::patch('/empresas/{empresa}/activate', [EmpresaController::class, 'activate']);
+        Route::patch('/empresas/{empresa}/deactivate', [EmpresaController::class, 'deactivate']);
+        Route::delete('/empresas/{empresa}', [EmpresaController::class, 'destroy']);
     });
 
     Route::middleware('menu.access:/users')->group(function (): void {

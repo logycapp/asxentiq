@@ -32,6 +32,7 @@ export class AdminSidebarComponent implements OnInit, OnChanges, OnDestroy {
     'users': 'group',
     'shield-check': 'shield',
     'shield-lock': 'shield',
+    'building': 'domain',
     'cap': 'school',
     'graduation-cap': 'school',
     'trainings': 'school',

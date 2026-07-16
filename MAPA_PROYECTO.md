@@ -39,6 +39,7 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - Auth
 - Users
 - Roles
+- Empresas
 - Menu
 - Profile
 - Test
@@ -62,6 +63,11 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `GET /api/roles/{role}/menu-permissions`
 - `PUT /api/roles/{role}/menu-permissions`
 - `DELETE /api/roles/{role}`
+- `GET /api/empresas`
+- `POST /api/empresas`
+- `GET /api/empresas/{empresa}`
+- `PUT /api/empresas/{empresa}`
+- `DELETE /api/empresas/{empresa}`
 - `GET /api/users`
 - `POST /api/users`
 - `GET /api/users/{user}`
@@ -83,6 +89,9 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `/roles/create`
 - `/roles/:id/edit`
 - `/roles/:id/menu-permissions`
+- `/empresas`
+- `/empresas/create`
+- `/empresas/:id/edit`
 - `/test`
 - `/users`
 - `/users/create`
@@ -110,6 +119,7 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `GET /api/profile`
 - `POST /api/profile`
 - CRUD de roles en `/api/roles`
+- CRUD de empresas en `/api/empresas`
 - CRUD de usuarios en `/api/users`
 - endpoints de permisos de menu para roles y usuarios
 - CRUD de capacitaciones en `/api/trainings`
@@ -128,6 +138,7 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - No se deben improvisar estilos nuevos fuera del template, salvo en `landing`.
 - El seeder crea roles base, un usuario administrador y items de menu iniciales.
 - El menu principal ya no expone `Usuarios` ni `Roles`; esos accesos viven dentro de `Administracion`.
+- `Empresas` vive en el menu principal y se controla por permisos de rol.
 - La visibilidad interna de `Usuarios` y `Roles` se controla con permisos de rol y permisos puntuales sobre los items de menu.
 - `Ajustes del perfil` permite editar nombre, correo y fotografia del usuario autenticado.
 - La configuracion local espera MySQL en `127.0.0.1:3307` con base `asxentiq`.

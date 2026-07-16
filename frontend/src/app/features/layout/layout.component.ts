@@ -40,6 +40,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly apiUrl = environment.apiUrl;
+  private readonly themeStorageKey = 'asxentiq_theme';
   private readonly subscriptions = new Subscription();
   private readonly handleResize = (): void => this.updateViewportMode();
   private readonly expandedMenuRoutes = new Set<string>();
@@ -129,6 +130,10 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     return user?.avatar_photo_url ?? user?.profile_photo_url ?? '';
   }
 
+  get companyLogoUrl(): string {
+    return this.authService.getCurrentUser()?.empresa_relation?.logo_url ?? '';
+  }
+
   get menuLayout(): 'top' | 'left' {
     return this.authService.getCurrentUser()?.menu_layout === 'left' ? 'left' : 'top';
   }
@@ -189,6 +194,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
       '/admin': 'fa-solid fa-screwdriver-wrench',
       '/profile': 'fa-solid fa-user-gear',
       '/roles': 'fa-solid fa-shield-halved',
+      '/empresas': 'fa-solid fa-building',
       '/test': 'fa-solid fa-vial-circle-check',
       '/users': 'fa-solid fa-users',
       '/trainings': 'fa-solid fa-graduation-cap'
@@ -221,6 +227,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     if (normalizedLabel.includes('administr')) return 'fa-solid fa-screwdriver-wrench';
     if (normalizedLabel.includes('perfil')) return 'fa-solid fa-user-gear';
     if (normalizedLabel.includes('rol')) return 'fa-solid fa-shield-halved';
+    if (normalizedLabel.includes('empresa')) return 'fa-solid fa-building';
     if (normalizedLabel.includes('usuario')) return 'fa-solid fa-users';
     if (normalizedLabel.includes('capacit')) return 'fa-solid fa-graduation-cap';
     if (normalizedLabel.includes('prueba')) return 'fa-solid fa-vial-circle-check';
@@ -369,6 +376,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     const isDark = htmlElement.classList.toggle('dark');
     htmlElement.classList.toggle('light', !isDark);
     this.themeToggleIcon = isDark ? 'light_mode' : 'dark_mode';
+    localStorage.setItem(this.themeStorageKey, isDark ? 'dark' : 'light');
     this.sidebarBrandLogo = isDark
       ? 'assets/template/logos/logo_principal/logo_dark.png'
       : 'assets/template/logos/logo_principal/logo_light.png';
@@ -404,12 +412,16 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     if (typeof document === 'undefined') return;
 
     const user = this.authService.getCurrentUser();
-    const preferredMode = user?.theme_mode || 'dark';
+    const storedTheme = localStorage.getItem(this.themeStorageKey);
+    const preferredMode = storedTheme === 'dark' || storedTheme === 'light'
+      ? storedTheme
+      : user?.theme_mode || 'dark';
     const htmlElement = document.documentElement;
 
     htmlElement.classList.toggle('dark', preferredMode === 'dark');
     htmlElement.classList.toggle('light', preferredMode === 'light');
     this.themeToggleIcon = preferredMode === 'dark' ? 'light_mode' : 'dark_mode';
+    localStorage.setItem(this.themeStorageKey, preferredMode);
     this.sidebarBrandLogo = preferredMode === 'dark'
       ? 'assets/template/logos/logo_principal/logo_dark.png'
       : 'assets/template/logos/logo_principal/logo_light.png';

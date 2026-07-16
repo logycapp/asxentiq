@@ -57,6 +57,7 @@
           </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Correo</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Rol</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Empresa</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Estado</th>
           <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end user-table-th">Acciones</th>
         </tr>
@@ -69,6 +70,7 @@
           </td>
           <td class="py-3 text-on-surface-variant">{{ user.email }}</td>
           <td class="py-3"><span class="badge rounded-pill user-role-badge">{{ user.role || 'user' }}</span></td>
+          <td class="py-3 text-on-surface-variant">{{ user.empresa_relation?.name || 'Sin empresa' }}</td>
           <td class="py-3">
             <span *ngIf="user.active" class="badge rounded-pill user-status-badge user-status-active">Activo</span>
             <span *ngIf="!user.active" class="badge rounded-pill user-status-badge user-status-inactive">Inactivo</span>
@@ -135,6 +137,13 @@
     <div class="mb-3">
       <label class="form-label small text-on-surface-variant" for="createEmail">Correo</label>
       <input id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="createEmpresa">Empresa</label>
+      <select id="createEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createEmpresaId" [disabled]="empresaId !== null">
+        <option [ngValue]="null">Selecciona una empresa</option>
+        <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
+      </select>
     </div>
     <div class="row g-3 mb-3">
       <div class="col-6">
@@ -309,6 +318,13 @@
       <label class="form-label small text-on-surface-variant" for="modalRole">Rol</label>
       <select id="modalRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editRole">
         <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalEmpresa">Empresa</label>
+      <select id="modalEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editEmpresaId">
+        <option [ngValue]="null">Selecciona una empresa</option>
+        <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
       </select>
     </div>
     <div class="d-flex align-items-center gap-3">

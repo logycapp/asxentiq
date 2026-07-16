@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use App\Notifications\PasswordResetNotification;
+use App\Models\Empresa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'active',
         'role_id',
+        'empresa_id',
         'role',
         'profile_photo_path',
         'avatar_photo_path',
@@ -43,6 +44,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'active' => 'boolean',
             'role_id' => 'integer',
+            'empresa_id' => 'integer',
         ];
     }
 
@@ -59,6 +61,11 @@ class User extends Authenticatable
     public function roleRelation(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function empresaRelation(): BelongsTo
+    {
+        return $this->belongsTo(Empresa::class, 'empresa_id');
     }
 
     public function menuItems(): BelongsToMany
@@ -78,7 +85,7 @@ class User extends Authenticatable
             return null;
         }
 
-        return Storage::disk('public')->url($this->profile_photo_path);
+        return $this->publicStorageUrl($this->profile_photo_path);
     }
 
     public function getAvatarPhotoUrlAttribute(): ?string
@@ -87,7 +94,7 @@ class User extends Authenticatable
             return null;
         }
 
-        return Storage::disk('public')->url($this->avatar_photo_path);
+        return $this->publicStorageUrl($this->avatar_photo_path);
     }
 
     public function getMenuLayoutAttribute($value): string
@@ -115,5 +122,16 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new PasswordResetNotification($token));
+    }
+
+    private function publicStorageUrl(string $path): string
+    {
+        $baseUrl = request()->getSchemeAndHttpHost();
+
+        if (! $baseUrl) {
+            $baseUrl = rtrim(config('app.url'), '/');
+        }
+
+        return rtrim($baseUrl, '/').'/api/storage/'.ltrim($path, '/');
     }
 }

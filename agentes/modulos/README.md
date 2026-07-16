@@ -13,6 +13,7 @@ Este indice lista los modulos que aparecen de forma clara en el proyecto.
 - `admin`
 - `profile`
 - `trainings`
+- `empresas`
 
 ## Como usar el indice
 

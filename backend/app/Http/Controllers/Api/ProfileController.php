@@ -14,8 +14,14 @@ class ProfileController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
+
         return response()->json([
-            'user' => $request->user()?->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 
@@ -66,7 +72,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Perfil actualizado correctamente.',
-            'user' => $user->fresh()->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 
@@ -104,7 +110,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Avatar generado correctamente.',
-            'user' => $user->fresh()->load('roleRelation'),
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
         ]);
     }
 }

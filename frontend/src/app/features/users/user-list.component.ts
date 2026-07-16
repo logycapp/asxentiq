@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleService } from '../../core/services/role.service';
 import { User, UserPayload, UserMenuPermissionItem, UserService } from '../../core/services/user.service';
@@ -21,24 +22,29 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly roleService = inject(RoleService);
+  private readonly empresaService = inject(EmpresaService);
   private readonly loadingService = inject(LoadingService);
+  private readonly route = inject(ActivatedRoute);
   private tooltipInstances = new Map<HTMLElement, { dispose: () => void }>();
   private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   users: User[] = [];
   filteredUsers: User[] = [];
+  empresas: Empresa[] = [];
   loading = false;
   message = '';
   errorMessage = '';
   searchQuery = '';
   sortKey = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  empresaId: number | null = null;
 
   // Modal state (edit)
   editingUser: User | null = null;
   editName = '';
   editEmail = '';
   editRole = 'user';
+  editEmpresaId: number | null = null;
   editActive = true;
   editPassword = '';
   editPasswordConfirmation = '';
@@ -50,6 +56,7 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   createName = '';
   createEmail = '';
   createRole = 'user';
+  createEmpresaId: number | null = null;
   createActive = true;
   createPassword = '';
   createPasswordConfirmation = '';
@@ -57,6 +64,9 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   createErrorMessage = '';
 
   ngOnInit(): void {
+    const routeEmpresaId = Number(this.route.snapshot.paramMap.get('empresaId'));
+    this.empresaId = Number.isFinite(routeEmpresaId) && routeEmpresaId > 0 ? routeEmpresaId : null;
+    this.loadEmpresas();
     this.loadUsers();
     this.loadRoles();
   }
@@ -78,7 +88,7 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading = true;
     this.errorMessage = '';
 
-    this.loadingService.track(this.userService.list())
+    this.loadingService.track(this.userService.list(this.empresaId ? { empresa_id: this.empresaId } : undefined))
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (users) => {
@@ -96,11 +106,24 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private loadEmpresas(): void {
+    this.empresaService.list().subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+
+        if (this.creating && !this.createEmpresaId) {
+          this.createEmpresaId = this.empresaId ?? this.empresas[0]?.id ?? null;
+        }
+      }
+    });
+  }
+
   openEditModal(user: User): void {
     this.editingUser = user;
     this.editName = user.name;
     this.editEmail = user.email;
     this.editRole = user.role || 'user';
+    this.editEmpresaId = user.empresa_id ?? null;
     this.editActive = user.active;
     this.editPassword = '';
     this.editPasswordConfirmation = '';
@@ -125,11 +148,17 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    if (!this.editEmpresaId) {
+      this.errorMessage = 'Debes seleccionar una empresa.';
+      return;
+    }
+
     const payload: UserPayload = {
       name: this.editName,
       email: this.editEmail,
       active: this.editActive,
       role: this.editRole,
+      empresa_id: this.editEmpresaId,
     };
 
     if (this.editPassword) {
@@ -182,13 +211,21 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       result = result.filter((u) =>
         u.name.toLowerCase().includes(this.searchQuery) ||
         u.email.toLowerCase().includes(this.searchQuery) ||
-        (u.role || '').toLowerCase().includes(this.searchQuery)
+        (u.role || '').toLowerCase().includes(this.searchQuery) ||
+        (u.empresa_relation?.name || '').toLowerCase().includes(this.searchQuery)
       );
     }
 
     if (this.sortKey === 'name') {
       result.sort((a, b) => {
         const cmp = a.name.localeCompare(b.name);
+        return this.sortDirection === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    if (this.sortKey === 'empresa') {
+      result.sort((a, b) => {
+        const cmp = (a.empresa_relation?.name ?? '').localeCompare(b.empresa_relation?.name ?? '');
         return this.sortDirection === 'asc' ? cmp : -cmp;
       });
     }
@@ -337,6 +374,7 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.createName = '';
     this.createEmail = '';
     this.createRole = this.roles[0]?.slug ?? 'user';
+    this.createEmpresaId = this.empresaId ?? this.empresas[0]?.id ?? null;
     this.createActive = true;
     this.createPassword = '';
     this.createPasswordConfirmation = '';
@@ -361,11 +399,17 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    if (!this.createEmpresaId) {
+      this.createErrorMessage = 'Debes seleccionar una empresa.';
+      return;
+    }
+
     const payload: UserPayload = {
       name: this.createName,
       email: this.createEmail,
       active: this.createActive,
       role: this.createRole,
+      empresa_id: this.createEmpresaId,
       password: this.createPassword,
       password_confirmation: this.createPasswordConfirmation,
     };
