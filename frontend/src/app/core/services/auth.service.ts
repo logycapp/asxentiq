@@ -12,6 +12,8 @@ export interface AuthUser {
   profile_photo_url?: string | null;
   avatar_photo_url?: string | null;
   menu_layout?: 'top' | 'left' | string | null;
+  theme_mode?: 'dark' | 'light';
+  sidebar_collapsed?: boolean | number;
   role_relation?: {
     id: number;
     name: string;

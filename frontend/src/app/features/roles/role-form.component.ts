@@ -3,14 +3,14 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { RolePayload, RoleService } from '../../core/services/role.service';
 
 @Component({
   selector: 'app-role-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './role-form.component.html'
 })
 export class RoleFormComponent implements OnInit {

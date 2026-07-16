@@ -3,11 +3,13 @@
 ## Que parece hacer
 
 Asxentiq parece ser un sistema web de administracion con autenticacion, gestion de usuarios, gestion de roles y control de permisos de menu. El frontend consume una API Laravel y el acceso se protege con Sanctum y tokens personales.
+La interfaz del sistema debe seguir el template Bootstrap ubicado en `frontend/template` como base visual obligatoria. La unica excepcion es `landing`, que funciona como pagina web publica y puede conservar su propio diseño.
+Esa carpeta es una referencia visual independiente y no tiene relacion directa con Angular; por eso, sus estilos, clases y componentes visuales deben copiarse y adaptarse a la estructura original de Angular.
 
 ## Estructura principal
 
 - `backend/`: API Laravel
-- `frontend/`: aplicacion Angular
+- `frontend/`: aplicacion Angular basada en el template Bootstrap de `frontend/template`
 - `start.sh`: arranque conjunto de backend y frontend
 
 ## Tecnologias detectadas
@@ -20,6 +22,7 @@ Asxentiq parece ser un sistema web de administracion con autenticacion, gestion 
 - RxJS
 - Bootstrap 5
 - `@ng-bootstrap/ng-bootstrap`
+- Template Bootstrap propio en `frontend/template`
 
 ## Como arranca
 
@@ -121,6 +124,8 @@ Asxentiq parece ser un sistema web de administracion con autenticacion, gestion 
 - La API fuerza respuestas JSON.
 - CORS permite el frontend local y soporta credenciales.
 - El backend protege la mayoria de rutas con `auth:sanctum`.
+- Cualquier modulo, componente, formulario o estilo nuevo en Angular debe respetar exactamente la estetica, estructura y patrones visuales de `frontend/template`.
+- No se deben improvisar estilos nuevos fuera del template, salvo en `landing`.
 - El seeder crea roles base, un usuario administrador y items de menu iniciales.
 - El menu principal ya no expone `Usuarios` ni `Roles`; esos accesos viven dentro de `Administracion`.
 - La visibilidad interna de `Usuarios` y `Roles` se controla con permisos de rol y permisos puntuales sobre los items de menu.

@@ -2,15 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { RoleMenuItem, RoleService } from '../../core/services/role.service';
+import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, RouterLink, PageHeaderComponent],
   templateUrl: './admin-panel.component.html'
 })
 export class AdminPanelComponent implements OnInit {

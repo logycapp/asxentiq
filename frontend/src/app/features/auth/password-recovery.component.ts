@@ -3,15 +3,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-password-recovery',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgbAlertModule, RouterLink],
-  templateUrl: './password-recovery.component.html',
-  styleUrl: './password-recovery.component.css'
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './password-recovery.component.html'
 })
 export class PasswordRecoveryComponent implements OnInit {
   private readonly fb = inject(FormBuilder);

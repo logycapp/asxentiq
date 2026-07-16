@@ -1,61 +1,319 @@
-<section class="surface-card p-4 p-xl-5">
-  <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 mb-4">
-    <div>
-      <span class="soft-badge mb-3">Usuarios</span>
-      <h1 class="h2 mb-2">Administracion de usuarios</h1>
-      <p class="text-secondary mb-0">Gestiona altas, ediciones, estados y eliminacion desde una sola pantalla.</p>
+<app-page-header
+  title="Administracion de usuarios"
+  subtitle="Gestiona altas, ediciones, estados y eliminacion desde una sola pantalla."
+  [showDateFilter]="false"
+/>
+
+<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
+  {{ message }}
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+  {{ errorMessage }}
+</div>
+
+<div class="card glass-card border-0 rounded-4 p-4 mb-4">
+  <div class="row g-3 align-items-center justify-content-between">
+    <div class="col-12 col-xl-auto">
+      <button
+        class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold"
+        type="button"
+        (click)="openCreateModal()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Nuevo usuario"
+        aria-label="Nuevo usuario"
+      >
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Nuevo usuario
+      </button>
     </div>
-
-    <a routerLink="/users/create" class="btn btn-primary">Nuevo usuario</a>
+    <div class="col-12 col-xl-auto">
+      <div style="width: min(100%, 360px);">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
+            <span class="material-symbols-outlined text-[18px]">search</span>
+          </span>
+          <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="userSearch" type="search" placeholder="Buscar usuario..." (input)="onSearch($event)" />
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
-  <ngb-alert *ngIf="message" type="success" [dismissible]="true" (closed)="message = ''" class="mb-3">
-    {{ message }}
-  </ngb-alert>
-  <ngb-alert *ngIf="errorMessage" type="danger" [dismissible]="true" (closed)="errorMessage = ''" class="mb-3">
-    {{ errorMessage }}
-  </ngb-alert>
+<div *ngIf="loading" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">Cargando usuarios...</div>
+</div>
 
-  <div *ngIf="loading" class="text-secondary py-4">Cargando usuarios...</div>
-
-  <div *ngIf="!loading" class="table-responsive">
-    <table class="table align-middle">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Correo</th>
-          <th>Rol</th>
-          <th>Estado</th>
-          <th class="d-none d-lg-table-cell">Actualizado</th>
-          <th class="text-end">Acciones</th>
+<div *ngIf="!loading" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 dashboard-table">
+      <thead class="user-table-head">
+        <tr class="border-bottom border-white/10">
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">#</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th user-table-th">
+            <button class="sort-trigger user-sort-trigger" type="button" (click)="sortBy('name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Correo</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Rol</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Estado</th>
+          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end user-table-th">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.id }}</td>
-          <td>
-            <div class="fw-semibold">{{ user.name }}</div>
+        <tr *ngFor="let user of filteredUsers; let i = index">
+          <td class="ps-4 py-3 font-mono text-on-surface">{{ user.id }}</td>
+          <td class="py-3">
+            <span class="text-on-surface fw-semibold">{{ user.name }}</span>
           </td>
-          <td>{{ user.email }}</td>
-          <td><span class="badge text-bg-light border">{{ user.role || 'user' }}</span></td>
-          <td>
-            <span class="badge rounded-pill" [class.text-bg-success]="user.active" [class.text-bg-secondary]="!user.active">
-              {{ user.active ? 'Activo' : 'Inactivo' }}
-            </span>
+          <td class="py-3 text-on-surface-variant">{{ user.email }}</td>
+          <td class="py-3"><span class="badge rounded-pill user-role-badge">{{ user.role || 'user' }}</span></td>
+          <td class="py-3">
+            <span *ngIf="user.active" class="badge rounded-pill user-status-badge user-status-active">Activo</span>
+            <span *ngIf="!user.active" class="badge rounded-pill user-status-badge user-status-inactive">Inactivo</span>
           </td>
-          <td class="d-none d-lg-table-cell text-secondary">{{ user.updated_at | date: 'medium' }}</td>
-          <td>
-            <div class="d-flex gap-2 justify-content-end flex-wrap">
-              <a class="btn btn-sm btn-primary" [routerLink]="['/users', user.id, 'edit']">Editar</a>
-              <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/users', user.id, 'menu-permissions']">Permisos del menu</a>
-              <button *ngIf="!user.active" class="btn btn-sm btn-success" type="button" (click)="activate(user)">Activar</button>
-              <button *ngIf="user.active" class="btn btn-sm btn-outline-secondary" type="button" (click)="deactivate(user)">Inactivar</button>
-              <button class="btn btn-sm btn-outline-danger" type="button" (click)="remove(user)">Eliminar</button>
+          <td class="pe-4 py-3 text-end">
+            <div class="dashboard-action-group">
+              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(user)">
+                <span class="material-symbols-outlined">edit</span><span>Editar</span>
+              </button>
+              <button class="btn btn-sm btn-outline-info fw-semibold" type="button" title="Permisos de menu" aria-label="Permisos de menu" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openPermModal(user)">
+                <span class="material-symbols-outlined">info</span><span>Info</span>
+              </button>
+              <button *ngIf="!user.active" class="btn btn-sm btn-outline-info fw-semibold" type="button" (click)="activate(user)" title="Activar" aria-label="Activar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <span class="material-symbols-outlined">check_circle</span><span>Activar</span>
+              </button>
+              <button *ngIf="user.active" class="btn btn-sm btn-outline-info fw-semibold" type="button" (click)="deactivate(user)" title="Inactivar" aria-label="Inactivar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <span class="material-symbols-outlined">block</span><span>Inactivar</span>
+              </button>
+              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(user)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <span class="material-symbols-outlined">delete</span><span>Eliminar</span>
+              </button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-</section>
+</div>
+
+<div *ngIf="!loading && filteredUsers.length === 0" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">No se encontraron usuarios.</div>
+</div>
+
+<div *ngIf="!loading" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ filteredUsers.length }} de {{ users.length }} usuarios</p>
+</div>
+
+<app-modal-shell
+  *ngIf="creating"
+  kicker="Usuarios"
+  title="Nuevo usuario"
+  subtitle="Completa los datos para crear un nuevo usuario."
+  headerVariant="info"
+  footerVariant="info"
+  size="md"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  primaryLabel="Crear usuario"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="createSaving"
+  [primaryLoading]="createSaving"
+  (secondaryRequested)="closeCreateModal()"
+  (primaryRequested)="saveCreate()"
+  (closeRequested)="closeCreateModal()"
+>
+  <div modal-body>
+    <div *ngIf="createErrorMessage" class="alert alert-danger py-2 mb-3 small">{{ createErrorMessage }}</div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="createName">Nombre</label>
+      <input id="createName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createName" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="createEmail">Correo</label>
+      <input id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" />
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="createPassword">Contrasena</label>
+        <input id="createPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="createPassword" />
+      </div>
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="createPasswordConfirm">Confirmar</label>
+        <input id="createPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="createPasswordConfirmation" />
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="createRole">Rol</label>
+      <select id="createRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createRole">
+        <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
+      </select>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <input class="form-check-input m-0" type="checkbox" id="createActive" [(ngModel)]="createActive" />
+      <label class="form-check-label fw-semibold small" for="createActive">{{ createActive ? 'Activo' : 'Inactivo' }}</label>
+    </div>
+  </div>
+</app-modal-shell>
+
+<app-modal-shell
+  *ngIf="permUser"
+  kicker="Usuarios"
+  title="Permisos de menu"
+  [subtitle]="'Ajusta permisos especiales para ' + permUser.name + (permUser.role ? '. Su rol base es ' + permUser.role + '.' : '.')"
+  headerVariant="info"
+  footerVariant="info"
+  size="lg"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  primaryLabel="Guardar permisos"
+  secondaryLabel="Cerrar"
+  [primaryDisabled]="permSaving || permLoading"
+  [primaryLoading]="permSaving"
+  (secondaryRequested)="closePermModal()"
+  (primaryRequested)="savePerm()"
+  (closeRequested)="closePermModal()"
+>
+  <div modal-body>
+    <div *ngIf="permMessage" class="alert alert-success alert-dismissible py-2 mb-3 small">
+      <button type="button" class="btn-close" aria-label="Close" (click)="permMessage = ''"></button>
+      {{ permMessage }}
+    </div>
+    <div *ngIf="permErrorMessage" class="alert alert-danger py-2 mb-3 small">{{ permErrorMessage }}</div>
+
+    <div *ngIf="permLoading" class="text-center py-4 text-on-surface-variant">Cargando permisos...</div>
+
+    <div *ngIf="!permLoading">
+      <p class="text-on-surface-variant small mb-3">
+        <strong>Nota:</strong> lo heredado por rol se muestra en solo lectura. Lo que marques abajo es permiso especial para este usuario.
+      </p>
+
+      <div class="mb-4">
+        <h6 class="font-label-sm text-on-surface-variant text-uppercase mb-2">Heredados por rol</h6>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr class="border-bottom border-white/10">
+                <th class="py-2 font-label-xs text-on-surface-variant">Menu</th>
+                <th class="py-2 font-label-xs text-on-surface-variant">Ruta</th>
+                <th class="py-2 font-label-xs text-on-surface-variant">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of permInheritedItems; trackBy: permTrackById">
+                <td class="py-2 text-on-surface fw-semibold">{{ item.label }}</td>
+                <td class="py-2"><code class="small">{{ item.route }}</code></td>
+                <td class="py-2">
+                  <span class="badge small" [ngClass]="permStatusClass(item)">{{ permStatusLabel(item) }}</span>
+                </td>
+              </tr>
+              <tr *ngIf="permInheritedItems.length === 0">
+                <td colspan="3" class="py-3 text-on-surface-variant small">Este usuario no recibe menus por rol.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+          <h6 class="font-label-sm text-on-surface-variant text-uppercase mb-0">Permisos directos</h6>
+          <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-2 py-1 small">{{ permSelectedIds.size }} especiales activos</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr class="border-bottom border-white/10">
+                <th class="py-2 font-label-xs text-on-surface-variant">Menu</th>
+                <th class="py-2 font-label-xs text-on-surface-variant">Ruta</th>
+                <th class="py-2 font-label-xs text-on-surface-variant">Estado</th>
+                <th class="py-2 font-label-xs text-on-surface-variant text-end">Permiso especial</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of permMenuItems; trackBy: permTrackById">
+                <td class="py-2 text-on-surface fw-semibold">{{ item.label }}</td>
+                <td class="py-2"><code class="small">{{ item.route }}</code></td>
+                <td class="py-2">
+                  <span class="badge small" [ngClass]="permStatusClass(item)">{{ permStatusLabel(item) }}</span>
+                </td>
+                <td class="py-2 text-end">
+                  <div class="form-check d-inline-flex align-items-center gap-2">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'modal-perm-item-' + item.id"
+                      [checked]="isPermChecked(item)"
+                      (change)="onPermToggleChange(item, $event)"
+                    />
+                    <label class="form-check-label small" [for]="'modal-perm-item-' + item.id">
+                      {{ isPermChecked(item) ? 'Especial' : 'Sin permiso especial' }}
+                    </label>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-modal-shell>
+
+<app-modal-shell
+  *ngIf="editingUser"
+  kicker="Usuarios"
+  title="Editar usuario"
+  [subtitle]="'Actualiza los datos de ' + editingUser.name + '.'"
+  headerVariant="warning"
+  footerVariant="warning"
+  size="md"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  primaryLabel="Guardar cambios"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="saving"
+  [primaryLoading]="saving"
+  (secondaryRequested)="closeEditModal()"
+  (primaryRequested)="saveEdit()"
+  (closeRequested)="closeEditModal()"
+>
+  <div modal-body>
+    <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>
+      <input id="modalName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalEmail">Correo</label>
+      <input id="modalEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="editEmail" />
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="modalPassword">Contrasena <span class="text-on-surface-variant opacity-50">(opcional)</span></label>
+        <input id="modalPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPassword" />
+      </div>
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="modalPasswordConfirm">Confirmar</label>
+        <input id="modalPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPasswordConfirmation" />
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalRole">Rol</label>
+      <select id="modalRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editRole">
+        <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
+      </select>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <input class="form-check-input m-0" type="checkbox" id="modalActive" [(ngModel)]="editActive" />
+      <label class="form-check-label fw-semibold small" for="modalActive">{{ editActive ? 'Activo' : 'Inactivo' }}</label>
+    </div>
+  </div>
+</app-modal-shell>

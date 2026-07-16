@@ -26,9 +26,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/menu', [MenuController::class, 'index']);
     Route::post('/test', [TestController::class, 'store']);
     Route::post('/test/extract-audio', [TestController::class, 'extractAudio']);
+    Route::post('/test/analyze-audio', [TestController::class, 'analyzeAudio']);
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar/generate', [ProfileController::class, 'generateAvatar']);
+    Route::post('/theme', [\App\Http\Controllers\Api\ThemeController::class, 'update']);
 
     Route::middleware('menu.access:/roles')->group(function (): void {
         Route::get('/roles', [RoleController::class, 'index']);

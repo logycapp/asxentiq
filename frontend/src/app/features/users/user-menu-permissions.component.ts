@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { UserMenuPermissionItem, UserMenuPermissionsResponse, UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-user-menu-permissions',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './user-menu-permissions.component.html'
 })
 export class UserMenuPermissionsComponent implements OnInit {

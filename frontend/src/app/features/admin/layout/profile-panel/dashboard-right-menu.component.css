@@ -1,0 +1,4 @@
+/* All styles are handled by the global theme.css and Tailwind classes */
+:host {
+  display: contents;
+}

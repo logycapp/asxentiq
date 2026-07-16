@@ -40,14 +40,29 @@ class MenuController extends Controller
         $childItems = $allItems->whereNotNull('parent_id');
 
         $items = $parentItems->map(static function (MenuItem $item) use ($childItems): array {
-            $children = $childItems->where('parent_id', $item->id)->values()->map(static fn (MenuItem $child): array => [
+            $childrenBase = $childItems->where('parent_id', $item->id)->values()->map(static fn (MenuItem $child): array => [
                 'id' => $child->id,
                 'label' => $child->label,
                 'route' => $child->route,
                 'icon' => $child->icon,
                 'order' => $child->sort_order,
                 'exact' => $child->exact ?? false,
-            ]);
+            ])->toArray();
+
+            // Prepender el item padre como primer hijo para que sea clickeable
+            $children = array_merge(
+                [
+                    [
+                        'id' => $item->id,
+                        'label' => $item->label,
+                        'route' => $item->route,
+                        'icon' => $item->icon,
+                        'order' => 0,
+                        'exact' => $item->exact ?? false,
+                    ],
+                ],
+                $childrenBase,
+            );
 
             return [
                 'id' => $item->id,

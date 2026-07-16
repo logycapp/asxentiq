@@ -30,6 +30,30 @@ export interface TestAudioResponse {
   };
 }
 
+export interface TestAnalysisResponse {
+  titulo_detectado: string;
+  idioma: string;
+  duracion_aproximada_segundos: number;
+  resumen_general: string;
+  temas_detectados: Array<{
+    orden: number;
+    tema: string;
+    inicio: number;
+    fin: number;
+  }>;
+  segmentos: Array<{
+    orden: number;
+    inicio: number;
+    fin: number;
+    tema: string;
+    subtema: string;
+    resumen: string;
+    texto: string;
+    palabras_clave: string[];
+    preguntas_posibles: string[];
+  }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,5 +67,9 @@ export class TestService {
 
   extractAudio(videoPath: string): Observable<TestAudioResponse> {
     return this.http.post<TestAudioResponse>(`${this.apiUrl}/extract-audio`, { video_path: videoPath });
+  }
+
+  analyzeAudio(audioPath: string): Observable<TestAnalysisResponse> {
+    return this.http.post<TestAnalysisResponse>(`${this.apiUrl}/analyze-audio`, { audio_path: audioPath });
   }
 }

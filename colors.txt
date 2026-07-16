@@ -1,0 +1,40 @@
+establece los siguiente colores para que sean los colores globales, 
+Paleta base declarada en landing.component.css
+#04294F --navy
+#0298E2 --cyan
+#24CFA0 --green
+#0457BF --slate
+#0DACA2 --teal
+#1E3160 --mid
+#E8F6FB --light
+#6B8099 --muted
+#FFFFFF --white
+#F4F8FB --off
+#D0E6F0 --border
+Referencia: [frontend/src/app/features/landing/landing.component.css (line 3)](/home/asus/software/asxentiq/frontend/src/app/features/landing/landing.component.css#L3)
+2. Paleta de la portada .cover
+#03142A --pc-navy-950
+#041C36 --pc-navy-900
+#0A2A4A --pc-navy-800
+#2E86EB --pc-azure
+#5FA8F5 --pc-azure-light
+#2BC48A --pc-mint
+#C7DAEC --pc-ice
+#FFFFFF --pc-white
+rgba(95,168,245,.14) --pc-line
+Sí, #03142A es el navy más profundo y se usa en el fondo del hero junto con #041C36.
+Referencia: [frontend/src/app/features/landing/landing.component.css (line 739)](/home/asus/software/asxentiq/frontend/src/app/features/landing/landing.component.css#L739)
+3. Colores visibles usados en secciones y estados
+#3D5166 texto secundario
+#B8D4E0 texto suave del hero
+#7ABFCF subtítulo del hero
+#D6E8EF texto de tarjetas
+#8BAFC2 texto de autoridad
+#B8D8E8 texto de nota
+#7A9BB2 texto de descripción
+#4A6480 otro tono de texto
+#3A7C16 texto de estado verde
+#E8EFF4, #EEF3F7, #EDF5FA bordes y fondos suaves
+#FFFFFF blanco en textos, fondo de tarjeta y logo
+#0298E2 azul principal de acento
+#24CFA0 verde de acento

@@ -15,7 +15,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $appends = ['role', 'profile_photo_url', 'avatar_photo_url'];
+    protected $appends = ['role', 'profile_photo_url', 'avatar_photo_url', 'theme_mode', 'sidebar_collapsed'];
 
     protected $fillable = [
         'name',
@@ -27,6 +27,8 @@ class User extends Authenticatable
         'profile_photo_path',
         'avatar_photo_path',
         'menu_layout',
+        'theme_mode',
+        'sidebar_collapsed',
     ];
 
     protected $hidden = [
@@ -42,6 +44,16 @@ class User extends Authenticatable
             'active' => 'boolean',
             'role_id' => 'integer',
         ];
+    }
+
+    public function getSidebarCollapsedAttribute($value): bool
+    {
+        return (bool) $value;
+    }
+
+    public function getThemeModeAttribute(?string $value): string
+    {
+        return in_array($value, ['dark', 'light'], true) ? $value : 'dark';
     }
 
     public function roleRelation(): BelongsTo

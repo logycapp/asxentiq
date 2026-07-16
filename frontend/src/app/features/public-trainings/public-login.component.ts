@@ -3,14 +3,14 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingService } from '../../core/services/training.service';
 
 @Component({
   selector: 'app-public-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
       <div class="card shadow" style="width: 400px;">

@@ -1,28 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatTableModule } from '@angular/material/table';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Tooltip } from 'bootstrap';
+import { filter, finalize, Subscription } from 'rxjs';
+
+import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
-import { ModalFacadeService } from '../../core/services/modal-facade.service';
 import {
+  ParticipantReview,
+  Question,
+  QuestionOption,
   Training,
   TrainingListMeta,
   TrainingListSummary,
+  TrainingParticipant,
   TrainingService
 } from '../../core/services/training.service';
-import { TrainingFormComponent } from './training-form.component';
-import { TrainingAssignComponent } from './training-assign.component';
-import { TrainingQuestionsComponent } from './training-questions.component';
-import { TrainingResultsComponent } from './training-results.component';
+import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-training-list',
@@ -31,765 +26,20 @@ import { TrainingResultsComponent } from './training-results.component';
     CommonModule,
     FormsModule,
     RouterLink,
-    NgbAlertModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatPaginatorModule,
-    MatSortModule,
-    MatTableModule
+    RouterOutlet,
+    PageHeaderComponent,
+    ModalShellComponent
   ],
-  template: `
-    <div class="container-fluid py-4 trainings-page">
-      <div class="trainings-shell">
-        <section class="trainings-hero">
-          <div class="trainings-hero__copy">
-            <p class="trainings-eyebrow mb-2">Modulo de seguridad</p>
-            <h1 class="trainings-title mb-3">Capacitaciones SST</h1>
-            <p class="trainings-description mb-0">
-              Gestiona, monitorea y certifica el crecimiento profesional de tus colaboradores
-              con una vista clara para seguimiento rapido.
-            </p>
-          </div>
-
-          <a routerLink="/trainings/create" class="btn btn-primary btn-lg trainings-cta">
-            <i class="fa-solid fa-plus trainings-cta__icon" aria-hidden="true"></i>
-            Nueva capacitacion
-          </a>
-        </section>
-
-        <section class="row g-3 mb-4" *ngIf="!loading">
-          <div class="col-12 col-lg-4">
-            <div class="metric-card metric-card-primary">
-              <div class="metric-card__top">
-                <span class="metric-icon metric-icon--primary">
-                  <i class="fa-solid fa-layer-group"></i>
-                </span>
-                <span class="metric-badge">Acumulado</span>
-              </div>
-              <span class="metric-value">{{ summary.total }}</span>
-              <span class="metric-help">Capacitaciones totales</span>
-            </div>
-          </div>
-          <div class="col-12 col-lg-4">
-            <div class="metric-card metric-card-warning">
-              <div class="metric-card__top">
-                <span class="metric-icon metric-icon--warning">
-                  <i class="fa-solid fa-calendar" aria-hidden="true"></i>
-                </span>
-                <span class="metric-badge">Próximas</span>
-              </div>
-              <span class="metric-value">{{ summary.scheduled }}</span>
-              <span class="metric-help">Pendientes por ejecutar</span>
-            </div>
-          </div>
-          <div class="col-12 col-lg-4">
-            <div class="metric-card metric-card-success">
-              <div class="metric-card__top">
-                <span class="metric-icon metric-icon--success">
-                  <i class="fa-solid fa-circle-check"></i>
-                </span>
-                <span class="metric-badge">Completado</span>
-              </div>
-              <span class="metric-value">{{ summary.completed }}</span>
-              <span class="metric-help">Cerradas exitosamente</span>
-            </div>
-          </div>
-        </section>
-
-        <div *ngIf="message" class="alert alert-success alert-dismissible fade show soft-alert" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" (click)="message = ''" aria-label="Close"></button>
-        </div>
-        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show soft-alert" role="alert">
-          {{ errorMessage }}
-          <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
-        </div>
-
-        <div *ngIf="loading" class="loading-panel text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-          <div class="loading-text mt-3">Cargando capacitaciones...</div>
-        </div>
-
-        <section *ngIf="!loading && trainings.length === 0" class="empty-card text-center">
-          <div class="empty-icon">
-            <i class="fa-solid fa-file-lines"></i>
-          </div>
-          <h5 class="mb-2">No hay capacitaciones registradas</h5>
-          <p class="text-muted mb-4">
-            {{ searchTerm ? 'No hay resultados para esa busqueda.' : 'Crea la primera capacitacion para empezar a gestionar el modulo.' }}
-          </p>
-          <a routerLink="/trainings/create" class="btn btn-primary">
-            <i class="fa-solid fa-plus me-2"></i>
-            Nueva capacitacion
-          </a>
-        </section>
-
-        <section *ngIf="!loading && trainings.length > 0" class="table-card">
-          <div class="table-card-header">
-            <div class="table-card-header__copy">
-              <h2 class="table-title mb-2">Listado Maestro</h2>
-              <p class="table-subtitle mb-0">{{ meta.total }} registros activos en la base de datos</p>
-            </div>
-            <div class="table-toolbar">
-              <div class="search-shell">
-                <i class="fa-solid fa-magnifying-glass search-shell__icon" aria-hidden="true"></i>
-                <input
-                  class="search-shell__input"
-                  name="searchTerm"
-                  [(ngModel)]="searchTerm"
-                  (keyup.enter)="applyFilters()"
-                  placeholder="Filtrar por titulo, tipo o fecha..."
-                  aria-label="Filtrar capacitaciones"
-                />
-                <button
-                  *ngIf="searchTerm"
-                  type="button"
-                  class="search-shell__clear"
-                  aria-label="Limpiar busqueda"
-                  (click)="clearSearch()"
-                >
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-              <button type="button" class="btn btn-dark trainings-filter-btn" (click)="applyFilters()">
-                Filtrar
-              </button>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table
-              mat-table
-              [dataSource]="trainings"
-              matSort
-              [matSortActive]="sortBy"
-              [matSortDirection]="sortDir"
-              (matSortChange)="onSortChange($event)"
-              class="mat-elevation-z0 training-table"
-            >
-              <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
-                <td mat-cell *matCellDef="let t" class="text-muted">#{{ t.id }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="title">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Titulo</th>
-                <td mat-cell *matCellDef="let t" class="fw-semibold">{{ t.title }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
-                <td mat-cell *matCellDef="let t">{{ typeLabel(t.type) }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="modality">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Modalidad</th>
-                <td mat-cell *matCellDef="let t">{{ modalityLabel(t.modality) }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="scheduled_date">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
-                <td mat-cell *matCellDef="let t">{{ t.scheduled_date }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-                <td mat-cell *matCellDef="let t">
-                  <span [class]="'status-pill ' + statusClass(t.status)">
-                    {{ statusLabel(t.status) }}
-                  </span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="questions_count">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Preguntas</th>
-                <td mat-cell *matCellDef="let t">
-                  <span class="count-pill">{{ t.questions_count ?? 0 }}</span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="users_count">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Usuarios</th>
-                <td mat-cell *matCellDef="let t">
-                  <span class="count-pill">{{ t.users_count ?? 0 }}</span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="text-end">Acciones</th>
-                <td mat-cell *matCellDef="let t" class="text-end">
-                  <div class="action-group">
-                    <button type="button" class="action-btn action-btn--edit" title="Editar" (click)="openEditModal(t)">
-                      <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                    </button>
-                    <button type="button" class="action-btn action-btn--questions" title="Preguntas" (click)="openQuestionsModal(t)">
-                      <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
-                    </button>
-                    <button type="button" class="action-btn action-btn--assign" title="Asignar usuarios" (click)="openAssignModal(t)">
-                      <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
-                    </button>
-                    <button type="button" class="action-btn action-btn--results" title="Resultados" (click)="openResultsModal(t)">
-                      <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
-                    </button>
-                    <button type="button" class="action-btn action-btn--delete" (click)="remove(t)" title="Eliminar">
-                      <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            </table>
-          </div>
-
-          <mat-paginator
-            [length]="meta.total"
-            [pageIndex]="meta.current_page - 1"
-            [pageSize]="meta.per_page"
-            [pageSizeOptions]="pageSizeOptions"
-            [showFirstLastButtons]="true"
-            (page)="onPageChange($event)">
-          </mat-paginator>
-        </section>
-      </div>
-    </div>
-  `,
-  styles: [`
-    :host {
-      --brand-navy: #071632;
-      --brand-blue: #2349a8;
-      --brand-cyan: #4f83e8;
-      --brand-green: #3f6f15;
-      --brand-ink: #1d2430;
-      --brand-muted: #5d6375;
-      display: block;
-    }
-
-    .trainings-page {
-      min-height: 100%;
-      background:
-        radial-gradient(circle at top left, rgba(35, 73, 168, 0.12), transparent 28%),
-        radial-gradient(circle at top right, rgba(79, 131, 232, 0.14), transparent 26%),
-        linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
-    }
-
-    .trainings-shell {
-      width: 100%;
-      max-width: none;
-      margin: 0 auto;
-    }
-
-    .trainings-hero,
-    .metric-card,
-    .table-card,
-    .empty-card,
-    .loading-panel {
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 32px;
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 20px 55px rgba(15, 23, 42, 0.08);
-      backdrop-filter: blur(12px);
-    }
-
-    .trainings-hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 2rem 2.25rem;
-      margin-bottom: 1.5rem;
-      background:
-        radial-gradient(circle at top right, rgba(79, 131, 232, 0.16), transparent 26%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.92));
-    }
-
-    .trainings-eyebrow {
-      color: var(--brand-blue);
-      font-size: 0.9rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.22em;
-    }
-
-    .trainings-title {
-      margin: 0;
-      font-size: clamp(2rem, 3vw, 3rem);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      color: var(--brand-ink);
-    }
-
-    .trainings-description {
-      max-width: 700px;
-      color: var(--brand-muted);
-      font-size: 1.06rem;
-      line-height: 1.6;
-    }
-
-    .trainings-cta {
-      flex: 0 0 auto;
-      min-width: 320px;
-      min-height: 72px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.85rem;
-      border: 0;
-      border-radius: 22px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #2349a8, #2f4ea4 55%, #1f78d6);
-      box-shadow: 0 20px 35px rgba(35, 73, 168, 0.28);
-    }
-
-    .trainings-cta__icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.4rem;
-      height: 1.4rem;
-      font-size: 1.05rem;
-      line-height: 1;
-      flex: 0 0 auto;
-    }
-
-    .metric-card {
-      position: relative;
-      height: 100%;
-      min-height: 170px;
-      padding: 1rem 1.2rem 1.05rem;
-      overflow: hidden;
-    }
-
-    .metric-card::after {
-      content: '';
-      position: absolute;
-      inset: auto -10% -40% auto;
-      width: 11rem;
-      height: 11rem;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 68%);
-      pointer-events: none;
-    }
-
-    .metric-card__top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.7rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .metric-icon {
-      width: 58px;
-      height: 58px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 17px;
-      font-size: 1.05rem;
-      color: #fff;
-      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.18);
-    }
-
-    .metric-icon i,
-    .action-btn i,
-    .trainings-cta__icon {
-      line-height: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .metric-icon--primary {
-      background: linear-gradient(135deg, #2349a8, #2b55c8);
-    }
-
-    .metric-icon--warning {
-      background: linear-gradient(135deg, #3e77d8, #5b90ea);
-    }
-
-    .metric-icon--success {
-      background: linear-gradient(135deg, #4b7716, #2f5d0f);
-    }
-
-    .metric-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.42rem 0.9rem;
-      border-radius: 999px;
-      background: #eef0f5;
-      color: #505664;
-      font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .metric-value {
-      display: block;
-      margin-top: 0.2rem;
-      font-size: 3rem;
-      line-height: 0.95;
-      font-weight: 700;
-      color: var(--brand-ink);
-      position: relative;
-      z-index: 1;
-    }
-
-    .metric-help {
-      display: block;
-      margin-top: 0.2rem;
-      font-size: 0.98rem;
-      color: #4d5566;
-      position: relative;
-      z-index: 1;
-    }
-
-    .metric-card-primary {
-      background: linear-gradient(135deg, rgba(35, 73, 168, 0.07), rgba(255, 255, 255, 0.98));
-    }
-
-    .metric-card-warning {
-      background: linear-gradient(135deg, rgba(79, 131, 232, 0.12), rgba(255, 255, 255, 0.98));
-    }
-
-    .metric-card-success {
-      background: linear-gradient(135deg, rgba(75, 119, 22, 0.12), rgba(255, 255, 255, 0.98));
-    }
-
-    .soft-alert {
-      border-radius: 20px;
-    }
-
-    .loading-panel {
-      padding: 3rem 1rem;
-    }
-
-    .loading-text {
-      color: var(--brand-muted);
-      font-weight: 700;
-    }
-
-    .empty-card {
-      padding: 3.25rem 1.5rem;
-    }
-
-    .empty-icon {
-      width: 4.5rem;
-      height: 4.5rem;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, rgba(35, 73, 168, 0.12), rgba(79, 131, 232, 0.12));
-      color: var(--brand-blue);
-      font-size: 1.75rem;
-    }
-
-    .table-card {
-      overflow: hidden;
-      border-radius: 34px;
-    }
-
-    .table-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.65rem 1.8rem 1.45rem;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 252, 0.98));
-    }
-
-    .table-card-header__copy {
-      min-width: 0;
-    }
-
-    .table-title {
-      margin: 0;
-      font-size: clamp(1.7rem, 2vw, 2.05rem);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      color: var(--brand-ink);
-    }
-
-    .table-subtitle {
-      color: var(--brand-muted);
-      font-size: 1rem;
-    }
-
-    .table-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: flex-end;
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-
-    .search-shell {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      flex: 1 1 500px;
-      max-width: 500px;
-      min-width: 0;
-      padding: 0.2rem 0.2rem 0.2rem 1rem;
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      border-radius: 22px;
-      background: #fff;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    }
-
-    .search-shell__icon {
-      color: #6b7280;
-      font-size: 1rem;
-    }
-
-    .search-shell__input {
-      width: 100%;
-      min-width: 0;
-      border: 0;
-      outline: none;
-      background: transparent;
-      color: var(--brand-ink);
-      font-size: 1rem;
-      padding: 1rem 0;
-    }
-
-    .search-shell__input::placeholder {
-      color: #a7afbf;
-    }
-
-    .search-shell__clear {
-      width: 42px;
-      height: 42px;
-      border: 0;
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.06);
-      color: #6b7280;
-      flex: 0 0 auto;
-    }
-
-    .trainings-filter-btn {
-      min-width: 138px;
-      min-height: 66px;
-      padding-inline: 1.5rem;
-      border-radius: 20px;
-      font-size: 1rem;
-      font-weight: 800;
-      background: #1f2328;
-      border-color: #1f2328;
-      box-shadow: 0 16px 28px rgba(15, 23, 42, 0.18);
-    }
-
-    .training-table {
-      width: 100%;
-      background: #fff;
-    }
-
-    .training-table ::ng-deep .mat-mdc-header-row {
-      background: #f1f3f6;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    }
-
-    .training-table ::ng-deep .mat-mdc-header-cell {
-      background: transparent;
-      color: var(--brand-ink);
-      border-bottom-color: rgba(15, 23, 42, 0.08);
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      font-weight: 800;
-    }
-
-    .training-table ::ng-deep .mat-sort-header-arrow {
-      color: var(--brand-blue);
-    }
-
-    .training-table ::ng-deep .mat-mdc-row:hover {
-      background: rgba(35, 73, 168, 0.03);
-    }
-
-    .training-table ::ng-deep .mat-mdc-cell,
-    .training-table ::ng-deep .mat-mdc-header-cell {
-      padding-left: 0.9rem;
-      padding-right: 0.9rem;
-      border-bottom-color: rgba(15, 23, 42, 0.08);
-    }
-
-    .training-table ::ng-deep .mat-mdc-cell {
-      padding-top: 1rem;
-      padding-bottom: 1rem;
-    }
-
-    .status-pill,
-    .count-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 5.5rem;
-      padding: 0.42rem 0.8rem;
-      border-radius: 999px;
-      font-size: 0.84rem;
-      font-weight: 800;
-    }
-
-    .count-pill {
-      min-width: 3rem;
-      background: rgba(15, 23, 42, 0.06);
-      color: var(--brand-ink);
-    }
-
-    .status-scheduled {
-      background: rgba(35, 73, 168, 0.12);
-      color: var(--brand-blue);
-    }
-
-    .status-completed {
-      background: rgba(63, 111, 21, 0.14);
-      color: #31610f;
-    }
-
-    .status-cancelled {
-      background: rgba(239, 68, 68, 0.14);
-      color: #b42318;
-    }
-
-    .action-group .btn {
-      box-shadow: none;
-    }
-
-    .action-group {
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 0.4rem;
-      flex-wrap: nowrap;
-    }
-
-    .action-btn {
-      width: 38px;
-      height: 38px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 13px;
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 22px rgba(15, 23, 42, 0.16);
-      filter: brightness(1.02);
-    }
-
-    .action-btn--edit {
-      background: linear-gradient(135deg, #3657d4, #2b4ebd);
-    }
-
-    .action-btn--questions {
-      background: linear-gradient(135deg, #3d84e8, #2f6fd3);
-    }
-
-    .action-btn--assign {
-      background: linear-gradient(135deg, #3f8e57, #2f7747);
-    }
-
-    .action-btn--results {
-      background: linear-gradient(135deg, #6b7280, #4b5563);
-    }
-
-    .action-btn--delete {
-      background: linear-gradient(135deg, #ee5d5d, #d63d3d);
-    }
-
-    @media (max-width: 1199.98px) {
-      .trainings-hero {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .trainings-cta {
-        width: 100%;
-        min-width: 0;
-      }
-
-      .action-group {
-        justify-content: flex-end;
-      }
-    }
-
-    @media (max-width: 991.98px) {
-      .table-card-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .table-toolbar {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .search-shell {
-        max-width: none;
-        flex-basis: auto;
-      }
-
-      .trainings-filter-btn {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 575.98px) {
-      .trainings-page {
-        padding-left: 0.6rem;
-        padding-right: 0.6rem;
-      }
-
-      .trainings-hero,
-      .table-card-header {
-        padding: 1.25rem;
-      }
-
-      .metric-card {
-        min-height: 152px;
-        padding: 0.95rem 1rem 1rem;
-      }
-
-      .metric-value {
-        font-size: 2.5rem;
-      }
-
-      .metric-help {
-        font-size: 0.92rem;
-      }
-    }
-  `]
+  templateUrl: './training-list.component.html',
+  styleUrls: ['./training-list.component.css']
 })
-export class TrainingListComponent implements OnInit {
+export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
-  private readonly modalService = inject(ModalFacadeService);
+  private readonly router = inject(Router);
+  private readonly subscriptions = new Subscription();
 
   trainings: Training[] = [];
-  displayedColumns = ['id', 'title', 'type', 'modality', 'scheduled_date', 'status', 'questions_count', 'users_count', 'actions'];
-  pageSizeOptions = [5, 10, 25, 50];
   searchTerm = '';
   sortBy = 'scheduled_date';
   sortDir: 'asc' | 'desc' = 'desc';
@@ -810,9 +60,91 @@ export class TrainingListComponent implements OnInit {
   loading = false;
   message = '';
   errorMessage = '';
+  isParticipantsRoute = false;
+  private tooltipInstances = new Map<HTMLElement, { dispose: () => void }>();
+  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
+
+  // Modal state
+  editingTraining: Training | null = null;
+  activeEditTab: 'general' | 'questions' | 'assign' | 'results' = 'general';
+  questions: Question[] = [];
+  questionsLoading = false;
+  questionsMessage = '';
+  questionsError = '';
+  editingQuestion = false;
+  editingQuestionId: number | null = null;
+  editForm: Partial<Question> = { question_text: '', type: 'open', order: 0 };
+  editingOptions: Partial<QuestionOption>[] = [];
+  editingQuestionMaterials: NonNullable<Question['materials']> = [];
+  questionMaterialFile: File | null = null;
+  questionMaterialType = 'pdf';
+  trainingMaterials: NonNullable<Training['materials']> = [];
+  trainingMaterialFile: File | null = null;
+  trainingMaterialType = 'pdf';
+  loadingEditDetails = false;
+  allParticipants: TrainingParticipant[] = [];
+  assignedParticipants: TrainingParticipant[] = [];
+  selectedIds = new Set<number>();
+  assignMessage = '';
+  assignError = '';
+  assignSaving = false;
+  reviewingParticipant: TrainingParticipant | null = null;
+  reviewData: ParticipantReview | null = null;
+  reviewLoading = false;
+  reviewSaving = false;
+  reviewError = '';
+  reviewObservations = '';
+  reviewScores: Record<number, string> = {};
+  editTitle = '';
+  editDescription = '';
+  editType = 'sst_training';
+  editModality = 'presential';
+  editStatus = 'scheduled';
+  editScheduledDate = '';
+  editDurationHours: number | undefined;
+  editPassingScore = 70;
+  editLocation = '';
+  editInstructor = '';
+  editMandatory = true;
+  saving = false;
 
   ngOnInit(): void {
+    this.updateRouteFlags();
+    this.subscriptions.add(
+      this.router.events
+        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .subscribe(() => this.updateRouteFlags())
+    );
+
     this.loadTrainings();
+  }
+
+  ngAfterViewInit(): void {
+    this.scheduleTooltipRefresh();
+  }
+
+  ngOnDestroy(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+      this.tooltipRefreshTimer = null;
+    }
+
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
+    this.subscriptions.unsubscribe();
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.meta.last_page;
+    const current = this.meta.current_page;
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   loadTrainings(): void {
@@ -834,6 +166,7 @@ export class TrainingListComponent implements OnInit {
           this.trainings = response.data;
           this.meta = response.meta;
           this.summary = response.summary;
+          this.scheduleTooltipRefresh();
         },
         error: () => (this.errorMessage = 'No fue posible cargar las capacitaciones.')
       });
@@ -844,29 +177,601 @@ export class TrainingListComponent implements OnInit {
     this.loadTrainings();
   }
 
-  clearSearch(): void {
-    if (!this.searchTerm) {
+  goToPage(page: number): void {
+    if (page < 1 || page > this.meta.last_page) return;
+    this.meta = { ...this.meta, current_page: page };
+    this.loadTrainings();
+  }
+
+  toggleSort(key: string): void {
+    if (this.sortBy === key) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = key;
+      this.sortDir = 'asc';
+    }
+    this.meta = { ...this.meta, current_page: 1 };
+    this.loadTrainings();
+  }
+
+  getSortIcon(key: string): string {
+    if (this.sortBy !== key) return 'unfold_more';
+    return this.sortDir === 'asc' ? 'north' : 'south';
+  }
+
+  openEditModal(training: Training): void {
+    this.editingTraining = training;
+    this.activeEditTab = 'general';
+    this.loadingEditDetails = true;
+    this.questions = [];
+    this.questionsError = '';
+    this.questionsMessage = '';
+    this.editingQuestion = false;
+    this.editingQuestionId = null;
+    this.editingOptions = [];
+    this.editingQuestionMaterials = [];
+    this.questionMaterialFile = null;
+    this.questionMaterialType = 'pdf';
+    this.allParticipants = [];
+    this.assignedParticipants = [];
+    this.selectedIds.clear();
+    this.assignMessage = '';
+    this.assignError = '';
+    this.reviewingParticipant = null;
+    this.reviewData = null;
+    this.reviewLoading = false;
+    this.reviewSaving = false;
+    this.reviewError = '';
+    this.reviewObservations = '';
+    this.reviewScores = {};
+    this.editTitle = training.title;
+    this.editDescription = training.description || '';
+    this.editType = training.type;
+    this.editModality = training.modality;
+    this.editStatus = training.status;
+    this.editScheduledDate = training.scheduled_date;
+    this.editDurationHours = training.duration_hours;
+    this.editPassingScore = training.passing_score;
+    this.editLocation = training.location || '';
+    this.editInstructor = training.instructor || '';
+    this.editMandatory = training.mandatory;
+    this.errorMessage = '';
+    this.saving = false;
+    this.loadEditTrainingDetails(training.id);
+  }
+
+  closeEditModal(): void {
+    this.editingTraining = null;
+    this.activeEditTab = 'general';
+    this.questions = [];
+    this.questionsLoading = false;
+    this.questionsMessage = '';
+    this.questionsError = '';
+    this.editingQuestion = false;
+    this.editingQuestionId = null;
+    this.editingOptions = [];
+    this.editingQuestionMaterials = [];
+    this.questionMaterialFile = null;
+    this.trainingMaterials = [];
+    this.trainingMaterialFile = null;
+    this.trainingMaterialType = 'pdf';
+    this.loadingEditDetails = false;
+    this.allParticipants = [];
+    this.assignedParticipants = [];
+    this.selectedIds.clear();
+    this.assignMessage = '';
+    this.assignError = '';
+    this.reviewingParticipant = null;
+    this.reviewData = null;
+    this.reviewLoading = false;
+    this.reviewSaving = false;
+    this.reviewError = '';
+    this.reviewObservations = '';
+    this.reviewScores = {};
+  }
+
+  setEditTab(tab: 'general' | 'questions' | 'assign' | 'results'): void {
+    this.activeEditTab = tab;
+    if (!this.editingTraining) {
       return;
     }
 
-    this.searchTerm = '';
-    this.applyFilters();
+    if (tab === 'questions' && this.questions.length === 0 && !this.questionsLoading) {
+      this.loadQuestions();
+    }
+
+    if (tab === 'assign' && this.allParticipants.length === 0 && this.assignedParticipants.length === 0) {
+      this.loadAssignmentData();
+    }
+
+    if (tab === 'results' && !this.reviewLoading) {
+      this.loadResultsData();
+    }
   }
 
-  onPageChange(event: PageEvent): void {
-    this.meta = {
-      ...this.meta,
-      current_page: event.pageIndex + 1,
-      per_page: event.pageSize
+  saveEditModal(): void {
+    if (!this.editingTraining || !this.editTitle) return;
+
+    const payload: Partial<Training> = {
+      title: this.editTitle,
+      description: this.editDescription || undefined,
+      type: this.editType,
+      modality: this.editModality,
+      status: this.editStatus,
+      scheduled_date: this.editScheduledDate,
+      duration_hours: this.editDurationHours || undefined,
+      passing_score: this.editPassingScore,
+      location: this.editLocation || undefined,
+      instructor: this.editInstructor || undefined,
+      mandatory: this.editMandatory,
     };
-    this.loadTrainings();
+
+    this.saving = true;
+    this.errorMessage = '';
+
+    this.loadingService
+      .track(this.trainingService.update(this.editingTraining.id, payload))
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe({
+        next: (response) => {
+          const savedTraining = response.training;
+
+          if (!this.trainingMaterialFile) {
+            this.message = response.message;
+            this.closeEditModal();
+            this.loadTrainings();
+            return;
+          }
+
+          const materialFile = this.trainingMaterialFile;
+          const materialType = this.trainingMaterialType;
+
+          this.loadingService.track(this.trainingService.uploadTrainingMaterial(savedTraining.id, materialFile, materialType))
+            .subscribe({
+              next: (materialRes) => {
+                this.trainingMaterials = [...this.trainingMaterials, materialRes.material];
+                this.trainingMaterialFile = null;
+                this.message = `${response.message} Material cargado correctamente.`;
+                this.closeEditModal();
+                this.loadTrainings();
+              },
+              error: () => {
+                this.errorMessage = 'La capacitacion se guardo, pero no se pudo cargar el material.';
+              }
+            });
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message || 'Error al guardar la capacitacion.';
+        }
+      });
   }
 
-  onSortChange(sort: Sort): void {
-    this.sortBy = sort.active || 'scheduled_date';
-    this.sortDir = (sort.direction || 'desc') as 'asc' | 'desc';
-    this.meta = { ...this.meta, current_page: 1 };
-    this.loadTrainings();
+  loadEditTrainingDetails(trainingId: number): void {
+    this.loadingService.track(this.trainingService.get(trainingId)).subscribe({
+      next: (training) => {
+        this.editingTraining = training;
+        this.trainingMaterials = training.materials ?? [];
+        this.loadingEditDetails = false;
+      },
+      error: () => {
+        this.loadingEditDetails = false;
+        this.errorMessage = 'No se pudo cargar el material de la capacitacion.';
+      }
+    });
+  }
+
+  onTrainingMaterialSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.trainingMaterialFile = input.files?.[0] ?? null;
+  }
+
+  clearTrainingMaterial(): void {
+    this.trainingMaterialFile = null;
+    this.trainingMaterialType = 'pdf';
+  }
+
+  removeTrainingMaterial(material: NonNullable<Training['materials']>[number]): void {
+    if (!this.editingTraining || !window.confirm(`Eliminar ${material.filename}?`)) {
+      return;
+    }
+
+    this.loadingService.track(this.trainingService.deleteTrainingMaterial(this.editingTraining.id, material.id)).subscribe({
+      next: () => {
+        this.trainingMaterials = this.trainingMaterials.filter((item) => item.id !== material.id);
+      },
+      error: () => {
+        this.errorMessage = 'No se pudo eliminar el material.';
+      }
+    });
+  }
+
+  loadQuestions(): void {
+    if (!this.editingTraining) return;
+
+    this.questionsLoading = true;
+    this.questionsError = '';
+
+    this.loadingService.track(this.trainingService.getQuestions(this.editingTraining.id))
+      .pipe(finalize(() => (this.questionsLoading = false)))
+      .subscribe({
+        next: (questions) => {
+          this.questions = questions;
+        },
+        error: () => {
+          this.questionsError = 'Error al cargar preguntas.';
+        }
+      });
+  }
+
+  showAddQuestionForm(): void {
+    this.editingQuestion = true;
+    this.editingQuestionId = null;
+    this.editForm = { question_text: '', type: 'open', order: this.questions.length + 1 };
+    this.editingOptions = [];
+    this.editingQuestionMaterials = [];
+    this.clearQuestionMaterial();
+  }
+
+  editQuestion(q: Question): void {
+    this.editingQuestion = true;
+    this.editingQuestionId = q.id;
+    this.editForm = { question_text: q.question_text, type: q.type, order: q.order };
+    this.editingOptions = (q.options || []).map((o) => ({ ...o }));
+    this.editingQuestionMaterials = q.materials ?? [];
+    this.clearQuestionMaterial();
+  }
+
+  cancelQuestionEdit(): void {
+    this.editingQuestion = false;
+    this.editingQuestionId = null;
+    this.editingOptions = [];
+    this.editingQuestionMaterials = [];
+    this.clearQuestionMaterial();
+  }
+
+  onQuestionTypeChange(): void {
+    if (this.editForm.type === 'multiple_choice') {
+      if (this.editingOptions.length === 0) {
+        this.addOption();
+        this.addOption();
+      }
+      return;
+    }
+
+    if (this.editForm.type === 'yes_no') {
+      this.editingOptions = [
+        { option_text: 'Si', is_correct: false, order: 0 },
+        { option_text: 'No', is_correct: false, order: 1 }
+      ];
+      return;
+    }
+
+    this.editingOptions = [];
+  }
+
+  addOption(): void {
+    this.editingOptions.push({ option_text: '', is_correct: false, order: this.editingOptions.length });
+  }
+
+  setCorrectOption(index: number): void {
+    this.editingOptions.forEach((option, currentIndex) => {
+      option.is_correct = currentIndex === index;
+    });
+  }
+
+  saveQuestion(): void {
+    if (!this.editingTraining) return;
+
+    const normalizedOptions = this.editingOptions
+      .map((opt, index) => ({
+        option_text: (opt.option_text ?? '').trim(),
+        is_correct: !!opt.is_correct,
+        order: opt.order ?? index
+      }))
+      .filter((opt) => opt.option_text !== '');
+
+    if ((this.editForm.type === 'multiple_choice' || this.editForm.type === 'yes_no') && normalizedOptions.length < 2) {
+      this.questionsError = 'La pregunta debe tener al menos 2 opciones.';
+      return;
+    }
+
+    const payload = {
+      question_text: this.editForm.question_text,
+      type: this.editForm.type,
+      order: this.editForm.order ?? 0,
+      options: this.editForm.type === 'multiple_choice' || this.editForm.type === 'yes_no' ? normalizedOptions : []
+    };
+
+    const saveObs = this.editingQuestionId
+      ? this.trainingService.updateQuestion(this.editingQuestionId, payload)
+      : this.trainingService.createQuestion(this.editingTraining.id, payload);
+
+    this.loadingService.track(saveObs).subscribe({
+      next: (res) => {
+        const savedQuestion = res.question;
+
+        if (!this.questionMaterialFile) {
+          this.questionsMessage = res.message;
+          this.cancelQuestionEdit();
+          this.loadQuestions();
+          return;
+        }
+
+        const materialFile = this.questionMaterialFile;
+        const materialType = this.questionMaterialType;
+
+        this.loadingService.track(this.trainingService.uploadQuestionMaterial(savedQuestion.id, materialFile, materialType))
+          .subscribe({
+            next: () => {
+              this.questionsMessage = `${res.message} Material cargado correctamente.`;
+              this.cancelQuestionEdit();
+              this.loadQuestions();
+            },
+            error: () => {
+              this.questionsError = 'La pregunta se guardo, pero no se pudo cargar el material.';
+            }
+          });
+      },
+      error: () => (this.questionsError = 'Error al guardar la pregunta.')
+    });
+  }
+
+  onQuestionMaterialSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.questionMaterialFile = input.files?.[0] ?? null;
+  }
+
+  clearQuestionMaterial(): void {
+    this.questionMaterialFile = null;
+    this.questionMaterialType = 'pdf';
+  }
+
+  removeQuestionMaterial(material: NonNullable<Question['materials']>[number]): void {
+    if (!this.editingQuestionId || !window.confirm(`Eliminar ${material.filename}?`)) {
+      return;
+    }
+
+    this.loadingService.track(this.trainingService.deleteQuestionMaterial(this.editingQuestionId, material.id)).subscribe({
+      next: () => {
+        this.editingQuestionMaterials = this.editingQuestionMaterials.filter((item) => item.id !== material.id);
+      },
+      error: () => {
+        this.questionsError = 'No se pudo eliminar el material.';
+      }
+    });
+  }
+
+  deleteQuestion(q: Question): void {
+    if (!window.confirm('Eliminar esta pregunta?')) return;
+
+    this.loadingService.track(this.trainingService.deleteQuestion(q.id)).subscribe({
+      next: () => {
+        this.questionsMessage = 'Pregunta eliminada.';
+        this.loadQuestions();
+      },
+      error: () => (this.questionsError = 'Error al eliminar.')
+    });
+  }
+
+  loadAssignmentData(): void {
+    if (!this.editingTraining) return;
+
+    this.assignError = '';
+
+    this.loadingService.track(this.trainingService.getAssignedParticipants(this.editingTraining.id)).subscribe({
+      next: (participants) => {
+        this.assignedParticipants = participants;
+      }
+    });
+
+    this.loadingService.track(this.trainingService.getAllParticipants()).subscribe({
+      next: (participants) => {
+        this.allParticipants = participants;
+      }
+    });
+  }
+
+  get availableParticipants(): TrainingParticipant[] {
+    const assignedIds = new Set(this.assignedParticipants.map((participant) => participant.id));
+    return this.allParticipants.filter((participant) => !assignedIds.has(participant.id));
+  }
+
+  toggleParticipant(participantId: number): void {
+    if (this.selectedIds.has(participantId)) {
+      this.selectedIds.delete(participantId);
+      return;
+    }
+
+    this.selectedIds.add(participantId);
+  }
+
+  assignParticipants(): void {
+    if (!this.editingTraining || this.selectedIds.size === 0) return;
+
+    this.assignSaving = true;
+    this.assignError = '';
+
+    this.loadingService.track(
+      this.trainingService.assignParticipants(this.editingTraining.id, [...this.selectedIds])
+    )
+      .pipe(finalize(() => (this.assignSaving = false)))
+      .subscribe({
+        next: (res) => {
+          this.assignMessage = res.message;
+          this.selectedIds.clear();
+          this.loadAssignmentData();
+        },
+        error: () => {
+          this.assignError = 'Error al asignar participantes.';
+        }
+      });
+  }
+
+  removeParticipant(participantId: number): void {
+    if (!this.editingTraining) return;
+
+    this.loadingService.track(this.trainingService.removeParticipant(this.editingTraining.id, participantId)).subscribe({
+      next: (res) => {
+        this.assignMessage = res.message;
+        this.assignedParticipants = this.assignedParticipants.filter((participant) => participant.id !== participantId);
+      },
+      error: () => {
+        this.assignError = 'Error al remover participante.';
+      }
+    });
+  }
+
+  loadResultsData(): void {
+    if (!this.editingTraining) return;
+
+    this.loadingService.track(this.trainingService.get(this.editingTraining.id)).subscribe({
+      next: (training) => {
+        this.editingTraining = training;
+      }
+    });
+  }
+
+  resetAttempt(participant: TrainingParticipant): void {
+    if (!this.editingTraining) return;
+
+    const name = participant.full_name || (participant as any).name || 'este participante';
+    const confirmed = window.confirm(
+      `Reabrir el intento de ${name}? Esto borrara sus respuestas y le permitira volver a presentar la prueba.`
+    );
+
+    if (!confirmed) return;
+
+    this.loadingService.track(this.trainingService.resetParticipantAttempt(this.editingTraining.id, participant.id)).subscribe({
+      next: () => this.loadResultsData()
+    });
+  }
+
+  openReview(participant: TrainingParticipant): void {
+    if (!this.editingTraining) return;
+
+    this.reviewingParticipant = participant;
+    this.reviewData = null;
+    this.reviewError = '';
+    this.reviewLoading = true;
+    this.reviewObservations = participant.pivot.observations ?? '';
+    this.reviewScores = {};
+
+    this.loadingService.track(this.trainingService.getParticipantReview(this.editingTraining.id, participant.id)).subscribe({
+      next: (review) => {
+        this.reviewData = review;
+        this.reviewObservations = review.pivot.observations ?? '';
+        this.reviewScores = review.questions.reduce((acc, question) => {
+          if (question.type === 'open') {
+            acc[question.id] = question.answer?.score === null || question.answer?.score === undefined
+              ? ''
+              : String(question.answer.score);
+          }
+
+          return acc;
+        }, {} as Record<number, string>);
+        this.reviewLoading = false;
+      },
+      error: (err) => {
+        this.reviewError = err.error?.message || 'No se pudo cargar la revision.';
+        this.reviewLoading = false;
+      }
+    });
+  }
+
+  saveReview(): void {
+    if (!this.editingTraining || !this.reviewingParticipant) return;
+
+    const openQuestions = this.reviewData?.questions.filter((question) => question.type === 'open') ?? [];
+
+    try {
+      const answers = openQuestions.map((question) => {
+        const rawScore = String(this.reviewScores[question.id] ?? '').trim();
+
+        if (rawScore !== '' && Number.isNaN(Number(rawScore))) {
+          throw new Error(`El puntaje de la pregunta ${question.order} no es valido.`);
+        }
+
+        return {
+          question_id: question.id,
+          score: rawScore === '' ? null : Number(rawScore),
+        };
+      });
+
+      this.reviewSaving = true;
+      this.reviewError = '';
+
+      const payload = {
+        answers,
+        observations: this.reviewObservations.trim() === '' ? null : this.reviewObservations.trim(),
+      };
+
+      this.loadingService.track(
+        this.trainingService.updateParticipantReview(this.editingTraining.id, this.reviewingParticipant.id, payload)
+      ).subscribe({
+        next: () => {
+          this.reviewSaving = false;
+          this.loadResultsData();
+          this.openReview(this.reviewingParticipant!);
+        },
+        error: (err) => {
+          this.reviewSaving = false;
+          this.reviewError = err.error?.message || 'No se pudo guardar la revision.';
+        }
+      });
+    } catch (error) {
+      this.reviewSaving = false;
+      this.reviewError = error instanceof Error ? error.message : 'No se pudo validar la calificacion.';
+    }
+  }
+
+  closeReview(): void {
+    this.reviewingParticipant = null;
+    this.reviewData = null;
+    this.reviewError = '';
+    this.reviewObservations = '';
+    this.reviewScores = {};
+  }
+
+  questionTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      open: 'Abierta',
+      multiple_choice: 'Opcion multiple',
+      yes_no: 'Si / No',
+    };
+
+    return labels[type] || type;
+  }
+
+  hasOpenQuestions(): boolean {
+    return this.reviewData?.questions.some((question) => question.type === 'open') ?? false;
+  }
+
+  hasPendingOpenQuestions(): boolean {
+    return this.reviewData?.questions.some(
+      (question) =>
+        question.type === 'open' &&
+        (question.answer?.score === null || question.answer?.score === undefined)
+    ) ?? false;
+  }
+
+  participantPassed(participant: TrainingParticipant): boolean {
+    const passed = participant.pivot.passed;
+
+    if (passed !== null && passed !== undefined) {
+      return passed;
+    }
+
+    return (participant.pivot.score ?? 0) >= (this.editingTraining?.passing_score ?? 70);
+  }
+
+  presentedLabel(participant: TrainingParticipant): 'Sí' | 'No' | 'Pendiente' {
+    const attended = (participant.pivot as any).attended;
+
+    if (attended === null || attended === undefined) {
+      return 'Pendiente';
+    }
+
+    return attended === true || attended === 1 || attended === '1' ? 'Sí' : 'No';
   }
 
   remove(training: Training): void {
@@ -910,46 +815,51 @@ export class TrainingListComponent implements OnInit {
     return labels[status] || status;
   }
 
-  statusClass(status: string): string {
+  statusBadgeClass(status: string): string {
     const classes: Record<string, string> = {
-      scheduled: 'status-scheduled',
-      completed: 'status-completed',
-      cancelled: 'status-cancelled'
+      scheduled: 'training-status-badge training-status-scheduled',
+      completed: 'training-status-badge training-status-completed',
+      cancelled: 'training-status-badge training-status-cancelled'
     };
-    return classes[status] || 'status-scheduled';
+    return classes[status] || 'training-status-badge training-status-neutral';
   }
 
-  countByStatus(status: string): number {
-    const trainings = Array.isArray(this.trainings) ? this.trainings : [];
-    return trainings.filter((training) => training.status === status).length;
+  private updateRouteFlags(): void {
+    const currentUrl = this.router.url.split('?')[0].split('#')[0].replace(/\/$/, '');
+    this.isParticipantsRoute = currentUrl === '/trainings/participants';
   }
 
-  openEditModal(training: Training): void {
-    const modalRef = this.modalService.open(TrainingFormComponent);
+  private refreshTooltips(): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
 
-    modalRef.componentInstance.trainingIdInput = training.id;
-    modalRef.componentInstance.saved.subscribe(() => this.loadTrainings());
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
+
+    document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]').forEach((element) => {
+      const tooltip = new Tooltip(element, {
+        trigger: 'hover focus',
+        placement: element.getAttribute('data-bs-placement') || 'top',
+        container: 'body'
+      });
+
+      this.tooltipInstances.set(element, tooltip);
+    });
   }
 
-  openQuestionsModal(training: Training): void {
-    const modalRef = this.modalService.open(TrainingQuestionsComponent);
+  private scheduleTooltipRefresh(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
 
-    modalRef.componentInstance.trainingIdInput = training.id;
-    modalRef.componentInstance.trainingTitleInput = training.title;
-    modalRef.componentInstance.saved.subscribe(() => this.loadTrainings());
-  }
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+    }
 
-  openAssignModal(training: Training): void {
-    const modalRef = this.modalService.open(TrainingAssignComponent);
-
-    modalRef.componentInstance.trainingIdInput = training.id;
-    modalRef.componentInstance.trainingTitleInput = training.title;
-    modalRef.componentInstance.saved.subscribe(() => this.loadTrainings());
-  }
-
-  openResultsModal(training: Training): void {
-    const modalRef = this.modalService.open(TrainingResultsComponent);
-
-    modalRef.componentInstance.trainingIdInput = training.id;
+    this.tooltipRefreshTimer = window.setTimeout(() => {
+      this.tooltipRefreshTimer = null;
+      this.refreshTooltips();
+    }, 0);
   }
 }

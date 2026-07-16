@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleMenuItem, RoleService } from '../../core/services/role.service';
 
 @Component({
   selector: 'app-role-menu-permissions',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './role-menu-permissions.component.html'
 })
 export class RoleMenuPermissionsComponent implements OnInit {

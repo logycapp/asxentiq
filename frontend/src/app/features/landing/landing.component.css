@@ -1,17 +1,6 @@
 /* ─── TOKENS ─────────────────────────────────────────────── */
   :host {
-    --navy:    #04294F;
-    --cyan:    #0298E2;
-    --green:   #24CFA0;
-    --slate:   #0457BF;
-    --teal:    #0DACA2;
     --brand-gradient: linear-gradient(90deg, #0457BF 0%, #0298E2 45%, #0DACA2 75%, #24CFA0 100%);
-    --mid:     #1E3160;
-    --light:   #E8F6FB;
-    --muted:   #6B8099;
-    --white:   #FFFFFF;
-    --off:     #F4F8FB;
-    --border:  #D0E6F0;
 
     --ff-display: 'Playfair Display', Georgia, serif;
     --ff-body:    'Inter', system-ui, sans-serif;
@@ -19,6 +8,30 @@
 
     --r: 6px;
     --r-lg: 12px;
+
+    /* Landing color palette (self-contained) */
+    --navy: #04294F;
+    --cyan: #0298E2;
+    --green: #24CFA0;
+    --slate: #0457BF;
+    --teal: #0DACA2;
+    --mid: #1E3160;
+    --light: #E8F6FB;
+    --white: #FFFFFF;
+    --off: #F4F8FB;
+    --border: #D0E6F0;
+    --muted: #6B8099;
+
+    /* Cover section palette */
+    --pc-navy-950: #03142A;
+    --pc-navy-900: #041C36;
+    --pc-navy-800: #0A2A4A;
+    --pc-azure: #2E86EB;
+    --pc-azure-light: #5FA8F5;
+    --pc-mint: #2BC48A;
+    --pc-ice: #C7DAEC;
+    --pc-white: #FFFFFF;
+    --pc-line: rgba(95, 168, 245, .14);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -733,21 +746,6 @@
     /* Reveal: shorter travel distance so content settles faster on small screens */
     .reveal { transform: translateY(18px); }
   }
-
-/* ===== PORTADA NUEVA (scoped .cover) ===== */
-:host{
-  --pc-navy-950:#03142A;
-  --pc-navy-900:#041C36;
-  --pc-navy-800:#0A2A4A;
-  --pc-azure:#2E86EB;
-  --pc-azure-light:#5FA8F5;
-  --pc-mint:#2BC48A;
-  --pc-ice:#C7DAEC;
-  --pc-white:#FFFFFF;
-  --pc-line:rgba(95,168,245,.14);
-}
-
-
 
 .cover{
   font-family:'IBM Plex Sans',system-ui,sans-serif;

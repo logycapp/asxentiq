@@ -12,12 +12,12 @@
     <a routerLink="/roles" class="btn btn-outline-primary">Volver al listado</a>
   </div>
 
-  <ngb-alert *ngIf="message" type="success" [dismissible]="true" (closed)="message = ''" class="mb-3">
+  <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
     {{ message }}
-  </ngb-alert>
-  <ngb-alert *ngIf="errorMessage" type="danger" [dismissible]="true" (closed)="errorMessage = ''" class="mb-3">
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
     {{ errorMessage }}
-  </ngb-alert>
+  </div>
 
   <div *ngIf="loading" class="text-secondary py-4">Cargando permisos...</div>
 

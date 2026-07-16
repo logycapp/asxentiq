@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html class="theme-light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asxentiq | Guía de Estilos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="theme.css"/>
+</head>
+<body class="styles-page">
+<main class="styles-shell">
+<section class="styles-hero glass-card">
+<div class="styles-hero-copy">
+<p class="styles-eyebrow">Design System</p>
+<h1>Asxentiq Style Guide</h1>
+<p class="styles-lead">Colores, tipografías, componentes y estados visuales usados en la plataforma para mantener consistencia entre login y dashboard.</p>
+</div>
+<div class="styles-hero-actions">
+<a class="primary-btn" href="login.html">Ir al login</a>
+<a class="alt-btn" href="dashboard.html">Ir al dashboard</a>
+</div>
+</section>
+
+<section class="styles-grid">
+<article class="styles-card glass-card">
+<h2>Paleta</h2>
+<div class="swatch-grid">
+<div class="swatch"><span class="swatch-chip bg"></span><strong>Background</strong><small>#131315</small></div>
+<div class="swatch"><span class="swatch-chip surface"></span><strong>Surface</strong><small>#1f1f21</small></div>
+<div class="swatch"><span class="swatch-chip primary"></span><strong>Primary</strong><small>#0c2671</small></div>
+<div class="swatch"><span class="swatch-chip accent"></span><strong>Accent</strong><small>#2f6bff</small></div>
+<div class="swatch"><span class="swatch-chip green"></span><strong>Success</strong><small>#24cfa0</small></div>
+<div class="swatch"><span class="swatch-chip error"></span><strong>Error</strong><small>#ffb4ab</small></div>
+</div>
+</article>
+
+<article class="styles-card glass-card">
+<h2>Tipografía</h2>
+<div class="type-samples">
+<div>
+<p class="type-label">Display</p>
+<p class="type-display">Inter Display</p>
+</div>
+<div>
+<p class="type-label">Body</p>
+<p class="type-body">Inter Body, usado en textos principales y navegación.</p>
+</div>
+<div>
+<p class="type-label">Mono</p>
+<p class="type-mono">JetBrains Mono 123:45 UTC</p>
+</div>
+</div>
+</article>
+
+<article class="styles-card glass-card">
+<h2>Componentes</h2>
+<div class="component-stack">
+<button class="primary-btn" type="button">Primary Button</button>
+<button class="alt-btn" type="button">Secondary Button</button>
+<div class="style-chip-row">
+<span class="style-chip">Active</span>
+<span class="style-chip muted">Muted</span>
+<span class="style-chip success">Success</span>
+</div>
+<div class="style-input-demo">
+<label class="field">
+<span>Example input</span>
+<input type="text" value="Asxentiq"/>
+</label>
+</div>
+</div>
+</article>
+
+<article class="styles-card glass-card styles-full">
+<h2>Notas de uso</h2>
+<ul class="styles-notes">
+<li>Usar fondo oscuro para superficies principales y azul profundo para headers y sidebars.</li>
+<li>Reservar el azul brillante para acciones activas, enlaces y estados de énfasis.</li>
+<li>Mantener tipografía Inter para UI y JetBrains Mono para tiempos, códigos y métricas.</li>
+<li>Evitar mezclar componentes de login y dashboard sin clase de página específica.</li>
+</ul>
+</article>
+</section>
+</main>
+</body>
+</html>
+

@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NgbCollapseModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { MenuItem } from '../../core/services/menu.service';
 
 @Component({
   selector: 'app-layout-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, NgbCollapseModule, NgbDropdownModule],
-  templateUrl: './layout-navbar.component.html'
+  imports: [CommonModule, RouterLink, RouterLinkActive],
+  templateUrl: './layout-navbar.component.html',
+  styleUrls: []
 })
 export class LayoutNavbarComponent {
   @Input() userName = 'Usuario';

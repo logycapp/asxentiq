@@ -13,6 +13,43 @@ INSTALL_PACKAGES=()
 PHP_REQUEST_LIMIT="128M"
 PHP_MEMORY_LIMIT="256M"
 
+free_port() {
+  local port="$1"
+  local pids=()
+
+  if command -v lsof >/dev/null 2>&1; then
+    mapfile -t pids < <(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)
+  elif command -v ss >/dev/null 2>&1; then
+    mapfile -t pids < <(
+      ss -lptn "sport = :$port" 2>/dev/null \
+        | grep -o 'pid=[0-9]*' \
+        | cut -d= -f2 \
+        | sort -u \
+        || true
+    )
+  elif command -v fuser >/dev/null 2>&1; then
+    mapfile -t pids < <(fuser "$port"/tcp 2>/dev/null | tr ' ' '\n' | grep -E '^[0-9]+$' || true)
+  fi
+
+  if [[ ${#pids[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  echo "Liberando puerto ${port} (PID(s): ${pids[*]})"
+
+  for pid in "${pids[@]}"; do
+    kill "$pid" 2>/dev/null || true
+  done
+
+  sleep 1
+
+  for pid in "${pids[@]}"; do
+    if kill -0 "$pid" 2>/dev/null; then
+      kill -9 "$pid" 2>/dev/null || true
+    fi
+  done
+}
+
 cleanup() {
   echo
   echo "Deteniendo servicios..."
@@ -203,6 +240,7 @@ install_frontend_dependencies() {
 }
 
 start_backend() {
+  free_port 8000
   echo "Iniciando Laravel API en http://localhost:8000"
   (
     cd "$BACKEND_DIR"
@@ -217,6 +255,7 @@ start_backend() {
 }
 
 start_frontend() {
+  free_port 4200
   echo "Iniciando Angular en http://localhost:4200"
   (
     cd "$FRONTEND_DIR"

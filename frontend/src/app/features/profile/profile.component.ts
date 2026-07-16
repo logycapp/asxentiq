@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -11,9 +11,8 @@ import { ProfileService } from '../../core/services/profile.service';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgbAlertModule],
-  templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);

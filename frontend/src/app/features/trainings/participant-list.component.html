@@ -1,0 +1,236 @@
+<app-page-header
+  title="Participantes"
+  subtitle="Gestiona las personas que se asignan a capacitaciones y mantiene su seguimiento en un solo lugar."
+  [showDateFilter]="false"
+/>
+
+<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
+  {{ message }}
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+  {{ errorMessage }}
+</div>
+
+<div class="card glass-card border-0 rounded-4 p-4 mb-4">
+  <div class="row g-3 align-items-center justify-content-between">
+    <div class="col-12 col-xl-auto">
+      <button class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button" (click)="openCreateModal()">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Nuevo participante
+      </button>
+    </div>
+    <div class="col-12 col-xl-auto">
+      <div style="width: min(260px, 100%);">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
+            <span class="material-symbols-outlined text-[18px]">search</span>
+          </span>
+          <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="participantSearch" type="search" placeholder="Buscar por cedula, nombre, email..." (input)="onSearch($event)" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">Cargando participantes...</div>
+</div>
+
+<div *ngIf="!loading" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 dashboard-table">
+      <thead class="participant-table-head">
+        <tr class="border-bottom border-white/10">
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">#</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('document_number')">Cedula <span class="material-symbols-outlined sort-icon">{{ getSortIcon('document_number') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('full_name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('full_name') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('email')">Email <span class="material-symbols-outlined sort-icon">{{ getSortIcon('email') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('phone')">Telefono <span class="material-symbols-outlined sort-icon">{{ getSortIcon('phone') }}</span></button>
+          </th>
+          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end participant-table-th">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let participant of paginatedParticipants; let i = index">
+          <td class="ps-4 py-3 font-mono text-on-surface">{{ participant.id }}</td>
+          <td class="py-3">
+            <span class="text-on-surface fw-semibold">{{ participant.document_number }}</span>
+          </td>
+          <td class="py-3">
+            <span class="text-on-surface fw-semibold">{{ participant.full_name }}</span>
+          </td>
+          <td class="py-3 text-on-surface-variant">{{ participant.email || '-' }}</td>
+          <td class="py-3 text-on-surface-variant">{{ participant.phone || '-' }}</td>
+          <td class="pe-4 py-3 text-end">
+            <div class="dashboard-action-group">
+              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" (click)="openEditModal(participant)">
+                <span class="material-symbols-outlined">edit</span><span>Editar</span>
+              </button>
+              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(participant)" title="Eliminar" aria-label="Eliminar">
+                <span class="material-symbols-outlined">delete</span><span>Eliminar</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="!loading && filteredParticipants.length === 0" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">No se encontraron participantes.</div>
+</div>
+
+<div *ngIf="!loading && filteredParticipants.length > 0" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+  <p class="text-on-surface-variant font-label-sm mb-0">
+    Mostrando {{ startRecord }}-{{ endRecord }} de {{ filteredParticipants.length }} participantes
+  </p>
+  <nav aria-label="Paginacion de participantes">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera">
+          <span class="material-symbols-outlined text-[16px]">first_page</span>
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior">
+          <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+        </button>
+      </li>
+      <li class="page-item" *ngFor="let p of [].constructor(totalPages); let idx = index">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="page === idx + 1" (click)="onPageChange(idx + 1)">{{ idx + 1 }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente">
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima">
+          <span class="material-symbols-outlined text-[16px]">last_page</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- Excel import/export card -->
+<div *ngIf="!loading" class="card glass-card border-0 rounded-4 p-4 mb-4">
+  <div class="row g-3 align-items-center justify-content-between">
+    <div class="col-12 col-xl-auto">
+      <div class="d-flex align-items-center gap-2">
+        <span class="material-symbols-outlined text-on-surface-variant">description</span>
+        <span class="text-on-surface fw-semibold">Carga masiva</span>
+        <span class="text-on-surface-variant font-label-sm">descarga el Excel, completalo y vuelve a subirlo para crear o actualizar participantes.</span>
+      </div>
+    </div>
+    <div class="col-12 col-xl-auto">
+      <div class="d-flex gap-2 flex-wrap">
+        <input #participantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
+        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="participantsFileInput.click()" [disabled]="importing">
+          <span class="material-symbols-outlined text-[16px]">upload_file</span>
+          {{ importing ? 'Cargando...' : 'Cargar Excel' }}
+        </button>
+        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="downloadReport()" [disabled]="exporting">
+          <span class="material-symbols-outlined text-[16px]">download</span>
+          {{ exporting ? 'Generando...' : 'Descargar Excel' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-modal-shell
+  *ngIf="creating"
+  kicker="Participantes"
+  title="Nuevo participante"
+  subtitle="Registra un nuevo participante en el sistema."
+  headerVariant="info"
+  footerVariant="info"
+  size="md"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  primaryLabel="Crear participante"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="savingCreate"
+  [primaryLoading]="savingCreate"
+  (secondaryRequested)="closeCreateModal()"
+  (primaryRequested)="saveCreateModal()"
+  (closeRequested)="closeCreateModal()"
+>
+  <div modal-body>
+    <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="createDocumentNumber">Cedula</label>
+      <input id="createDocumentNumber" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createDocumentNumber" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="createFullName">Nombre completo</label>
+      <input id="createFullName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createFullName" />
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="createEmail">Email</label>
+        <input id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" />
+      </div>
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="createPhone">Telefono</label>
+        <input id="createPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createPhone" />
+      </div>
+    </div>
+  </div>
+</app-modal-shell>
+
+<app-modal-shell
+  *ngIf="editingParticipant"
+  kicker="Participantes"
+  title="Editar participante"
+  [subtitle]="'Actualiza los datos de ' + editingParticipant.full_name + '.'"
+  headerVariant="warning"
+  footerVariant="warning"
+  size="md"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  primaryLabel="Guardar cambios"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="saving"
+  [primaryLoading]="saving"
+  (secondaryRequested)="closeEditModal()"
+  (primaryRequested)="saveEditModal()"
+  (closeRequested)="closeEditModal()"
+>
+  <div modal-body>
+    <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalDocumentNumber">Cedula</label>
+      <input id="modalDocumentNumber" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editDocumentNumber" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalFullName">Nombre completo</label>
+      <input id="modalFullName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editFullName" />
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="modalEmail">Email</label>
+        <input id="modalEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="editEmail" />
+      </div>
+      <div class="col-6">
+        <label class="form-label small text-on-surface-variant" for="modalPhone">Telefono</label>
+        <input id="modalPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editPhone" />
+      </div>
+    </div>
+  </div>
+</app-modal-shell>

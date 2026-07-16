@@ -1,10 +1,125 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="utf-8">
   <title>Asxentiq | Plataforma ARL</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Tailwind CSS (needed for dashboard template classes) -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Tailwind Configuration matching template/dashboard.html -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#abc8f7",
+            "outline": "#8e9097",
+            "on-error-container": "#ffdad6",
+            "on-secondary": "#103157",
+            "inverse-surface": "#e4e2e4",
+            "secondary": "#abc8f7",
+            "on-background": "#e4e2e4",
+            "tertiary-container": "#260c02",
+            "background": "#131315",
+            "surface-variant": "#343537",
+            "on-tertiary-container": "#a17460",
+            "tertiary-fixed": "#ffdbcc",
+            "secondary-fixed": "#d4e3ff",
+            "surface": "#131315",
+            "on-secondary-fixed": "#001c3a",
+            "surface-container-lowest": "#0d0e10",
+            "outline-variant": "#44474d",
+            "on-tertiary-fixed-variant": "#633e2d",
+            "on-secondary-fixed-variant": "#2a486f",
+            "surface-container-highest": "#343537",
+            "on-surface-variant": "#c5c6cd",
+            "inverse-primary": "#505f79",
+            "error": "#ffb4ab",
+            "surface-dim": "#131315",
+            "error-container": "#93000a",
+            "on-secondary-container": "#9dbae8",
+            "surface-container": "#1f1f21",
+            "on-surface": "#e4e2e4",
+            "primary": "#b7c7e5",
+            "tertiary": "#f0bba4",
+            "on-primary-fixed-variant": "#384760",
+            "primary-container": "#03142a",
+            "on-primary": "#213148",
+            "on-tertiary": "#492819",
+            "primary-fixed-dim": "#b7c7e5",
+            "surface-container-low": "#1b1b1d",
+            "surface-bright": "#39393b",
+            "inverse-on-surface": "#303032",
+            "on-error": "#690005",
+            "on-primary-fixed": "#0b1c32",
+            "tertiary-fixed-dim": "#f0bba4",
+            "surface-tint": "#b7c7e5",
+            "surface-container-high": "#292a2c",
+            "primary-fixed": "#d5e3ff",
+            "on-tertiary-fixed": "#301406",
+            "on-primary-container": "#6f7f9a",
+            "secondary-container": "#2d4a72",
+            "chart-cyan": "#0298E2",
+            "chart-green": "#24CFA0",
+            "card-navy": "#04294F"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "xs": "4px",
+            "lg": "24px",
+            "base": "4px",
+            "md": "16px",
+            "sm": "8px",
+            "gutter": "24px",
+            "xl": "32px",
+            "margin-mobile": "16px",
+            "margin-desktop": "40px"
+          },
+          "fontFamily": {
+            "body-sm": ["Inter", "sans-serif"],
+            "display-lg": ["Inter", "sans-serif"],
+            "label-md": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "headline-lg": ["Inter", "sans-serif"],
+            "body-lg": ["Inter", "sans-serif"],
+            "headline-md": ["Inter", "sans-serif"],
+            "label-sm": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          "fontSize": {
+            "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+          }
+        },
+      },
+    }
+  </script>
+
+  <!-- Google Fonts + Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap JS (needed for dropdowns, collapse, etc.) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
   <app-root></app-root>

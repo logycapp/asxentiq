@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\GeminiAudioIndexService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +31,7 @@ class TestController extends Controller
                 'mime_type' => $file?->getMimeType(),
                 'size_bytes' => $file?->getSize(),
                 'path' => $path,
-                'url' => $path ? Storage::disk('public')->url($path) : null,
+                'url' => $path ? $this->publicStorageApiUrl($path) : null,
             ],
         ]);
     }
@@ -41,7 +42,7 @@ class TestController extends Controller
             'video_path' => ['required', 'string', 'max:1024'],
         ]);
 
-        $relativePath = $this->normalizePublicVideoPath($data['video_path']);
+        $relativePath = $this->normalizePublicPath($data['video_path'], 'test-videos/');
 
         if (! $relativePath) {
             return response()->json([
@@ -57,7 +58,9 @@ class TestController extends Controller
             ], 404);
         }
 
-        if (! $this->ffmpegAvailable()) {
+        $ffmpegBinary = $this->resolveFfmpegBinary();
+
+        if ($ffmpegBinary === null) {
             return response()->json([
                 'message' => 'No se encontro ffmpeg en el servidor.',
             ], 500);
@@ -72,7 +75,7 @@ class TestController extends Controller
 
         $command = sprintf(
             '%s -y -i %s -vn -acodec libmp3lame -q:a 2 %s 2>&1',
-            escapeshellcmd(env('FFMPEG_PATH', 'ffmpeg')),
+            escapeshellcmd($ffmpegBinary),
             escapeshellarg($sourcePath),
             escapeshellarg($outputPath),
         );
@@ -92,17 +95,48 @@ class TestController extends Controller
             'message' => 'Audio extraido correctamente.',
             'source' => [
                 'video_path' => $relativePath,
-                'video_url' => Storage::disk('public')->url($relativePath),
+                'video_url' => $this->publicStorageApiUrl($relativePath),
             ],
             'audio' => [
                 'original_name' => $baseName.'.mp3',
                 'path' => $outputRelativePath,
-                'url' => Storage::disk('public')->url($outputRelativePath),
+                'url' => $this->publicStorageApiUrl($outputRelativePath),
             ],
         ]);
     }
 
-    private function normalizePublicVideoPath(string $path): ?string
+    public function analyzeAudio(Request $request, GeminiAudioIndexService $audioIndexService): JsonResponse
+    {
+        $data = $request->validate([
+            'audio_path' => ['required', 'string', 'max:1024'],
+        ]);
+
+        $relativePath = $this->normalizePublicPath($data['audio_path'], 'test-audio/');
+
+        if (! $relativePath) {
+            return response()->json([
+                'message' => 'La ruta del audio no es valida.',
+            ], 422);
+        }
+
+        if (! Storage::disk('public')->exists($relativePath)) {
+            return response()->json([
+                'message' => 'El audio no existe en el servidor.',
+            ], 404);
+        }
+
+        $analysis = $audioIndexService->analyzeFromAudio($relativePath);
+
+        if (! $analysis) {
+            return response()->json([
+                'message' => 'No fue posible analizar el audio.',
+            ], 502);
+        }
+
+        return response()->json($analysis);
+    }
+
+    private function normalizePublicPath(string $path, string $requiredPrefix): ?string
     {
         $path = trim($path);
 
@@ -117,6 +151,10 @@ class TestController extends Controller
 
         $path = ltrim($path, '/');
 
+        if (str_starts_with($path, 'api/storage/')) {
+            $path = substr($path, strlen('api/storage/'));
+        }
+
         if (str_starts_with($path, 'storage/')) {
             $path = substr($path, strlen('storage/'));
         }
@@ -125,21 +163,36 @@ class TestController extends Controller
             return null;
         }
 
-        if (! str_starts_with($path, 'test-videos/')) {
+        if (! str_starts_with($path, $requiredPrefix)) {
             return null;
         }
 
         return $path;
     }
 
-    private function ffmpegAvailable(): bool
+    private function resolveFfmpegBinary(): ?string
     {
-        $binary = escapeshellcmd(env('FFMPEG_PATH', 'ffmpeg'));
-        $output = [];
-        $exitCode = 0;
+        $candidates = array_values(array_filter(array_unique(array_merge(
+            [trim((string) env('FFMPEG_PATH', ''))],
+            ['/usr/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/opt/homebrew/bin/ffmpeg', 'ffmpeg'],
+        ))));
 
-        exec($binary.' -version 2>&1', $output, $exitCode);
+        foreach ($candidates as $binary) {
+            $output = [];
+            $exitCode = 0;
 
-        return $exitCode === 0;
+            exec(escapeshellcmd($binary).' -version 2>&1', $output, $exitCode);
+
+            if ($exitCode === 0) {
+                return $binary;
+            }
+        }
+
+        return null;
+    }
+
+    private function publicStorageApiUrl(string $path): string
+    {
+        return '/api/storage/'.ltrim($path, '/');
     }
 }

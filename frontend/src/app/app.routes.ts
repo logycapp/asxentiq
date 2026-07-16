@@ -24,6 +24,7 @@ import { PublicDashboardComponent } from './features/public-trainings/public-das
 import { PublicExamComponent } from './features/public-trainings/public-exam.component';
 import { PublicLoginComponent } from './features/public-trainings/public-login.component';
 import { PublicResultComponent } from './features/public-trainings/public-result.component';
+import { VideoIndexActionComponent } from './features/video-indexaction/video-indexaction.component';
 import { UserFormComponent } from './features/users/user-form.component';
 import { UserListComponent } from './features/users/user-list.component';
 import { UserMenuPermissionsComponent } from './features/users/user-menu-permissions.component';
@@ -64,13 +65,21 @@ export const appRoutes: Routes = [
       { path: 'users/create', component: UserFormComponent, data: { pageTitle: 'Usuarios' } },
       { path: 'users/:id/edit', component: UserFormComponent, data: { pageTitle: 'Usuarios' } },
       { path: 'users/:id/menu-permissions', component: UserMenuPermissionsComponent, data: { pageTitle: 'Usuarios' } },
-      { path: 'trainings', component: TrainingListComponent, data: { pageTitle: 'Capacitaciones' } },
-      { path: 'trainings/create', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
-      { path: 'trainings/participants', component: ParticipantListComponent, data: { pageTitle: 'Capacitaciones' } },
-      { path: 'trainings/:id/edit', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
-      { path: 'trainings/:id/questions', component: TrainingQuestionsComponent, data: { pageTitle: 'Capacitaciones' } },
-      { path: 'trainings/:id/assign', component: TrainingAssignComponent, data: { pageTitle: 'Capacitaciones' } },
-      { path: 'trainings/:id/results', component: TrainingResultsComponent, data: { pageTitle: 'Capacitaciones' } }
+      { path: 'video_indexaction', component: VideoIndexActionComponent, data: { pageTitle: 'Video Index Action' } },
+      { path: 'video-indexaction', redirectTo: 'video_indexaction', pathMatch: 'full' },
+      {
+        path: 'trainings',
+        component: TrainingListComponent,
+        data: { pageTitle: 'Capacitaciones' },
+        children: [
+          { path: 'create', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
+          { path: 'participants', component: ParticipantListComponent, data: { pageTitle: 'Capacitaciones' } },
+          { path: ':id/edit', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
+          { path: ':id/questions', component: TrainingQuestionsComponent, data: { pageTitle: 'Capacitaciones' } },
+          { path: ':id/assign', component: TrainingAssignComponent, data: { pageTitle: 'Capacitaciones' } },
+          { path: ':id/results', component: TrainingResultsComponent, data: { pageTitle: 'Capacitaciones' } }
+        ]
+      },
     ]
   },
   // Public training routes (no auth guard, uses document_number)

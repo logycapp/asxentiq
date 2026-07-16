@@ -1,0 +1,73 @@
+<div
+  class="fixed right-0 top-0 h-full w-[320px] glass-card backdrop-blur-xl border-l border-white/10 z-[70] overflow-hidden transition-all duration-500"
+  id="profile-panel"
+  [class.translate-x-full]="!open"
+  [class.invisible]="!open"
+  [class.opacity-0]="!open"
+>
+  <div class="p-4 p-lg-5 border-bottom border-white/5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <h2 class="font-headline-md text-on-surface tracking-tight">Account</h2>
+    <button
+      class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95"
+      type="button"
+      (click)="close.emit()"
+    >
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="p-xl flex flex-col items-center text-center">
+    <div class="relative mb-lg">
+      <div class="w-24 h-24 rounded-full border-2 border-primary/30 p-1 glow-accent-cyan relative">
+        <img
+          alt="Shaun Park"
+          class="w-full h-full rounded-full object-cover"
+          [src]="userPhotoUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDXXpP7CN_DohNV4M-jSm4rVi_X5bvwyt5wcewq4ozXOCgCFua0WWDIVtiOqG6c7pgeLmdkZME7U0R7oSU8MseLxMTc4gJ_YRbxwViI_OeN_s7lkvOaXsuKQr-m3D3H65Rn3v8m-761ZGXoCXCryvMdLMci4xsaJE0pMNisediP1OZNgQqWt9t2v4YWGSmzOyAfzMQsTShoxZSLSdQnQshLLwZAzHldAwChRh2N7h7lXn-cuC_q5wgTeJGMplhdH5dIzfi6PnC5LNE'"
+        />
+        <div class="absolute bottom-0 right-0 w-6 h-6 bg-chart-green border-4 border-surface-container rounded-full status-pulse"></div>
+      </div>
+    </div>
+    <h3 class="font-headline-md text-on-surface font-bold tracking-tight">{{ userName || 'Shaun Park' }}</h3>
+    <p class="text-on-surface-variant text-body-sm font-mono opacity-70">{{ userEmail || 'shaun@mail.com' }}</p>
+    <div class="flex items-center gap-2 mt-lg bg-white/5 px-4 py-2 rounded-full border border-white/5">
+      <div class="flex -space-x-2">
+        <div class="w-6 h-6 rounded-full bg-chart-cyan/20 flex items-center justify-center text-[10px] font-bold text-chart-cyan border border-white/10">SP</div>
+        <div class="w-6 h-6 rounded-full bg-chart-green/20 flex items-center justify-center text-[10px] font-bold text-chart-green border border-white/10">DS</div>
+      </div>
+      <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1">Active Projects</span>
+    </div>
+  </div>
+  <div class="flex-1 overflow-y-auto px-md space-y-1">
+    <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+      <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">person</span>
+      <span class="font-label-md tracking-wide">Profile Settings</span>
+    </a>
+    <a class="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+      <div class="flex items-center gap-md">
+        <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">folder</span>
+        <span class="font-label-md tracking-wide">Projects</span>
+      </div>
+      <span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">03</span>
+    </a>
+    <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+      <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">card_membership</span>
+      <span class="font-label-md tracking-wide">Subscription</span>
+    </a>
+    <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+      <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">security</span>
+      <span class="font-label-md tracking-wide">Security & Privacy</span>
+    </a>
+    <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+      <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">settings</span>
+      <span class="font-label-md tracking-wide">Account Preferences</span>
+    </a>
+  </div>
+  <div class="p-lg border-t border-white/5 bg-white/2">
+    <button
+      class="w-full py-3 bg-error-container/10 hover:bg-error-container/20 text-error rounded-lg font-label-md transition-all border border-error/20 flex items-center justify-center gap-2"
+      type="button"
+    >
+      <span class="material-symbols-outlined text-[18px]">logout</span>
+      <span>Sign Out</span>
+    </button>
+  </div>
+</div>

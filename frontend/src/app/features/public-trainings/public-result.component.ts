@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingService, TrainingResult } from '../../core/services/training.service';
 
 @Component({
   selector: 'app-public-result',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="container py-4">
       <div *ngIf="loading" class="text-center py-5">

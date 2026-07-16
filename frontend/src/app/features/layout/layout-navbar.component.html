@@ -1,7 +1,7 @@
 <header class="app-navbar surface-card" [class.app-navbar--profile-only]="!showBrand && !showMenu && !showToggle">
   <nav class="navbar navbar-expand-lg px-3 px-lg-4 py-3">
     <a *ngIf="showBrand" class="navbar-brand d-flex align-items-center gap-3" routerLink="/dashboard" (click)="requestClose()">
-      <img src="assets/logos/logo2.png" alt="Asxentiq" class="brand-logo">
+      <img src="assets/logos/logo_light.png" alt="Asxentiq" class="brand-logo">
     </a>
 
     <button
@@ -18,9 +18,9 @@
 
     <div
       *ngIf="showMenu"
-      class="collapse navbar-collapse"
-      [class.mobile-drawer-open]="!isCollapsed"
-      [ngbCollapse]="isCollapsed">
+      class="navbar-collapse"
+      [class.show]="!isCollapsed"
+      [class.collapse]="isCollapsed">
       <div class="mobile-drawer-profile d-lg-none">
         <div class="mobile-drawer-profile__avatar">
           <img *ngIf="userPhotoUrl; else drawerInitialAvatar" class="avatar-photo avatar-photo--drawer" [src]="userPhotoUrl" [alt]="userName">
@@ -38,18 +38,19 @@
         <span class="text-secondary small">Cargando menu...</span>
       </div>
 
-      <ul *ngIf="!menuLoading && menuItems.length" class="navbar-nav mx-lg-auto align-items-lg-center gap-lg-1">
+      <ul *ngIf="!menuLoading && menuItems.length" class="navbar-nav mx-lg-auto align-items-lg-center gap-lg-1 app-menu-list">
         <ng-container *ngFor="let item of menuItems; trackBy: trackByRoute">
-          <li class="nav-item dropdown" *ngIf="hasChildren(item)" ngbDropdown>
+          <li class="nav-item dropdown" *ngIf="hasChildren(item)">
             <a
-              class="nav-link dropdown-toggle"
-              ngbDropdownToggle
+              class="nav-link nav-link--menu dropdown-toggle"
+              data-bs-toggle="dropdown"
               role="button"
+              aria-expanded="false"
             >
               {{ item.label }}
             </a>
-            <div ngbDropdownMenu class="dropdown-menu shadow border-0">
-              <a
+            <ul class="dropdown-menu shadow border-0">
+              <li><a
                 class="dropdown-item fw-semibold"
                 [routerLink]="item.route"
                 routerLinkActive="active"
@@ -57,10 +58,9 @@
                 (click)="requestClose()"
               >
                 {{ item.label }}
-              </a>
-              <div class="dropdown-divider"></div>
-              <a
-                *ngFor="let child of item.children"
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li *ngFor="let child of item.children"><a
                 class="dropdown-item"
                 [routerLink]="child.route"
                 routerLinkActive="active"
@@ -68,12 +68,12 @@
                 (click)="requestClose()"
               >
                 {{ child.label }}
-              </a>
-            </div>
+              </a></li>
+            </ul>
           </li>
           <li class="nav-item" *ngIf="!hasChildren(item)">
             <a
-              class="nav-link"
+              class="nav-link nav-link--menu"
               [routerLink]="item.route"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: item.exact }"
@@ -90,25 +90,25 @@
       </div>
 
       <div *ngIf="showProfile" class="navbar-actions">
-        <div ngbDropdown class="dropdown profile-dropdown" placement="bottom-end">
-          <button type="button" class="btn btn-light dropdown-toggle d-flex align-items-center gap-2" ngbDropdownToggle>
+        <div class="dropdown profile-dropdown">
+          <button type="button" class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 profile-trigger" data-bs-toggle="dropdown" aria-expanded="false">
             <img *ngIf="userPhotoUrl; else initialAvatar" class="avatar-photo" [src]="userPhotoUrl" [alt]="userName">
             <ng-template #initialAvatar>
               <span class="avatar-dot">{{ userInitial }}</span>
             </ng-template>
             <span class="d-none d-md-inline">Perfil</span>
           </button>
-          <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end shadow border-0">
-            <div class="dropdown-header px-3 py-2">
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+            <li class="dropdown-header px-3 py-2">
               <div class="fw-semibold">{{ userName }}</div>
               <small class="text-secondary">{{ userEmail }}</small>
-            </div>
-            <div class="dropdown-divider"></div>
-            <a *ngIf="showAdminAccess" ngbDropdownItem routerLink="/admin" (click)="requestClose()">Administracion</a>
-            <a ngbDropdownItem routerLink="/profile" (click)="requestClose()">Ajustes del perfil</a>
-            <div class="dropdown-divider"></div>
-            <button ngbDropdownItem (click)="requestLogout()">Cerrar sesion</button>
-          </div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li *ngIf="showAdminAccess"><a class="dropdown-item" routerLink="/admin" (click)="requestClose()">Administracion</a></li>
+            <li><a class="dropdown-item" routerLink="/profile" (click)="requestClose()">Ajustes del perfil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item" (click)="requestLogout()">Cerrar sesion</button></li>
+          </ul>
         </div>
       </div>
 
@@ -120,25 +120,25 @@
     </div>
 
     <div *ngIf="!showMenu" class="navbar-actions">
-      <div ngbDropdown class="dropdown profile-dropdown" placement="bottom-end">
-        <button type="button" class="btn btn-light dropdown-toggle d-flex align-items-center gap-2" ngbDropdownToggle>
+      <div class="dropdown profile-dropdown">
+        <button type="button" class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 profile-trigger" data-bs-toggle="dropdown" aria-expanded="false">
           <img *ngIf="userPhotoUrl; else soloInitialAvatar" class="avatar-photo" [src]="userPhotoUrl" [alt]="userName">
           <ng-template #soloInitialAvatar>
             <span class="avatar-dot">{{ userInitial }}</span>
           </ng-template>
           <span class="d-none d-md-inline">Perfil</span>
         </button>
-        <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end shadow border-0">
-          <div class="dropdown-header px-3 py-2">
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+          <li class="dropdown-header px-3 py-2">
             <div class="fw-semibold">{{ userName }}</div>
             <small class="text-secondary">{{ userEmail }}</small>
-          </div>
-          <div class="dropdown-divider"></div>
-          <a *ngIf="showAdminAccess" ngbDropdownItem routerLink="/admin">Administracion</a>
-          <a ngbDropdownItem routerLink="/profile">Ajustes del perfil</a>
-          <div class="dropdown-divider"></div>
-          <button ngbDropdownItem (click)="requestLogout()">Cerrar sesion</button>
-        </div>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li *ngIf="showAdminAccess"><a class="dropdown-item" routerLink="/admin">Administracion</a></li>
+          <li><a class="dropdown-item" routerLink="/profile">Ajustes del perfil</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item" (click)="requestLogout()">Cerrar sesion</button></li>
+        </ul>
       </div>
     </div>
   </nav>

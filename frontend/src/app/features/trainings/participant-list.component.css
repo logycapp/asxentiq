@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+
+:host .participant-table-head th {
+  font-size: 0.72rem;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+:host .participant-table-head .sortable-th {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+:host .participant-sort-trigger {
+  width: 100%;
+  min-height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  padding: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+:host .participant-sort-trigger .sort-icon {
+  font-size: 18px !important;
+  flex: 0 0 auto;
+}
+
+:host-context(.light) .participant-table-head th {
+  color: #334155;
+}
+
+:host-context(.light) .participant-sort-trigger {
+  color: #1e293b;
+}
+
+:host-context(.light) .participant-sort-trigger:hover,
+:host-context(.light) .participant-sort-trigger:focus-visible {
+  color: #0457bf;
+}

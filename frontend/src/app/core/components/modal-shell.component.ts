@@ -6,223 +6,120 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="app-modal-shell">
-      <header class="app-modal-shell__header" [ngClass]="'header-' + headerVariant">
-        <div class="app-modal-shell__copy">
-          <p *ngIf="kicker" class="app-modal-shell__kicker mb-1">{{ kicker }}</p>
-          <h4 class="app-modal-shell__title mb-1">{{ title }}</h4>
-          <p *ngIf="subtitle" class="app-modal-shell__subtitle mb-0">{{ subtitle }}</p>
+    <div
+      class="modal fade show d-block position-fixed top-0 start-0 w-100 h-100 overflow-hidden"
+      style="background: rgba(0,0,0,0.5); z-index: 1055;"
+      tabindex="-1"
+      role="dialog"
+    >
+      <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-shell-dialog" [ngClass]="sizeClass" role="document">
+        <div class="modal-content glass-card border-0 rounded-4 modal-shell-content">
+          <div class="modal-themed-header" [ngClass]="'modal-themed-' + headerVariant">
+            <div>
+              <p *ngIf="kicker" class="font-label-md text-on-surface-variant opacity-75 mb-1">{{ kicker }}</p>
+              <h5 class="modal-title font-headline-lg mb-1">{{ title }}</h5>
+              <p *ngIf="subtitle" class="modal-subtitle font-label-md mb-0">{{ subtitle }}</p>
+            </div>
+
+            <ng-content select="[modal-header-actions]"></ng-content>
+
+            <button
+              *ngIf="showHeaderClose"
+              type="button"
+              class="modal-close-btn p-2 transition-colors active:scale-95"
+              aria-label="Cerrar modal"
+              (click)="closeRequested.emit()"
+            >
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <ng-content select="[modal-body]"></ng-content>
+          </div>
+
+          <div class="modal-footer border-white/10" *ngIf="showFooter">
+            <div class="d-flex w-100 justify-content-between align-items-center gap-3">
+              <div>
+                <ng-content select="[modal-footer-start]"></ng-content>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <ng-content select="[modal-footer-actions]"></ng-content>
+
+                <button
+                  *ngIf="showSecondaryButton"
+                  type="button"
+                  class="btn btn-outline-light fw-semibold"
+                  (click)="secondaryRequested.emit()"
+                >
+                  {{ secondaryLabel }}
+                </button>
+
+                <button
+                  *ngIf="showPrimaryButton"
+                  type="button"
+                  class="btn fw-semibold d-inline-flex align-items-center gap-1"
+                  [ngClass]="primaryButtonClass"
+                  [disabled]="primaryDisabled"
+                  (click)="primaryRequested.emit()"
+                >
+                  <span *ngIf="primaryLoading" class="spinner-border spinner-border-sm"></span>
+                  {{ primaryLabel }}
+                </button>
+
+                <button
+                  *ngIf="showFooterClose"
+                  type="button"
+                  class="btn btn-outline-light fw-semibold"
+                  (click)="closeRequested.emit()"
+                >
+                  {{ closeLabel }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="app-modal-shell__header-actions">
-          <ng-content select="[modal-header-actions]"></ng-content>
-        </div>
-
-        <button
-          *ngIf="showHeaderClose"
-          type="button"
-          class="app-modal-shell__close"
-          aria-label="Cerrar modal"
-          (click)="closeRequested.emit()"
-        >
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </header>
-
-      <section class="app-modal-shell__body">
-        <ng-content select="[modal-body]"></ng-content>
-      </section>
-
-      <footer class="app-modal-shell__footer" *ngIf="showFooter">
-        <div class="app-modal-shell__footer-start">
-          <ng-content select="[modal-footer-start]"></ng-content>
-        </div>
-
-        <div class="app-modal-shell__footer-actions">
-          <ng-content select="[modal-footer-actions]"></ng-content>
-        </div>
-
-        <button
-          *ngIf="showFooterClose"
-          type="button"
-          class="btn btn-light app-modal-shell__footer-close"
-          (click)="closeRequested.emit()"
-        >
-          {{ closeLabel }}
-        </button>
-      </footer>
+      </div>
     </div>
-  `,
+  `
+  ,
   styles: [`
     :host {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
+      display: block;
     }
 
-    .app-modal-shell {
+    .modal-shell-dialog {
+      width: min(100%, var(--modal-shell-width, 1140px));
+      height: calc(100vh - 2rem);
+      max-height: calc(100vh - 2rem);
+      margin: 1rem auto;
+      padding: 0 0.75rem;
+    }
+
+    .modal-shell-content {
       display: flex;
       flex-direction: column;
-      width: 100%;
       height: 100%;
-      min-height: 0;
-      flex: 1 1 auto;
+      max-height: 100%;
       overflow: hidden;
-      border-radius: 1.5rem;
-      background: linear-gradient(180deg, #f7fbff 0%, #eef4fb 100%);
     }
 
-    .app-modal-shell__header {
-      position: relative;
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      padding: 1.25rem 3.5rem 1.25rem 1.4rem;
-      color: #fff;
-    }
-
-    .header-primary {
-      background: linear-gradient(135deg, #1462ff, #1dbbd6);
-    }
-
-    .header-success {
-      background: linear-gradient(135deg, #28a745, #42d483);
-    }
-
-    .header-danger {
-      background: linear-gradient(135deg, #dc3545, #e0737e);
-    }
-
-    .header-warning {
-      background: linear-gradient(135deg, #b8860b, #d4a017);
-    }
-
-    .header-info {
-      background: linear-gradient(135deg, #17a2b8, #5bc0de);
-    }
-
-    .header-dark {
-      background: linear-gradient(135deg, #343a40, #565e66);
-    }
-
-    .header-secondary {
-      background: linear-gradient(135deg, #6c757d, #929ba3);
-    }
-
-    .app-modal-shell__copy {
+    .modal-shell-content .modal-body {
       flex: 1 1 auto;
-      min-width: 0;
+      overflow: auto;
     }
 
-    .app-modal-shell__kicker {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      opacity: 0.82;
-    }
-
-    .app-modal-shell__title {
-      font-size: 1.35rem;
-      font-weight: 800;
-    }
-
-    .app-modal-shell__subtitle {
-      opacity: 0.88;
-    }
-
-    .app-modal-shell__header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-left: auto;
-    }
-
-    .app-modal-shell__close {
-      width: 2.25rem;
-      height: 2.25rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.18);
-      color: #fff;
-      font-size: 1rem;
-      transition: transform 0.2s ease, background 0.2s ease;
-      flex: 0 0 auto;
-    }
-
-    .app-modal-shell__close:hover {
-      transform: scale(1.04);
-      background: rgba(255, 255, 255, 0.28);
-    }
-
-    .app-modal-shell__body {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 1.35rem;
-      background: rgba(255, 255, 255, 0.96);
-      scrollbar-gutter: stable;
-    }
-
-    .app-modal-shell__footer {
+    .modal-shell-content .modal-footer {
       flex-shrink: 0;
-      margin-top: auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.35rem 1.35rem;
-      border-top: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(255, 255, 255, 0.96);
     }
 
-    .app-modal-shell__footer-start,
-    .app-modal-shell__footer-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      min-width: 0;
-    }
-
-    .app-modal-shell__footer-actions {
-      margin-left: auto;
-      justify-content: flex-end;
-      flex: 1 1 auto;
-    }
-
-    .app-modal-shell__footer-close {
-      flex: 0 0 auto;
-      margin-left: auto;
-    }
-
-    .app-modal-shell__footer .btn {
-      min-width: 110px;
-    }
-
-    @media (max-width: 576px) {
-      .app-modal-shell__header,
-      .app-modal-shell__footer {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .app-modal-shell__header {
-        padding-right: 1.4rem;
-      }
-
-      .app-modal-shell__header-actions,
-      .app-modal-shell__footer-actions {
-        margin-left: 0;
-      }
-
-      .app-modal-shell__footer .btn {
-        width: 100%;
+    @media (max-width: 767.98px) {
+      .modal-shell-dialog {
+        height: calc(100vh - 1rem);
+        max-height: calc(100vh - 1rem);
+        margin: 0.5rem auto;
+        padding: 0 0.5rem;
       }
     }
   `]
@@ -232,9 +129,37 @@ export class ModalShellComponent {
   @Input() title = '';
   @Input() subtitle = '';
   @Input() closeLabel = 'Cerrar';
+  @Input() primaryLabel = 'Guardar';
+  @Input() secondaryLabel = 'Cancelar';
   @Input() showHeaderClose = true;
   @Input() showFooterClose = true;
   @Input() showFooter = true;
   @Input() headerVariant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' = 'primary';
+  @Input() footerVariant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' | '' = '';
+  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'lg';
+  @Input() showPrimaryButton = false;
+  @Input() showSecondaryButton = false;
+  @Input() primaryDisabled = false;
+  @Input() primaryLoading = false;
   @Output() closeRequested = new EventEmitter<void>();
+  @Output() primaryRequested = new EventEmitter<void>();
+  @Output() secondaryRequested = new EventEmitter<void>();
+
+  get sizeClass(): string {
+    switch (this.size) {
+      case 'sm':
+        return 'modal-sm';
+      case 'xl':
+        return 'modal-xl';
+      case 'lg':
+        return 'modal-lg';
+      default:
+        return '';
+    }
+  }
+
+  get primaryButtonClass(): string {
+    const variant = this.footerVariant || this.headerVariant;
+    return `btn-${variant}`;
+  }
 }

@@ -1,0 +1,110 @@
+:host {
+  display: block;
+}
+
+:host .training-table-head th {
+  font-size: 0.72rem;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+:host .training-table-head .sortable-th {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+:host .training-sort-trigger {
+  width: 100%;
+  min-height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  padding: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+:host .training-sort-trigger .sort-icon {
+  font-size: 18px !important;
+  flex: 0 0 auto;
+}
+
+:host .training-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 5.25rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+:host .training-status-scheduled {
+  background: rgba(250, 204, 21, 0.14);
+  border-color: rgba(250, 204, 21, 0.32);
+  color: #b45309;
+}
+
+:host .training-status-completed {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.32);
+  color: #15803d;
+}
+
+:host .training-status-cancelled {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.32);
+  color: #b91c1c;
+}
+
+:host .training-status-neutral {
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #475569;
+}
+
+:host-context(.light) .training-table-head th {
+  color: #334155;
+}
+
+:host-context(.light) .training-sort-trigger {
+  color: #1e293b;
+}
+
+:host-context(.light) .training-sort-trigger:hover,
+:host-context(.light) .training-sort-trigger:focus-visible {
+  color: #0457bf;
+}
+
+:host-context(.light) .training-status-scheduled {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.28);
+  color: #92400e;
+}
+
+:host-context(.light) .training-status-completed {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.28);
+  color: #166534;
+}
+
+:host-context(.light) .training-status-cancelled {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #b91c1c;
+}
+
+:host-context(.light) .training-status-neutral {
+  background: rgba(100, 116, 139, 0.12);
+  border-color: rgba(100, 116, 139, 0.22);
+  color: #475569;
+}

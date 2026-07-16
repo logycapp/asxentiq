@@ -3,7 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleService } from '../../core/services/role.service';
 import { UserPayload, UserService } from '../../core/services/user.service';
@@ -11,7 +11,7 @@ import { UserPayload, UserService } from '../../core/services/user.service';
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './user-form.component.html',
   styles: []
 })

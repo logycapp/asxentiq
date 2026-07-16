@@ -3,14 +3,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingService, Training, SubmitAnswer } from '../../core/services/training.service';
 
 @Component({
   selector: 'app-public-exam',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="container py-4">
       <div *ngIf="loading" class="text-center py-5">

@@ -1,57 +1,136 @@
-<section class="surface-card p-4 p-xl-5">
-  <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 mb-4">
-    <div>
-      <span class="soft-badge mb-3">Roles</span>
-      <h1 class="h2 mb-2">Administracion de roles</h1>
-      <p class="text-secondary mb-0">Crea, edita y elimina los roles que luego se usan en usuarios y en el menu dinamico.</p>
+<app-page-header
+  title="Administracion de roles"
+  subtitle="Crea, edita y elimina los roles que luego se usan en usuarios y en el menu dinamico."
+  [showDateFilter]="false"
+/>
+
+<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
+  {{ message }}
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
+  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
+  {{ errorMessage }}
+</div>
+
+<div class="card glass-card border-0 rounded-4 p-4 mb-4">
+  <div class="row g-3 align-items-center justify-content-between">
+    <div class="col-12 col-xl-auto">
+      <a routerLink="/roles/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Nuevo rol
+      </a>
     </div>
-
-    <a routerLink="/roles/create" class="btn btn-primary">Nuevo rol</a>
+    <div class="col-12 col-xl-auto">
+      <div style="width: min(100%, 360px);">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
+            <span class="material-symbols-outlined text-[18px]">search</span>
+          </span>
+          <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="roleSearch" type="search" placeholder="Buscar rol..." (input)="onSearch($event)" />
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
-  <ngb-alert *ngIf="message" type="success" [dismissible]="true" (closed)="message = ''" class="mb-3">
-    {{ message }}
-  </ngb-alert>
-  <ngb-alert *ngIf="errorMessage" type="danger" [dismissible]="true" (closed)="errorMessage = ''" class="mb-3">
-    {{ errorMessage }}
-  </ngb-alert>
+<div *ngIf="loading" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">Cargando roles...</div>
+</div>
 
-  <div *ngIf="loading" class="text-secondary py-4">Cargando roles...</div>
-
-  <div *ngIf="!loading" class="table-responsive">
-    <table class="table align-middle">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Slug</th>
-          <th>Descripcion</th>
-          <th>Sistema</th>
-          <th class="d-none d-lg-table-cell">Actualizado</th>
-          <th class="text-end">Acciones</th>
+<div *ngIf="!loading" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 dashboard-table">
+      <thead class="role-table-head">
+        <tr class="border-bottom border-white/10">
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">#</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('slug')">Slug <span class="material-symbols-outlined sort-icon">{{ getSortIcon('slug') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">Descripcion</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">Sistema</th>
+          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end role-table-th">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let role of roles">
-          <td>{{ role.id }}</td>
-          <td class="fw-semibold">{{ role.name }}</td>
-          <td><code>{{ role.slug }}</code></td>
-          <td>{{ role.description || '-' }}</td>
-          <td>
-            <span class="badge rounded-pill" [class.text-bg-primary]="role.is_system" [class.text-bg-secondary]="!role.is_system">
-              {{ role.is_system ? 'Si' : 'No' }}
-            </span>
+        <tr *ngFor="let role of filteredRoles; let i = index">
+          <td class="ps-4 py-3 font-mono text-on-surface">{{ role.id }}</td>
+          <td class="py-3">
+            <span class="text-on-surface fw-semibold">{{ role.name }}</span>
           </td>
-          <td class="d-none d-lg-table-cell text-secondary">{{ role.updated_at | date: 'medium' }}</td>
-          <td>
-            <div class="d-flex gap-2 justify-content-end flex-wrap">
-              <a class="btn btn-sm btn-outline-primary" [routerLink]="['/roles', role.id, 'edit']">Editar</a>
-              <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/roles', role.id, 'menu-permissions']">Permisos del menu</a>
-              <button class="btn btn-sm btn-outline-danger" type="button" (click)="remove(role)">Eliminar</button>
+          <td class="py-3"><code class="text-on-surface-variant">{{ role.slug }}</code></td>
+          <td class="py-3 text-on-surface-variant">{{ role.description || '-' }}</td>
+          <td class="py-3">
+            <span *ngIf="role.is_system" class="badge rounded-pill role-system-badge role-system-yes">Si</span>
+            <span *ngIf="!role.is_system" class="badge rounded-pill role-system-badge role-system-no">No</span>
+          </td>
+          <td class="pe-4 py-3 text-end">
+            <div class="dashboard-action-group">
+              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" (click)="openEditModal(role)">
+                <span class="material-symbols-outlined">edit</span><span>Editar</span>
+              </button>
+              <a class="btn btn-sm btn-outline-info fw-semibold" [routerLink]="['/roles', role.id, 'menu-permissions']" title="Permisos del menu" aria-label="Permisos del menu">
+                <span class="material-symbols-outlined">settings</span><span>Menu</span>
+              </a>
+              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(role)" title="Eliminar" aria-label="Eliminar">
+                <span class="material-symbols-outlined">delete</span><span>Eliminar</span>
+              </button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-</section>
+</div>
+
+<div *ngIf="!loading && filteredRoles.length === 0" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">No se encontraron roles.</div>
+</div>
+
+<div *ngIf="!loading" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ filteredRoles.length }} de {{ roles.length }} roles</p>
+</div>
+
+<app-modal-shell
+  *ngIf="editingRole"
+  kicker="Administracion"
+  title="Editar rol"
+  [subtitle]="'Actualiza los datos de ' + editingRole.name + '.'"
+  headerVariant="warning"
+  footerVariant="warning"
+  size="md"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  primaryLabel="Guardar cambios"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="saving"
+  [primaryLoading]="saving"
+  (secondaryRequested)="closeEditModal()"
+  (primaryRequested)="saveEdit()"
+  (closeRequested)="closeEditModal()"
+>
+  <div modal-body>
+    <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>
+      <input id="modalName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalSlug">Slug</label>
+      <input id="modalSlug" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editSlug" placeholder="admin, user, editor" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label small text-on-surface-variant" for="modalDescription">Descripcion</label>
+      <textarea id="modalDescription" class="form-control bg-transparent border-white/10 text-on-surface" rows="2" [(ngModel)]="editDescription"></textarea>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <input class="form-check-input m-0" type="checkbox" id="modalIsSystem" [(ngModel)]="editIsSystem" />
+      <label class="form-check-label fw-semibold small" for="modalIsSystem">{{ editIsSystem ? 'Rol del sistema' : 'Rol normal' }}</label>
+    </div>
+  </div>
+</app-modal-shell>

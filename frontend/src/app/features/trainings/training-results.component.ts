@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import {
@@ -21,82 +21,73 @@ import {
       kicker="Seguimiento"
       [title]="'Resultados: ' + (training?.title || trainingTitle)"
       subtitle="Revisa asistencia, puntajes y estado final sin salir del modulo."
-      [showHeaderClose]="isModal"
-      [showFooterClose]="isModal"
-      [showFooter]="isModal"
+      [showHeaderClose]="true"
+      [showFooterClose]="false"
+      [showFooter]="true"
       headerVariant="success"
       (closeRequested)="closeModal()"
     >
       <div modal-body>
-        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-          <a *ngIf="!isModal" routerLink="/trainings" class="btn btn-outline-secondary btn-sm">&larr; Capacitaciones</a>
-          <span *ngIf="isModal" class="training-results-modal-hint">Vista rapida en modal</span>
-        </div>
-
         <div *ngIf="!training" class="text-center py-4">
-          <div class="spinner-border text-primary" role="status"></div>
-          <div class="mt-3 text-muted">Cargando resultados...</div>
+          <div class="text-on-surface-variant font-body-md">Cargando resultados...</div>
         </div>
 
-        <div *ngIf="training && (!training.participants || training.participants.length === 0)" class="training-results-empty">
-          No hay participantes asignados a esta capacitacion.
+        <div *ngIf="training && (!training.participants || training.participants.length === 0)" class="text-center py-4">
+          <div class="text-on-surface-variant font-body-md">No hay participantes asignados a esta capacitacion.</div>
         </div>
 
         <div *ngIf="(training?.participants?.length ?? 0) > 0" class="table-responsive">
-          <table class="table table-hover align-middle mb-0 training-results-table">
+          <table class="table table-hover align-middle mb-0 dashboard-table">
             <thead>
-              <tr>
-                <th>Participante</th>
-                <th>Cedula</th>
-                <th>Presentó</th>
-                <th>Puntaje</th>
-                <th>Resultado</th>
-                <th>Completado</th>
-                <th>Acciones</th>
+              <tr class="border-bottom border-white/10">
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Participante</th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Cedula</th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Presento</th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Puntaje</th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Resultado</th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Completado</th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase text-end">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of training?.participants ?? []">
-                <td class="fw-semibold">{{ $any(p).full_name || $any(p).name }}</td>
-                <td>{{ p.document_number }}</td>
-                <td>
-                  <span *ngIf="presentedLabel(p) === 'Sí'" class="badge bg-success">Sí</span>
-                  <span *ngIf="presentedLabel(p) === 'No'" class="badge bg-danger">No</span>
-                  <span *ngIf="presentedLabel(p) === 'Pendiente'" class="badge bg-secondary">Pendiente</span>
+              <tr *ngFor="let p of training?.participants ?? []" class="border-bottom border-white/5">
+                <td class="py-3 fw-semibold text-on-surface">{{ $any(p).full_name || $any(p).name }}</td>
+                <td class="py-3 text-on-surface-variant">{{ p.document_number }}</td>
+                <td class="py-3">
+                  <span *ngIf="presentedLabel(p) === 'Sí'" class="badge rounded-pill bg-chart-green/10 text-chart-green border border-chart-green/20 px-3 py-2">Si</span>
+                  <span *ngIf="presentedLabel(p) === 'No'" class="badge rounded-pill bg-error-container/20 text-error border border-error/20 px-3 py-2">No</span>
+                  <span *ngIf="presentedLabel(p) === 'Pendiente'" class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-2">Pendiente</span>
                 </td>
-                <td>{{ $any(p.pivot).score !== null ? $any(p.pivot).score + '%' : '-' }}</td>
-                <td>
-                  <span
-                    *ngIf="$any(p.pivot).score !== null"
-                    [class]="'badge ' + (participantPassed(p) ? 'bg-success' : 'bg-danger')"
-                  >
+                <td class="py-3 text-on-surface-variant">{{ $any(p.pivot).score !== null ? $any(p.pivot).score + '%' : '-' }}</td>
+                <td class="py-3">
+                  <span *ngIf="$any(p.pivot).score !== null" class="badge rounded-pill px-3 py-2" [ngClass]="participantPassed(p) ? 'bg-chart-green/10 text-chart-green border border-chart-green/20' : 'bg-error-container/20 text-error border border-error/20'">
                     {{ participantPassed(p) ? 'Aprobado' : 'No Aprobado' }}
                   </span>
-                  <span *ngIf="$any(p.pivot).score === null" class="badge bg-warning text-dark">Pendiente de revision</span>
+                  <span *ngIf="$any(p.pivot).score === null" class="badge rounded-pill bg-chart-yellow/10 text-chart-yellow border border-chart-yellow/20 px-3 py-2">Pendiente de revision</span>
                 </td>
-                <td>{{ $any(p.pivot).completed_at ? ($any(p.pivot).completed_at | date:'short') : '-' }}</td>
-                <td>
-                  <div class="d-flex flex-wrap gap-2 justify-content-end">
+                <td class="py-3 text-on-surface-variant">{{ $any(p.pivot).completed_at ? ($any(p.pivot).completed_at | date:'short') : '-' }}</td>
+                <td class="py-3 text-end">
+                  <div class="dashboard-action-group">
                     <button
                       *ngIf="$any(p.pivot).completed_at"
                       type="button"
-                      class="btn btn-sm btn-outline-primary"
+                      class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1"
                       (click)="openReview(p)"
                     >
-                      Revisar prueba
+                      <span class="material-symbols-outlined text-[16px]">rate_review</span>Revisar
                     </button>
                     <button
                       *ngIf="$any(p.pivot).completed_at"
                       type="button"
-                      class="btn btn-sm btn-outline-warning"
+                      class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1"
                       (click)="resetAttempt(p)"
                     >
-                      Reabrir intento
+                      <span class="material-symbols-outlined text-[16px]">replay</span>Reabrir
                     </button>
-                    <span *ngIf="!$any(p.pivot).completed_at">-</span>
+                    <span *ngIf="!$any(p.pivot).completed_at" class="text-on-surface-variant font-label-sm">-</span>
                   </div>
-                  <div *ngIf="$any(p.pivot).completed_at" class="text-end mt-1">
-                    <small class="text-muted">
+                  <div *ngIf="$any(p.pivot).completed_at" class="mt-1">
+                    <small class="text-on-surface-variant font-label-sm">
                       Evaluado con: {{ training?.passing_score ?? 70 }}%
                     </small>
                   </div>
@@ -106,37 +97,37 @@ import {
           </table>
         </div>
 
-        <div *ngIf="reviewingParticipant" class="card mt-4">
-          <div class="card-header d-flex justify-content-between align-items-center gap-2">
+        <div *ngIf="reviewingParticipant" class="border border-white/10 rounded-3 p-3 mt-4">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
             <div>
-              <strong>Revision de prueba</strong>
-              <div class="small text-muted">
+              <h6 class="text-on-surface mb-1">Revision de prueba</h6>
+              <div class="font-label-sm text-on-surface-variant">
                 {{ reviewingParticipant.full_name }} | {{ reviewingParticipant.document_number }}
               </div>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeReview()">
-              Cerrar
+            <button type="button" class="btn btn-outline-light fw-semibold btn-sm d-inline-flex align-items-center gap-1" (click)="closeReview()">
+              <span class="material-symbols-outlined text-[16px]">close</span>Cerrar
             </button>
           </div>
 
-          <div class="card-body">
+          <div>
             <div *ngIf="reviewLoading" class="text-center py-4">
-              <div class="spinner-border text-primary" role="status"></div>
-              <div class="mt-2 text-muted">Cargando revision...</div>
+              <div class="text-on-surface-variant font-body-md">Cargando revision...</div>
             </div>
 
             <div *ngIf="reviewError" class="alert alert-danger">{{ reviewError }}</div>
 
             <div *ngIf="reviewData && !reviewLoading">
-              <div class="alert alert-info py-2">
+              <div class="alert alert-info py-2 font-label-sm">
+                <span class="material-symbols-outlined text-[16px] align-middle me-1">info</span>
                 Califica cada pregunta abierta de forma individual. El puntaje final se recalcula cuando todas las preguntas tengan nota.
               </div>
 
               <div class="row g-3 mb-4">
                 <div class="col-12">
-                  <label class="form-label">Observaciones</label>
+                  <label class="form-label small text-on-surface-variant">Observaciones</label>
                   <textarea
-                    class="form-control"
+                    class="form-control bg-transparent border-white/10 text-on-surface"
                     rows="3"
                     [(ngModel)]="reviewObservations"
                     name="reviewObservations"
@@ -146,34 +137,34 @@ import {
               </div>
 
               <div class="mb-3">
-                <h6 class="mb-3">Respuestas registradas</h6>
-                <div *ngFor="let q of reviewData.questions" class="border rounded p-3 mb-2">
+                <h6 class="text-on-surface mb-3">Respuestas registradas</h6>
+                <div *ngFor="let q of reviewData.questions" class="border border-white/10 rounded-3 p-3 mb-2">
                   <div class="d-flex justify-content-between gap-3">
-                    <div class="fw-semibold">{{ q.order }}. {{ q.question_text }}</div>
-                    <span class="badge bg-light text-dark text-uppercase">{{ questionTypeLabel(q.type) }}</span>
+                    <div class="fw-semibold text-on-surface">{{ q.order }}. {{ q.question_text }}</div>
+                    <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ questionTypeLabel(q.type) }}</span>
                   </div>
 
                   <div class="mt-2">
                     <div *ngIf="q.answer?.answer_text; else noTextAnswer">
-                      <span class="text-muted d-block small">Respuesta abierta</span>
-                      <div>{{ q.answer?.answer_text }}</div>
+                      <span class="text-on-surface-variant d-block font-label-sm">Respuesta abierta</span>
+                      <div class="text-on-surface">{{ q.answer?.answer_text }}</div>
                     </div>
                     <ng-template #noTextAnswer>
                       <div *ngIf="q.answer?.selected_option_text; else noAnswer">
-                        <span class="text-muted d-block small">Opcion seleccionada</span>
-                        <div>{{ q.answer?.selected_option_text }}</div>
+                        <span class="text-on-surface-variant d-block font-label-sm">Opcion seleccionada</span>
+                        <div class="text-on-surface">{{ q.answer?.selected_option_text }}</div>
                       </div>
                     </ng-template>
                     <ng-template #noAnswer>
-                      <div class="text-muted">Sin respuesta registrada.</div>
+                      <div class="text-on-surface-variant">Sin respuesta registrada.</div>
                     </ng-template>
                   </div>
 
                   <div class="mt-3" *ngIf="q.type === 'open'">
-                    <label class="form-label mb-1">Puntaje de esta pregunta</label>
+                    <label class="form-label small text-on-surface-variant mb-1">Puntaje de esta pregunta</label>
                     <input
                       type="number"
-                      class="form-control"
+                      class="form-control bg-transparent border-white/10 text-on-surface"
                       min="0"
                       max="100"
                       step="0.01"
@@ -182,7 +173,7 @@ import {
                       [disabled]="q.answer?.score !== null && q.answer?.score !== undefined"
                       placeholder="0 - 100"
                     />
-                    <small class="text-muted d-block mt-1">
+                    <small class="text-on-surface-variant d-block mt-1 font-label-sm">
                       <span *ngIf="q.answer?.score !== null && q.answer?.score !== undefined">
                         Esta pregunta ya fue calificada y su puntaje queda bloqueado.
                       </span>
@@ -193,8 +184,8 @@ import {
                   </div>
 
                   <div class="mt-3" *ngIf="q.type !== 'open'">
-                    <span class="badge bg-secondary">Calificacion automatica</span>
-                    <span *ngIf="q.answer?.score !== null" class="ms-2 badge bg-light text-dark">
+                    <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-2 py-1">Calificacion automatica</span>
+                    <span *ngIf="q.answer?.score !== null" class="ms-2 badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1">
                       {{ q.answer?.score }}%
                     </span>
                   </div>
@@ -204,17 +195,17 @@ import {
               <button
                 *ngIf="hasOpenQuestions()"
                 type="button"
-                class="btn btn-primary"
+                class="btn btn-primary fw-semibold d-inline-flex align-items-center gap-1"
                 (click)="saveReview()"
                 [disabled]="reviewSaving || !hasPendingOpenQuestions()"
               >
-                <span *ngIf="reviewSaving" class="spinner-border spinner-border-sm me-1"></span>
+                <span *ngIf="reviewSaving" class="spinner-border spinner-border-sm"></span>
                 Guardar calificacion
               </button>
-              <div *ngIf="hasOpenQuestions() && !hasPendingOpenQuestions()" class="text-muted mt-2">
+              <div *ngIf="hasOpenQuestions() && !hasPendingOpenQuestions()" class="text-on-surface-variant mt-2 font-label-sm">
                 Todas las preguntas abiertas ya tienen puntaje guardado.
               </div>
-              <div *ngIf="!hasOpenQuestions()" class="text-muted">
+              <div *ngIf="!hasOpenQuestions()" class="text-on-surface-variant font-label-sm">
                 Esta prueba no tiene preguntas abiertas pendientes de revision.
               </div>
             </div>
@@ -223,141 +214,13 @@ import {
       </div>
     </app-modal-shell>
   `,
-  styles: [`
-    :host {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .training-results-shell {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      border-radius: 1.5rem;
-      overflow: hidden;
-      background: linear-gradient(180deg, #f7fbff 0%, #eef4fb 100%);
-    }
-
-    .training-results-shell--modal {
-      height: 100%;
-      max-height: 100%;
-      min-width: min(100%, 980px);
-    }
-
-    .training-results-hero {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1.25rem 3.5rem 1.25rem 1.4rem;
-      color: #fff;
-      background: linear-gradient(135deg, var(--brand-blue, #1462ff), var(--brand-cyan, #1dbbd6));
-    }
-
-    .training-results-kicker {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      opacity: 0.82;
-    }
-
-    .training-results-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-    }
-
-    .training-results-subtitle {
-      opacity: 0.88;
-    }
-
-    .training-modal-close {
-      position: absolute;
-      top: 0.9rem;
-      right: 0.9rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.18);
-      color: #fff;
-      font-size: 1rem;
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .training-modal-close:hover {
-      transform: scale(1.04);
-      background: rgba(255, 255, 255, 0.28);
-    }
-
-    .training-results-body {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 1.35rem;
-      background: rgba(255, 255, 255, 0.96);
-    }
-
-    .training-results-modal-hint {
-      color: var(--muted, #55617a);
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .training-results-empty {
-      padding: 1.15rem;
-      border-radius: 1rem;
-      color: var(--muted, #55617a);
-      background: rgba(20, 98, 255, 0.04);
-      border: 1px dashed rgba(20, 98, 255, 0.18);
-    }
-
-    .training-results-table {
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 1rem;
-      overflow: hidden;
-      background: #fff;
-    }
-
-    .training-results-table thead th {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      border-bottom: 0;
-    }
-
-    .training-results-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(15, 23, 42, 0.08);
-    }
-
-    @media (max-width: 576px) {
-      .training-results-hero {
-        flex-direction: column;
-        align-items: stretch;
-      }
-    }
-  `]
+  styles: [/* styles intentionally cleared for custom implementation */]
 })
 export class TrainingResultsComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
-  private readonly activeModal = inject(NgbActiveModal, { optional: true });
+  private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } | null = null;
 
   @Input() trainingIdInput?: number;
   @Input() trainingTitleInput?: string;
@@ -528,6 +391,11 @@ export class TrainingResultsComponent implements OnInit {
   }
 
   closeModal(): void {
-    this.activeModal?.dismiss('close');
+    if (this.activeModal) {
+      this.activeModal.dismiss('close');
+      return;
+    }
+
+    window.history.back();
   }
 }

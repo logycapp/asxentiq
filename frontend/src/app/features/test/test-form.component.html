@@ -9,9 +9,9 @@
     <a routerLink="/users" class="btn btn-outline-primary">Volver al listado</a>
   </div>
 
-  <ngb-alert *ngIf="errorMessage" type="danger" [dismissible]="true" (closed)="errorMessage = ''" class="mb-3">
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
     {{ errorMessage }}
-  </ngb-alert>
+  </div>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="row g-3">
@@ -60,9 +60,9 @@
       </p>
     </div>
 
-    <ngb-alert *ngIf="extractErrorMessage" type="danger" [dismissible]="true" (closed)="extractErrorMessage = ''" class="mb-3">
+    <div *ngIf="extractErrorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="extractErrorMessage = ''"></button>
       {{ extractErrorMessage }}
-    </ngb-alert>
+    </div>
 
     <form [formGroup]="audioForm" (ngSubmit)="extractAudio()">
       <div class="row g-3">
@@ -99,6 +99,40 @@
         Link directo: <a [href]="extractedAudioUrl" target="_blank" rel="noopener">{{ extractedAudioUrl }}</a>
       </p>
       <pre class="surface-card p-3 mb-0">{{ extractedAudio | json }}</pre>
+    </div>
+
+    <div class="mt-4" *ngIf="extractedAudio">
+      <h3 class="h5 mb-3">Indice inteligente</h3>
+
+      <div *ngIf="analysisErrorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="analysisErrorMessage = ''"></button>
+        {{ analysisErrorMessage }}
+      </div>
+
+      <form [formGroup]="analysisForm" (ngSubmit)="analyzeAudio()">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label" for="audioPath">Ruta del MP3</label>
+            <input id="audioPath" class="form-control" type="text" formControlName="audioPath" placeholder="test-audio/mi-video.mp3">
+            <div class="text-danger small mt-1" *ngIf="analysisForm.controls.audioPath.touched && analysisForm.controls.audioPath.invalid">
+              La ruta del MP3 es obligatoria.
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <button class="btn btn-primary" type="submit" [disabled]="analyzingAudio">
+            {{ analyzingAudio ? 'Analizando...' : 'Analizar MP3' }}
+          </button>
+          <button class="btn btn-outline-secondary" type="button" (click)="resetAnalysisPath()">
+            Restablecer ruta
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-4" *ngIf="analysisResponse">
+        <h4 class="h6 mb-3">JSON generado</h4>
+        <pre class="surface-card p-3 mb-0">{{ analysisResponse | json }}</pre>
+      </div>
     </div>
   </div>
 

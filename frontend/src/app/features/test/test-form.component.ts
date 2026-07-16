@@ -3,13 +3,18 @@ import { Component, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
-import { TestAudioResponse, TestService, TestUploadResponse } from '../../core/services/test.service';
+
+import {
+  TestAnalysisResponse,
+  TestAudioResponse,
+  TestService,
+  TestUploadResponse
+} from '../../core/services/test.service';
 
 @Component({
   selector: 'app-test-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgbAlertModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './test-form.component.html',
   styles: []
 })
@@ -25,11 +30,18 @@ export class TestFormComponent implements OnDestroy {
   uploadedVideoUrl: string | null = null;
   extractedAudio: TestAudioResponse | null = null;
   extractedAudioUrl: string | null = null;
+  analysisResponse: TestAnalysisResponse | null = null;
   extractingAudio = false;
   extractErrorMessage = '';
+  analyzingAudio = false;
+  analysisErrorMessage = '';
 
   readonly audioForm = this.fb.group({
     videoPath: ['', [Validators.required, Validators.maxLength(1024)]]
+  });
+
+  readonly analysisForm = this.fb.group({
+    audioPath: ['', [Validators.required, Validators.maxLength(1024)]]
   });
 
   readonly form = this.fb.group({
@@ -63,7 +75,8 @@ export class TestFormComponent implements OnDestroy {
     this.errorMessage = '';
     this.response = null;
 
-      this.testService.submit(payload)
+    this.testService
+      .submit(payload)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (response) => {
@@ -88,8 +101,11 @@ export class TestFormComponent implements OnDestroy {
     this.response = null;
     this.extractedAudio = null;
     this.extractedAudioUrl = null;
+    this.analysisResponse = null;
     this.extractErrorMessage = '';
+    this.analysisErrorMessage = '';
     this.audioForm.reset();
+    this.analysisForm.reset();
   }
 
   extractAudio(): void {
@@ -108,6 +124,8 @@ export class TestFormComponent implements OnDestroy {
     this.extractErrorMessage = '';
     this.extractedAudio = null;
     this.extractedAudioUrl = null;
+    this.analysisResponse = null;
+    this.analysisErrorMessage = '';
 
     this.testService.extractAudio(videoPath)
       .pipe(finalize(() => (this.extractingAudio = false)))
@@ -115,6 +133,9 @@ export class TestFormComponent implements OnDestroy {
         next: (response) => {
           this.extractedAudio = response;
           this.extractedAudioUrl = this.resolveStorageUrl(response.audio.url);
+          this.analysisForm.patchValue({
+            audioPath: response.audio.path ?? ''
+          });
           this.audioForm.patchValue({
             videoPath: response.source.video_path
           });
@@ -123,6 +144,43 @@ export class TestFormComponent implements OnDestroy {
           this.extractErrorMessage = error?.error?.message || this.extractValidationError(error?.error?.errors) || 'No fue posible extraer el audio.';
         }
       });
+  }
+
+  analyzeAudio(): void {
+    if (this.analysisForm.invalid) {
+      this.analysisForm.markAllAsTouched();
+      return;
+    }
+
+    const audioPath = this.analysisForm.getRawValue().audioPath?.trim() ?? '';
+    if (!audioPath) {
+      this.analysisErrorMessage = 'Indica la ruta del MP3.';
+      return;
+    }
+
+    this.analyzingAudio = true;
+    this.analysisErrorMessage = '';
+    this.analysisResponse = null;
+
+    this.testService
+      .analyzeAudio(audioPath)
+      .pipe(finalize(() => (this.analyzingAudio = false)))
+      .subscribe({
+        next: (response) => {
+          this.analysisResponse = response;
+        },
+        error: (error) => {
+          this.analysisErrorMessage = error?.error?.message || this.extractValidationError(error?.error?.errors) || 'No fue posible analizar el audio.';
+        }
+      });
+  }
+
+  resetAnalysisPath(): void {
+    this.analysisForm.reset({
+      audioPath: this.extractedAudio?.audio.path ?? ''
+    });
+    this.analysisResponse = null;
+    this.analysisErrorMessage = '';
   }
 
   ngOnDestroy(): void {

@@ -1,174 +1,537 @@
-<div class="app-shell">
-  <div
-    *ngIf="loadingService.isLoading()"
-    class="app-loading-overlay"
-    aria-live="polite"
-    aria-busy="true"
-  >
-    <div class="loading-card surface-card">
-      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <div>
-        <div class="fw-semibold">Cargando {{ pageHeading }}</div>
-        <div class="text-secondary small">Estamos preparando los datos del modulo.</div>
+<div *ngIf="!isDashboardRoute" id="load_screen">
+  <div class="loader"></div>
+</div>
+
+<ng-container *ngIf="!isDashboardRoute; else dashboardShell">
+<div class="header-container container-xxl">
+  <header class="header navbar expand-header">
+    <a href="javascript:void(0);" class="btn-toggle sidebarCollapse d-lg-none me-3" aria-label="Abrir menu">
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-menu-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <line x1="4" y1="6" x2="20" y2="6"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="18" x2="20" y2="18"></line>
+      </svg>
+    </a>
+
+    <ul class="header-item ms-md-0 ms-auto search-area">
+      <li class="nav-item align-self-center search-content search-animated" (click)="openSearchDialog()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search toggle-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <circle cx="10" cy="10" r="7"></circle>
+          <line x1="21" y1="21" x2="15" y2="15"></line>
+        </svg>
+        <form class="search-full search-inline-form" role="search">
+          <div class="search-bar">
+            <input
+              type="text"
+              class="form-control search-form-control ms-lg-auto"
+              placeholder="Search..."
+              (focus)="openSearchDialog()"
+              (click)="openSearchDialog()"
+              [value]="searchTerm"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x search-close">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </div>
+        </form>
+        <span class="badge badge-secondary">Ctrl + /</span>
+      </li>
+    </ul>
+
+    <ul class="header-item ms-md-auto action-area">
+      <li class="h-item dropdown language-dropdown">
+        <a href="javascript:void(0);" class="h-link dropdown-toggle" id="language-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <img src="https://designreset.com/cork/html/src/assets/img/1x1/us.svg" class="flag-width" alt="flag"><span>English</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-down" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </a>
+        <div class="dropdown-menu position-absolute" aria-labelledby="language-dropdown">
+          <a class="dropdown-item d-flex" data-img-value="us" data-value="English" href="javascript:void(0);"><img src="https://designreset.com/cork/html/src/assets/img/1x1/us.svg" class="flag-width" alt="flag"> <span class="align-self-center">&nbsp;English</span></a>
+          <a class="dropdown-item d-flex" data-img-value="fr" data-value="French" href="javascript:void(0);"><img src="https://designreset.com/cork/html/src/assets/img/1x1/fr.svg" class="flag-width" alt="flag"> <span class="align-self-center">&nbsp;French</span></a>
+          <a class="dropdown-item d-flex" data-img-value="es" data-value="Spanish" href="javascript:void(0);"><img src="https://designreset.com/cork/html/src/assets/img/1x1/es.svg" class="flag-width" alt="flag"> <span class="align-self-center">&nbsp;Spanish</span></a>
+          <a class="dropdown-item d-flex" data-img-value="cn" data-value="Chinese" href="javascript:void(0);"><img src="https://designreset.com/cork/html/src/assets/img/1x1/cn.svg" class="flag-width" alt="flag"> <span class="align-self-center">&nbsp;Chinese</span></a>
+          <a class="dropdown-item d-flex" data-img-value="sa" data-value="Arabic" href="javascript:void(0);"><img src="https://designreset.com/cork/html/src/assets/img/1x1/sa.svg" class="flag-width" alt="flag"> <span class="align-self-center">&nbsp;Arabic</span></a>
+        </div>
+      </li>
+
+      <li class="h-item theme-toggle-item">
+        <a href="javascript:void(0);" class="h-link theme-toggle" aria-label="Tema">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-moon dark-mode" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sun-high light-mode" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z"></path>
+            <path d="M6.343 17.657l-1.414 1.414"></path>
+            <path d="M6.343 6.343l-1.414 -1.414"></path>
+            <path d="M17.657 6.343l1.414 -1.414"></path>
+            <path d="M17.657 17.657l1.414 1.414"></path>
+            <path d="M4 12h-2"></path>
+            <path d="M12 4v-2"></path>
+            <path d="M20 12h2"></path>
+            <path d="M12 20v2"></path>
+          </svg>
+        </a>
+      </li>
+
+      <li class="h-item dropdown message-dropdown">
+        <a href="javascript:void(0);" class="h-link dropdown-toggle" id="messageDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-hipchat" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M17.802 17.292s.077 -.055 .2 -.149c1.843 -1.425 2.998 -3.49 2.998 -5.789c0 -4.286 -4.03 -7.764 -8.998 -7.764c-4.97 0 -9.002 3.478 -9.002 7.764c0 4.288 4.03 7.646 9 7.646c.424 0 1.12 -.028 2.088 -.084c1.262 .82 3.104 1.493 4.716 1.493c.499 0 .734 -.41 .414 -.828c-.486 -.596 -1.156 -1.551 -1.416 -2.29z"></path>
+          </svg>
+          <span class="badge badge-success"></span>
+        </a>
+        <div class="dropdown-menu position-absolute preventScroll" aria-labelledby="messageDropdown">
+          <div class="dropdown-title message">
+            <h6 class="d-flex justify-content-between"><span class="align-self-center">Messages</span> <span class="badge badge-light-success">9 New</span></h6>
+          </div>
+          <div class="message-scroll">
+            <a class="dropdown-item">
+              <div class="media">
+                <div class="user-img usr-status-online">
+                  <img src="assets/img/profile/profile-11.png" class="img-fluid mr-2" alt="avatar">
+                </div>
+                <div class="media-body">
+                  <p class="usr-name">Shaun Park</p>
+                  <p class="msg-date">10 mins ago</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </li>
+
+      <li class="h-item dropdown notification-dropdown">
+        <a href="javascript:void(0);" class="h-link dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-auto-close="outside">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bell" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
+            <path d="M9 17v1a3 3 0 0 0 6 0v-1"></path>
+          </svg>
+          <span class="badge badge-warning"></span>
+        </a>
+        <div class="dropdown-menu position-absolute preventScroll" aria-labelledby="notificationDropdown">
+          <div class="dropdown-title message">
+            <div class="d-flex justify-content-between">
+              <ul class="nav nav-tabs notification-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-tab-pane" type="button" role="tab" aria-controls="all-tab-pane" aria-selected="true">All <span class="ms-1 d-inline-block badge bg-dark:200 text-dark:700 dark:bg-info:500 dark:text-info:100" style="padding: 1px 6px;">3</span></button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="notification-scroll ps">
+            <div class="tab-content" id="myTabContent">
+              <div class="tab-pane fade show active" id="all-tab-pane" role="tabpanel" aria-labelledby="all-tab" tabindex="0">
+                <div class="tab-image no-notification">
+                  <img class="notification-light" src="https://designreset.com/cork/html/src/assets/img/notification-empty.svg" alt="notification-empty">
+                  <img class="notification-dark" src="https://designreset.com/cork/html/src/assets/img/notification-empty-dark.svg" alt="notification-empty">
+                  <div class="notification">
+                    <p>0 notifications</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="h-item dropdown user-profile-dropdown">
+        <a href="javascript:void(0);" class="h-link dropdown-toggle user" id="userProfileDropdown">
+          <div class="avatar-container">
+            <div class="avatar avatar-sm avatar-indicators avatar-online">
+              <img alt="avatar" src="assets/img/profile/profile-35.png" class="rounded-circle">
+            </div>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </header>
+</div>
+
+  <div class="main-container" id="container">
+  <div class="overlay"></div>
+  <div class="search-overlay"></div>
+  <div class="tc-overlay"></div>
+  <div class="psidebar-overlay"></div>
+
+  <div class="sidebar-wrapper sidebar-theme">
+    <nav id="sidebar">
+      <div class="navbar-nav theme-brand flex-row text-center">
+        <div class="nav-logo">
+          <div class="nav-item theme-logo">
+            <a routerLink="/dashboard" aria-label="Ir al dashboard">
+              <img src="assets/img/logo/logo_light.png" class="navbar-logo navbar-logo-light" alt="logo-light">
+              <img src="assets/img/logo/logo_dark.png" class="navbar-logo navbar-logo-dark" alt="logo-dark">
+            </a>
+          </div>
+          <div class="nav-item theme-text" style="display:none !important;">
+            <a href="javascript:void(0);" class="nav-link"> CORK </a>
+          </div>
+        </div>
+        <div class="nav-item sidebar-toggle">
+          <div class="btn-toggle sidebarCollapse">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevrons-left">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M11 7l-5 5l5 5"></path>
+              <path d="M17 7l-5 5l5 5"></path>
+            </svg>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <div class="shadow-bottom"></div>
+
+      <ul class="list-unstyled menu-categories" id="accordionExample">
+        <li class="menu active">
+          <a href="#dashboard" data-bs-toggle="collapse" aria-expanded="true" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <polyline points="5 12 3 12 12 3 21 12 19 12"></polyline>
+                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"></path>
+              </svg>
+              <span>Dashboard</span>
+            </div>
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+          <ul class="collapse submenu list-unstyled show" id="dashboard" data-bs-parent="#accordionExample">
+            <li class="active"><a href="javascript:void(0);"> Analytics </a></li>
+            <li><a href="javascript:void(0);"> Sales </a></li>
+          </ul>
+        </li>
+
+        <li class="menu menu-heading">
+          <div class="heading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>APPLICATIONS</span>
+          </div>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-dots" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M4 21v-13a3 3 0 0 1 3 -3h10a3 3 0 0 1 3 3v6a3 3 0 0 1 -3 3h-9l-4 4"></path>
+                <line x1="12" y1="11" x2="12" y2="11.01"></line>
+                <line x1="8" y1="11" x2="8" y2="11.01"></line>
+                <line x1="16" y1="11" x2="16" y2="11.01"></line>
+              </svg>
+              <span>Chat</span>
+            </div>
+          </a>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-gmail" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M16 20h3a1 1 0 0 0 1 -1v-14a1 1 0 0 0 -1 -1h-3v16z"></path>
+                <path d="M5 20h3v-16h-3a1 1 0 0 0 -1 1v14a1 1 0 0 0 1 1z"></path>
+                <path d="M16 4l-4 4l-4 -4"></path>
+                <path d="M4 6.5l8 7.5l8 -7.5"></path>
+              </svg>
+              <span>Mailbox</span>
+            </div>
+          </a>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-notes" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+                <line x1="9" y1="7" x2="15" y2="7"></line>
+                <line x1="9" y1="11" x2="15" y2="11"></line>
+                <line x1="9" y1="15" x2="13" y2="15"></line>
+              </svg>
+              <span>Notes</span>
+            </div>
+          </a>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-layout-kanban" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <line x1="4" y1="4" x2="10" y2="4"></line>
+                <line x1="14" y1="4" x2="20" y2="4"></line>
+                <rect x="4" y="8" width="6" height="12" rx="2"></rect>
+                <rect x="14" y="8" width="6" height="6" rx="2"></rect>
+              </svg>
+              <span>Kanban</span>
+            </div>
+          </a>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <rect x="4" y="5" width="16" height="16" rx="2"></rect>
+                <line x1="16" y1="3" x2="16" y2="7"></line>
+                <line x1="8" y1="3" x2="8" y2="7"></line>
+                <line x1="4" y1="11" x2="20" y2="11"></line>
+                <line x1="11" y1="15" x2="12" y2="15"></line>
+                <line x1="12" y1="15" x2="12" y2="18"></line>
+              </svg>
+              <span>Calendar</span>
+            </div>
+          </a>
+        </li>
+
+        <li class="menu">
+          <a href="#ai" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-ai">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M8 16v-6a2 2 0 1 1 4 0v6"></path>
+                <path d="M8 13h4"></path>
+                <path d="M16 8v8"></path>
+              </svg>
+              <span>AI</span>
+            </div>
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+          <ul class="collapse submenu list-unstyled" id="ai" data-bs-parent="#accordionExample">
+            <li><a href="javascript:void(0);"> New Chat </a></li>
+            <li><a href="javascript:void(0);"> Conversation </a></li>
+          </ul>
+        </li>
+
+        <li class="menu">
+          <a href="#users" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+              </svg>
+              <span>Users</span>
+            </div>
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+          <ul class="collapse submenu list-unstyled" id="users" data-bs-parent="#accordionExample">
+            <li><a href="javascript:void(0);"> Profile </a></li>
+            <li><a href="javascript:void(0);"> Cards </a></li>
+            <li><a href="javascript:void(0);"> List </a></li>
+            <li><a href="javascript:void(0);"> Create </a></li>
+            <li><a href="javascript:void(0);"> Edit </a></li>
+            <li><a href="javascript:void(0);"> Account </a></li>
+          </ul>
+        </li>
+
+        <li class="menu">
+          <a href="#invoices" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-receipt" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2m4 -14h6m-6 4h6m-2 4h2"></path>
+              </svg>
+              <span>Invoice</span>
+            </div>
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+          <ul class="collapse submenu list-unstyled" id="invoices" data-bs-parent="#accordionExample">
+            <li><a href="javascript:void(0);"> List </a></li>
+            <li><a href="javascript:void(0);"> Preview </a></li>
+            <li><a href="javascript:void(0);"> Add </a></li>
+            <li><a href="javascript:void(0);"> Edit </a></li>
+          </ul>
+        </li>
+
+        <li class="menu menu-heading">
+          <div class="heading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>USER INTERFACE</span>
+          </div>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-components" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M3 12l3 3l3 -3l-3 -3z"></path>
+                <path d="M15 12l3 3l3 -3l-3 -3z"></path>
+                <path d="M9 6l3 3l3 -3l-3 -3z"></path>
+                <path d="M9 18l3 3l3 -3l-3 -3z"></path>
+              </svg>
+              <span>Components</span>
+            </div>
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+        </li>
+
+        <li class="menu">
+          <a href="javascript:void(0);" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bolt" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <polyline points="13 3 13 10 19 10 11 21 11 14 5 14 13 3"></polyline>
+              </svg>
+              <span>Elements</span>
+            </div>
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </nav>
   </div>
 
-  <div class="app-main" [class.app-main--sidebar]="menuLayout === 'left' && !isMobileView">
+  <div id="content" class="main-content">
     <app-layout-navbar
-      *ngIf="!isMobileView"
       [userName]="userName"
       [userEmail]="userEmail"
       [userPhotoUrl]="userPhotoUrl"
+      [isCollapsed]="isNavbarCollapsed"
       [menuItems]="visibleMenuItems"
       [showAdminAccess]="hasAdminAccess"
-      [showBrand]="false"
-      [showMenu]="false"
-      [showToggle]="false"
+      [menuLoading]="menuLoading"
+      [menuError]="menuError"
+      [showBrand]="true"
+      [showMenu]="menuLayout === 'top'"
+      [showToggle]="true"
+      [showProfile]="true"
+      (toggleRequested)="toggleNavbar()"
+      (closeRequested)="closeNavbar()"
       (logoutRequested)="logout()"
     />
-
-    <ng-container *ngIf="menuLayout === 'top' || isMobileView">
-      <app-layout-navbar
-        [userName]="userName"
-        [userEmail]="userEmail"
-        [userPhotoUrl]="userPhotoUrl"
-        [isCollapsed]="isNavbarCollapsed"
-        [menuItems]="visibleMenuItems"
-        [showAdminAccess]="hasAdminAccess"
-        [menuLoading]="menuLoading"
-        [menuError]="menuError"
-        [showProfile]="isMobileView"
-        (toggleRequested)="toggleNavbar()"
-        (closeRequested)="closeNavbar()"
-        (logoutRequested)="logout()"
-      />
-    </ng-container>
-
-    <div *ngIf="menuLayout === 'left' && !isMobileView" class="app-sidebar-layout">
-      <aside class="app-sidebar surface-card">
-        <a class="app-sidebar__brand" routerLink="/dashboard" (click)="closeNavbar()" aria-label="Ir al dashboard">
-          <span class="app-sidebar__brand-badge">
-            <img src="assets/logos/logo2.png" alt="Asxentiq" class="app-sidebar__logo">
-          </span>
-        </a>
-
-        <div class="app-sidebar__menu" *ngIf="menuLoading">
-          <span class="text-secondary small">Cargando menu...</span>
-        </div>
-
-        <nav *ngIf="!menuLoading && visibleMenuItems.length" class="sidebar-links">
-          <ng-container *ngFor="let item of visibleMenuItems; trackBy: trackByRoute">
-            <ng-container *ngIf="hasChildren(item); else singleSidebarItem">
-              <div class="sidebar-group">
-                <button
-                  type="button"
-                  class="sidebar-link sidebar-link--toggle"
-                  [class.active]="isMenuRouteActive(item.route, item.exact) || isMenuGroupExpanded(item.route)"
-                  [attr.title]="item.label"
-                  [attr.aria-label]="item.label"
-                  (click)="toggleMenuGroup(item.route)"
-                >
-                  <span class="sidebar-link__icon" aria-hidden="true">
-                    <i [class]="menuIconClass(item)"></i>
-                  </span>
-                  <span class="sidebar-link__label">{{ item.label }}</span>
-                  <span class="sidebar-link__caret" [class.sidebar-link__caret--open]="isMenuGroupExpanded(item.route)" aria-hidden="true">
-                    <i class="fa-solid fa-chevron-right"></i>
-                  </span>
-                </button>
-
-                <div class="sidebar-submenu-flyout" *ngIf="isMenuGroupExpanded(item.route)">
-                  <a
-                    class="sidebar-submenu-flyout__parent"
-                    [routerLink]="item.route"
-                    [class.active]="isMenuRouteActive(item.route, item.exact)"
-                    (click)="closeNavbar()"
-                  >
-                    <i [ngClass]="[menuIconClass(item), 'me-2']"></i>
-                    {{ item.label }}
-                  </a>
-                  <a
-                    *ngFor="let child of item.children"
-                    class="sidebar-submenu-flyout__item"
-                    [routerLink]="child.route"
-                    [class.active]="isMenuRouteActive(child.route, child.exact)"
-                    (click)="closeNavbar()"
-                  >
-                    {{ child.label }}
-                  </a>
-                </div>
-              </div>
-            </ng-container>
-            <ng-template #singleSidebarItem>
-              <a
-                class="sidebar-link"
-                [routerLink]="item.route"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: item.exact }"
-                (click)="closeNavbar()"
-                [attr.title]="item.label"
-                [attr.aria-label]="item.label"
-              >
-                <span class="sidebar-link__icon" aria-hidden="true">
-                  <i [class]="menuIconClass(item)"></i>
-                </span>
-                <span class="sidebar-link__label">{{ item.label }}</span>
-              </a>
-            </ng-template>
-          </ng-container>
-        </nav>
-
-        <div *ngIf="!menuLoading && !visibleMenuItems.length" class="app-sidebar__menu">
-          <span class="text-secondary small">{{ menuError || 'No hay opciones de menu disponibles.' }}</span>
-        </div>
-
-        <div class="app-sidebar__footer">
-          <a
-            routerLink="/profile"
-            class="sidebar-utility"
-            title="Ajustes del perfil"
-            aria-label="Ajustes del perfil"
-            (click)="closeNavbar()"
-          >
-            <i class="fa-solid fa-gear" aria-hidden="true"></i>
-          </a>
-        </div>
-      </aside>
-
-      <button
-        *ngIf="hasExpandedMenu()"
-        type="button"
-        class="sidebar-backdrop"
-        aria-label="Cerrar submenu"
-        (click)="closeSidebarMenus()"
-      ></button>
-
-      <div class="app-main__content">
-        <main class="app-content">
-          <router-outlet />
-        </main>
-
-        <footer class="app-footer">
-          <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-            <span>Asxentiq shell</span>
-            <span>&copy; {{ currentYear }}</span>
-          </div>
-        </footer>
-      </div>
-    </div>
-
-    <ng-container *ngIf="menuLayout === 'top' || isMobileView">
-      <main class="app-content">
-        <router-outlet />
-      </main>
-
-      <footer class="app-footer">
-        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-          <span>Asxentiq shell</span>
-          <span>&copy; {{ currentYear }}</span>
-        </div>
-      </footer>
-    </ng-container>
+    <router-outlet />
   </div>
 </div>
+</ng-container>
+
+<app-modal-shell
+  *ngIf="searchDialogOpen"
+  kicker="Busqueda"
+  title="Busqueda rapida"
+  subtitle="Escribe para buscar dentro del sistema."
+  headerVariant="info"
+  footerVariant="info"
+  size="md"
+  [showHeaderClose]="true"
+  [showFooterClose]="true"
+  [showPrimaryButton]="false"
+  [showSecondaryButton]="false"
+  closeLabel="Cerrar"
+  (closeRequested)="closeSearchDialog()"
+>
+  <div modal-body>
+    <label class="form-label small text-on-surface-variant" for="searchQuickInput">Buscar</label>
+    <input
+      id="searchQuickInput"
+      type="text"
+      class="form-control bg-transparent border-white/10 text-on-surface"
+      placeholder="Busca modulos, usuarios, roles..."
+      [(ngModel)]="searchTerm"
+    />
+
+    <div class="mt-3">
+      <div class="font-label-sm text-on-surface-variant mb-2">Accesos rapidos</div>
+      <div class="d-flex flex-wrap gap-2">
+        <a routerLink="/dashboard" class="btn btn-sm btn-outline-light fw-semibold" (click)="closeSearchDialog()">Dashboard</a>
+        <a routerLink="/users" class="btn btn-sm btn-outline-light fw-semibold" (click)="closeSearchDialog()">Usuarios</a>
+        <a routerLink="/roles" class="btn btn-sm btn-outline-light fw-semibold" (click)="closeSearchDialog()">Roles</a>
+        <a routerLink="/trainings" class="btn btn-sm btn-outline-light fw-semibold" (click)="closeSearchDialog()">Capacitaciones</a>
+      </div>
+    </div>
+  </div>
+</app-modal-shell>
+
+<ng-template #dashboardShell>
+  <!-- Floating Submenu Popover -->
+  <div class="floating-submenu" id="floating-popover">
+    <div class="space-y-1" id="floating-popover-content"></div>
+  </div>
+
+  <button class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-label="Open menu" type="button" (click)="toggleMobileSidebar()">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+  <div class="mobile-sidebar-overlay" id="mobile-sidebar-overlay" (click)="closeMobileSidebar()"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside
+    class="sidebar-transition fixed left-0 top-0 h-full w-[280px] border-r border-white/10 flex flex-col py-lg z-50 glass-card"
+    id="sidebar"
+    [class.sidebar-collapsed]="isSidebarCollapsed"
+  >
+    <app-admin-sidebar
+      [isSidebarCollapsed]="isSidebarCollapsed"
+      [sidebarBrandLogo]="sidebarBrandLogo"
+      [menuItems]="dashboardMenuItems"
+      (toggleSidebar)="toggleDashboardSidebar()"
+      (toggleSubmenu)="toggleSubmenu($event.id, $event.button)"
+    />
+  </aside>
+
+  <!-- Main Content -->
+  <main
+    class="main-content-transition position-relative d-flex flex-column vh-100"
+    id="main-content"
+    style="margin-left: 280px;"
+    [class.main-content-collapsed]="isSidebarCollapsed"
+  >
+    <app-top-header
+      [themeToggleIcon]="themeToggleIcon"
+      [clockLabel]="clockLabel"
+      (toggleTheme)="toggleTheme()"
+      (openProfilePanel)="openProfilePanel()"
+    />
+
+    <div class="container-fluid px-4 py-5 flex-grow-1 overflow-y-auto">
+      <router-outlet />
+    </div>
+  </main>
+
+  <app-profile-panel
+    [open]="profilePanelOpen"
+    [userName]="userName"
+    [userEmail]="userEmail"
+    [userPhotoUrl]="userPhotoUrl"
+    [showAdminAccess]="hasAdminAccess"
+    (close)="closeProfilePanel()"
+    (logout)="logout()"
+  />
+</ng-template>

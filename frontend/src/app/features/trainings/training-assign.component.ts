@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbActiveModal, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingService, TrainingParticipant } from '../../core/services/training.service';
@@ -11,15 +11,15 @@ import { TrainingService, TrainingParticipant } from '../../core/services/traini
 @Component({
   selector: 'app-training-assign',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgbAlertModule, ModalShellComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ModalShellComponent],
   template: `
     <app-modal-shell
       kicker="Asignacion"
       [title]="'Participantes: ' + trainingTitle"
       subtitle="Selecciona los participantes que deben tomar esta capacitacion."
-      [showHeaderClose]="isModal"
-      [showFooterClose]="isModal"
-      [showFooter]="isModal"
+      [showHeaderClose]="true"
+      [showFooterClose]="false"
+      [showFooter]="true"
       headerVariant="warning"
       (closeRequested)="closeModal()"
     >
@@ -76,7 +76,7 @@ export class TrainingAssignComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
-  private readonly activeModal = inject(NgbActiveModal, { optional: true });
+  private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } | null = null;
 
   @Input() trainingIdInput?: number;
   @Input() trainingTitleInput?: string;
@@ -159,6 +159,10 @@ export class TrainingAssignComponent implements OnInit {
   }
 
   closeModal(): void {
-    this.activeModal?.dismiss('close');
+    if (this.activeModal) {
+      this.activeModal.dismiss('close');
+    } else {
+      window.history.back();
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingParticipant, TrainingService } from '../../core/services/training.service';
@@ -61,19 +61,12 @@ import { TrainingParticipant, TrainingService } from '../../core/services/traini
       </div>
     </app-modal-shell>
   `,
-  styles: [`
-    :host {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-    }
-  `]
+  styles: [/* styles intentionally cleared for custom implementation */]
 })
 export class ParticipantFormComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
-  private readonly activeModal = inject(NgbActiveModal);
+  private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } = { close: () => {}, dismiss: () => {} };
 
   @Input() participantInput?: TrainingParticipant;
   @Output() saved = new EventEmitter<void>();

@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { NgbActiveModal, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingService, Question, QuestionOption } from '../../core/services/training.service';
@@ -11,82 +11,77 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
 @Component({
   selector: 'app-training-questions',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgbAlertModule, ModalShellComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ModalShellComponent],
   template: `
     <app-modal-shell
       kicker="Banco de preguntas"
       [title]="'Preguntas: ' + trainingTitle"
       subtitle="Agrega, edita y administra las preguntas de la capacitacion."
-      [showHeaderClose]="isModal"
-      [showFooterClose]="isModal"
+      [showHeaderClose]="true"
+      [showFooterClose]="false"
       [showFooter]="true"
       [headerVariant]="editingQuestionId ? 'warning' : 'info'"
       (closeRequested)="closeModal()"
     >
       <div modal-header-actions>
-        <button type="button" class="btn btn-light btn-sm" (click)="showAddForm()">
-          <i class="fa-solid fa-plus me-2"></i>
+        <button type="button" class="btn btn-sm btn-outline-light fw-semibold d-inline-flex align-items-center gap-1" (click)="showAddForm()">
+          <span class="material-symbols-outlined text-[16px]">add</span>
           Agregar pregunta
         </button>
       </div>
 
       <div modal-body>
-        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-          <a *ngIf="!isModal" routerLink="/trainings" class="btn btn-outline-secondary btn-sm">&larr; Capacitaciones</a>
-          <span *ngIf="isModal" class="training-questions-modal-hint">Edicion rapida en modal</span>
-        </div>
-
         <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
+          <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
           {{ message }}
-          <button type="button" class="btn-close" (click)="message = ''"></button>
         </div>
         <div *ngIf="errorMessage" class="alert alert-danger mb-3">{{ errorMessage }}</div>
 
-        <div *ngIf="editingQuestion" class="training-questions-editor mb-3">
+        <div *ngIf="editingQuestion" class="border border-white/10 rounded-3 p-3 mb-3">
           <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
             <div>
-              <h6 class="mb-1">{{ editingQuestionId ? 'Editar' : 'Nueva' }} pregunta</h6>
-              <p class="text-muted mb-0">Mantén el contenido corto y claro para facilitar la evaluación.</p>
+              <h6 class="mb-1 text-on-surface">{{ editingQuestionId ? 'Editar' : 'Nueva' }} pregunta</h6>
+              <p class="text-on-surface-variant font-label-sm mb-0">Manten el contenido corto y claro para facilitar la evaluacion.</p>
             </div>
-            <button type="button" class="btn btn-link text-decoration-none p-0" (click)="cancelEdit()">Cancelar</button>
+            <button type="button" class="btn btn-outline-light fw-semibold btn-sm" (click)="cancelEdit()">Cancelar</button>
           </div>
 
           <div class="mb-2">
-            <label class="form-label">Tipo</label>
-            <select class="form-select" [(ngModel)]="editForm.type" (change)="onTypeChange()">
+            <label class="form-label small text-on-surface-variant">Tipo</label>
+            <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editForm.type" (change)="onTypeChange()">
               <option value="open">Abierta</option>
               <option value="multiple_choice">Opcion Multiple</option>
               <option value="yes_no">Si / No</option>
             </select>
           </div>
           <div class="mb-2">
-            <label class="form-label">Pregunta</label>
-            <textarea class="form-control" [(ngModel)]="editForm.question_text" rows="3"></textarea>
+            <label class="form-label small text-on-surface-variant">Pregunta</label>
+            <textarea class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editForm.question_text" rows="3"></textarea>
           </div>
           <div class="mb-2">
-            <label class="form-label">Orden</label>
-            <input type="number" class="form-control form-control-sm" [(ngModel)]="editForm.order" style="width: 80px" />
+            <label class="form-label small text-on-surface-variant">Orden</label>
+            <input type="number" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editForm.order" style="width: 80px" />
           </div>
 
-          <div class="mt-3 border rounded-3 p-3 bg-light">
+          <div class="mt-3 border border-white/10 rounded-3 p-3">
             <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
               <div>
-                <label class="form-label mb-1">Material adicional opcional</label>
-                <div class="text-muted small">
+                <label class="form-label small text-on-surface-variant mb-1">Material adicional opcional</label>
+                <div class="text-on-surface-variant font-label-sm">
                   Este archivo se mostrara al participante junto con esta pregunta. No es obligatorio.
                 </div>
               </div>
-              <span class="badge bg-secondary-subtle text-secondary-emphasis">Opcional</span>
+              <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1">Opcional</span>
             </div>
 
             <div class="row g-2 align-items-end">
               <div class="col-lg-7">
-                <label class="form-label small text-muted">Archivo</label>
-                <input type="file" class="form-control" (change)="onQuestionMaterialSelected($event)" />
+                <label class="form-label small text-on-surface-variant">Archivo</label>
+                <input type="file" class="form-control bg-transparent border-white/10 text-on-surface" (change)="onQuestionMaterialSelected($event)" />
               </div>
               <div class="col-lg-3">
-                <label class="form-label small text-muted">Tipo</label>
-                <select class="form-select" [(ngModel)]="questionMaterialType" name="questionMaterialType">
+                <label class="form-label small text-on-surface-variant">Tipo</label>
+                <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="questionMaterialType" name="questionMaterialType">
                   <option value="pdf">PDF</option>
                   <option value="video">Video</option>
                   <option value="spreadsheet">Hoja de calculo</option>
@@ -94,83 +89,91 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
                 </select>
               </div>
               <div class="col-lg-2">
-                <button type="button" class="btn btn-outline-secondary w-100" (click)="clearQuestionMaterial()">
+                <button type="button" class="btn btn-outline-light fw-semibold w-100" (click)="clearQuestionMaterial()">
                   Limpiar
                 </button>
               </div>
             </div>
 
             <div *ngIf="editingQuestionId && editingQuestionMaterials.length > 0" class="mt-3">
-              <div class="small text-muted mb-2">Material ya cargado:</div>
-              <ul class="list-group list-group-flush">
-                <li *ngFor="let material of editingQuestionMaterials" class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none">
-                      <i class="fa-solid fa-paperclip me-1 text-primary"></i>
-                      {{ material.filename }}
-                    </a>
-                    <span class="badge bg-light text-dark text-uppercase">{{ material.type }}</span>
-                  </div>
-                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeQuestionMaterial(material)">
-                    Eliminar
-                  </button>
-                </li>
-              </ul>
+              <div class="font-label-sm text-on-surface-variant mb-2">Material ya cargado:</div>
+              <div *ngFor="let material of editingQuestionMaterials" class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-white/5">
+                <div class="d-flex align-items-center gap-2">
+                  <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none text-on-surface">
+                    <span class="material-symbols-outlined text-[14px] align-middle">attach_file</span>
+                    {{ material.filename }}
+                  </a>
+                  <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger fw-semibold" (click)="removeQuestionMaterial(material)">
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
 
           <div *ngIf="editForm.type === 'multiple_choice'" class="mt-3">
-            <label class="form-label">Opciones</label>
-            <div *ngFor="let opt of editingOptions; let i = index" class="input-group mb-2">
+            <label class="form-label small text-on-surface-variant">Opciones</label>
+            <div *ngFor="let opt of editingOptions; let i = index" class="d-flex gap-2 mb-2 align-items-center">
               <input
-                class="form-control form-control-sm"
+                class="form-control bg-transparent border-white/10 text-on-surface flex-grow-1"
                 [(ngModel)]="opt.option_text"
                 placeholder="Opcion {{ i + 1 }}"
               />
-              <div class="input-group-text">
+              <div class="d-flex align-items-center gap-1">
                 <input type="radio" [name]="'correct_' + i" [checked]="opt.is_correct" (change)="setCorrectOption(i)" />
-                <span class="ms-1 small">Correcta</span>
+                <span class="small text-on-surface-variant">Correcta</span>
               </div>
-              <button type="button" class="btn btn-outline-danger btn-sm" (click)="editingOptions.splice(i, 1)">X</button>
+              <button type="button" class="btn btn-sm btn-outline-danger fw-semibold" (click)="editingOptions.splice(i, 1)">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+              </button>
             </div>
-            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" (click)="addOption()">+ Opcion</button>
+            <button type="button" class="btn btn-outline-light fw-semibold btn-sm d-inline-flex align-items-center gap-1 mt-1" (click)="addOption()">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+              Opcion
+            </button>
           </div>
 
         </div>
 
-        <div *ngIf="!loading && questions.length === 0" class="training-questions-empty">
-          No hay preguntas. Agregue la primera pregunta.
+        <div *ngIf="!loading && questions.length === 0" class="text-center py-4">
+          <div class="text-on-surface-variant font-body-md">No hay preguntas. Agregue la primera pregunta.</div>
         </div>
 
-        <div *ngIf="questions.length > 0" class="training-questions-list">
-          <div *ngFor="let q of questions; let i = index" class="training-question-item">
+        <div *ngIf="questions.length > 0" class="d-flex flex-column gap-2">
+          <div *ngFor="let q of questions; let i = index" class="border border-white/10 rounded-3 p-3">
             <div class="d-flex justify-content-between gap-3">
               <div>
-                <strong>{{ i + 1 }}.</strong> {{ q.question_text }}
-                <span class="badge bg-info ms-2">{{ typeLabel(q.type) }}</span>
-                <span class="badge bg-secondary ms-1">Orden: {{ q.order }}</span>
+                <span class="text-on-surface fw-semibold">{{ i + 1 }}.</span>
+                <span class="text-on-surface">{{ q.question_text }}</span>
+                <span class="badge rounded-pill bg-info/20 text-info border border-info/20 px-2 py-1 ms-2">{{ typeLabel(q.type) }}</span>
+                <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 ms-1">Orden: {{ q.order }}</span>
               </div>
               <div class="d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-outline-primary" (click)="editQuestion(q)">Editar</button>
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteQuestion(q)">Eliminar</button>
+                <button type="button" class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" (click)="editQuestion(q)">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>Editar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1" (click)="deleteQuestion(q)">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>Eliminar
+                </button>
               </div>
             </div>
             <div *ngIf="q.options && q.options.length > 0" class="mt-2 ms-4">
-              <div *ngFor="let opt of q.options" class="small">
-                <span [class.text-success]="opt.is_correct" [class.fw-bold]="opt.is_correct">
-                  <i [class]="opt.is_correct ? 'fa-solid fa-circle-check text-success' : 'fa-regular fa-circle text-muted'"></i>
+              <div *ngFor="let opt of q.options" class="font-label-sm">
+                <span [class]="opt.is_correct ? 'text-chart-green fw-semibold' : 'text-on-surface-variant'">
+                  <span class="material-symbols-outlined text-[14px] align-middle">{{ opt.is_correct ? 'check_circle' : 'radio_button_unchecked' }}</span>
                   <span class="ms-1">{{ opt.option_text }}</span>
                 </span>
               </div>
             </div>
             <div *ngIf="q.materials && q.materials.length > 0" class="mt-3 ms-4">
-              <div class="small text-muted mb-2">Material adjunto</div>
-              <div *ngFor="let material of q.materials" class="d-flex justify-content-between align-items-center gap-2 small mb-2">
-                <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none">
-                  <i class="fa-solid fa-paperclip me-1 text-primary"></i>
+              <div class="font-label-sm text-on-surface-variant mb-2">Material adjunto</div>
+              <div *ngFor="let material of q.materials" class="d-flex justify-content-between align-items-center gap-2 font-label-sm mb-2">
+                <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none text-on-surface d-inline-flex align-items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">attach_file</span>
                   {{ material.filename }}
                 </a>
-                <span class="badge bg-light text-dark text-uppercase">{{ material.type }}</span>
+                <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
               </div>
             </div>
           </div>
@@ -178,10 +181,10 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
       </div>
 
       <div modal-footer-actions *ngIf="editingQuestion">
-        <button type="button" class="btn btn-light" (click)="cancelEdit()">Cancelar</button>
+        <button type="button" class="btn btn-outline-light fw-semibold" (click)="cancelEdit()">Cancelar</button>
         <button
           type="button"
-          class="btn"
+          class="btn fw-semibold d-inline-flex align-items-center gap-1"
           [ngClass]="editingQuestionId ? 'btn-warning' : 'btn-primary'"
           (click)="saveQuestion()"
         >
@@ -190,156 +193,13 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
       </div>
     </app-modal-shell>
   `,
-  styles: [`
-    :host {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .training-questions-shell {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: 0;
-      border-radius: 1.5rem;
-      overflow: hidden;
-      background: linear-gradient(180deg, #f7fbff 0%, #eef4fb 100%);
-    }
-
-    .training-questions-shell--modal {
-      height: 100%;
-      max-height: 100%;
-      min-width: min(100%, 980px);
-    }
-
-    .training-questions-hero {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1.25rem 3.5rem 1.25rem 1.4rem;
-      color: #fff;
-      background: linear-gradient(135deg, var(--brand-cyan, #1dbbd6), var(--brand-green, #42d483));
-    }
-
-    .training-modal-close {
-      position: absolute;
-      top: 0.9rem;
-      right: 0.9rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.18);
-      color: #fff;
-      font-size: 1rem;
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .training-modal-close:hover {
-      transform: scale(1.04);
-      background: rgba(255, 255, 255, 0.28);
-    }
-
-    .training-questions-kicker {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      opacity: 0.82;
-    }
-
-    .training-questions-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-    }
-
-    .training-questions-subtitle {
-      opacity: 0.88;
-    }
-
-    .training-questions-body {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 1.35rem;
-      background: rgba(255, 255, 255, 0.96);
-    }
-
-    .training-questions-modal-hint {
-      color: var(--muted, #55617a);
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .training-questions-editor,
-    .training-question-item {
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 1rem;
-      background: #fff;
-      box-shadow: 0 10px 24px rgba(11, 27, 73, 0.05);
-    }
-
-    .training-questions-editor {
-      padding: 1.1rem;
-    }
-
-    .training-questions-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-    }
-
-    .training-question-item {
-      padding: 1rem 1.1rem;
-    }
-
-    .training-questions-empty {
-      padding: 1.15rem;
-      border-radius: 1rem;
-      color: var(--muted, #55617a);
-      background: rgba(20, 98, 255, 0.04);
-      border: 1px dashed rgba(20, 98, 255, 0.18);
-    }
-
-    .training-questions-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 1.1rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(15, 23, 42, 0.08);
-    }
-
-    .training-questions-footer .btn {
-      min-width: 110px;
-    }
-
-    @media (max-width: 576px) {
-      .training-questions-hero,
-      .training-questions-footer {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .training-questions-footer .btn {
-        width: 100%;
-      }
-    }
-  `]
+  styles: [/* styles intentionally cleared for custom implementation */]
 })
 export class TrainingQuestionsComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
-  private readonly activeModal = inject(NgbActiveModal, { optional: true });
+  private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } | null = null;
 
   @Input() trainingIdInput?: number;
   @Input() trainingTitleInput?: string;
@@ -536,6 +396,11 @@ export class TrainingQuestionsComponent implements OnInit {
   }
 
   closeModal(): void {
-    this.activeModal?.dismiss('close');
+    if (this.activeModal) {
+      this.activeModal.dismiss('close');
+    } else {
+      // Standalone page: navigate back
+      window.history.back();
+    }
   }
 }
