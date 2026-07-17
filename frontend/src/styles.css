@@ -40,3 +40,105 @@ html.light .dashboard-table-search::placeholder {
 .dashboard-table-search:-ms-input-placeholder {
   color: inherit;
 }
+
+html.dark .form-control,
+html.dark .form-select,
+html.dark .form-control-color,
+html.dark .input-group-text,
+.form-control,
+.form-select,
+.form-control-color,
+.input-group-text,
+.searchable-select-trigger,
+.searchable-select-search,
+.date-picker-trigger,
+.month-picker-trigger,
+.week-picker-trigger,
+.datetime-picker-trigger {
+  border-radius: 0.95rem;
+}
+
+html.dark .form-control,
+html.dark .form-select,
+html.dark .form-control-color,
+html.dark .input-group-text {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #e4e2e4;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+html.dark .form-control::placeholder {
+  color: rgba(196, 198, 205, 0.65);
+}
+
+html.dark .form-control:focus,
+html.dark .form-select:focus,
+html.dark .form-control-color:focus {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #e4e2e4;
+  border-color: rgba(183, 199, 229, 0.65);
+  box-shadow: 0 0 0 0.2rem rgba(183, 199, 229, 0.18);
+}
+
+html.dark .form-control:disabled,
+html.dark .form-control[readonly],
+html.dark .form-select:disabled {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: rgba(196, 198, 205, 0.65);
+}
+
+html.dark .form-check-input {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+html.dark .form-check-input:checked {
+  background-color: #b7c7e5;
+  border-color: #b7c7e5;
+}
+
+html.dark .form-range::-webkit-slider-runnable-track,
+html.dark .form-range::-moz-range-track {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+html.dark .form-control.ng-invalid.ng-touched,
+html.dark .form-select.ng-invalid.ng-touched,
+html.dark .form-control.ng-invalid.ng-dirty,
+html.dark .form-select.ng-invalid.ng-dirty,
+html.dark .form-control.is-invalid,
+html.dark .form-select.is-invalid,
+html.dark .form-control-color.is-invalid,
+html.dark .form-check-input.is-invalid,
+.was-validated .form-control:invalid,
+.was-validated .form-select:invalid,
+.was-validated .form-control-color:invalid,
+.was-validated .form-check-input:invalid {
+  border-color: #ffb4ab !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 180, 171, 0.14);
+}
+
+html.dark .form-control.ng-invalid.ng-touched:focus,
+html.dark .form-select.ng-invalid.ng-touched:focus,
+html.dark .form-control.ng-invalid.ng-dirty:focus,
+html.dark .form-select.ng-invalid.ng-dirty:focus,
+html.dark .form-control.is-invalid:focus,
+html.dark .form-select.is-invalid:focus,
+html.dark .form-control-color.is-invalid:focus,
+html.dark .form-check-input.is-invalid:focus,
+.was-validated .form-control:invalid:focus,
+.was-validated .form-select:invalid:focus,
+.was-validated .form-control-color:invalid:focus,
+.was-validated .form-check-input:invalid:focus {
+  border-color: #ffb4ab !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 180, 171, 0.18);
+}
+
+.invalid-feedback {
+  color: #ffb4ab;
+}
+
+.text-danger.small.mt-1 {
+  color: #ffb4ab !important;
+  margin-top: 0.4rem !important;
+}

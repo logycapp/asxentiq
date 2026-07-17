@@ -30,6 +30,7 @@ class PasswordResetNotification extends Notification
         $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords', 'users').'.expire', 5);
 
         return (new MailMessage)
+            ->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Restauracion de contrasena')
             ->greeting('Hola!')
             ->line('Recibimos una solicitud para restaurar tu contrasena.')

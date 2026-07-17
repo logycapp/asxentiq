@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -47,6 +47,8 @@ export class ParticipantListComponent implements OnInit {
   createEmail = '';
   createPhone = '';
   savingCreate = false;
+  @ViewChild('createForm') private createForm?: NgForm;
+  @ViewChild('editForm') private editForm?: NgForm;
 
   // Excel import/export
   exporting = false;
@@ -110,7 +112,14 @@ export class ParticipantListComponent implements OnInit {
     this.creating = false;
   }
 
-  saveCreateModal(): void {
+  saveCreateModal(createForm?: NgForm): void {
+    const formInstance = createForm ?? this.createForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.createDocumentNumber || !this.createFullName) {
       this.errorMessage = 'Cedula y nombre son obligatorios.';
       return;
@@ -155,7 +164,14 @@ export class ParticipantListComponent implements OnInit {
     this.editingParticipant = null;
   }
 
-  saveEditModal(): void {
+  saveEditModal(editForm?: NgForm): void {
+    const formInstance = editForm ?? this.editForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.editingParticipant || !this.editDocumentNumber || !this.editFullName) {
       this.errorMessage = 'Cedula y nombre son obligatorios.';
       return;

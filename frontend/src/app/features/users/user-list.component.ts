@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
@@ -62,6 +62,8 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   createPasswordConfirmation = '';
   createSaving = false;
   createErrorMessage = '';
+  @ViewChild('createForm') private createForm?: NgForm;
+  @ViewChild('editForm') private editForm?: NgForm;
 
   ngOnInit(): void {
     const routeEmpresaId = Number(this.route.snapshot.paramMap.get('empresaId'));
@@ -135,7 +137,14 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editingUser = null;
   }
 
-  saveEdit(): void {
+  saveEdit(editForm?: NgForm): void {
+    const formInstance = editForm ?? this.editForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.editingUser || !this.editName || !this.editEmail) return;
 
     if (this.editPassword && this.editPassword.length < 8) {
@@ -386,7 +395,14 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.creating = false;
   }
 
-  saveCreate(): void {
+  saveCreate(createForm?: NgForm): void {
+    const formInstance = createForm ?? this.createForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.createName || !this.createEmail) return;
 
     if (!this.createPassword || this.createPassword.length < 8) {

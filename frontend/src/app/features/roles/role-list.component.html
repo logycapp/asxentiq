@@ -116,21 +116,29 @@
 >
   <div modal-body>
     <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>
-      <input id="modalName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalSlug">Slug</label>
-      <input id="modalSlug" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editSlug" placeholder="admin, user, editor" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalDescription">Descripcion</label>
-      <textarea id="modalDescription" class="form-control bg-transparent border-white/10 text-on-surface" rows="2" [(ngModel)]="editDescription"></textarea>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <input class="form-check-input m-0" type="checkbox" id="modalIsSystem" [(ngModel)]="editIsSystem" />
-      <label class="form-check-label fw-semibold small" for="modalIsSystem">{{ editIsSystem ? 'Rol del sistema' : 'Rol normal' }}</label>
-    </div>
+    <form #editForm="ngForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>
+        <input #editNameModel="ngModel" id="modalName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" name="editName" required />
+        <div class="invalid-feedback d-block" *ngIf="(editNameModel.touched || editForm.submitted) && editNameModel.invalid">
+          El nombre es obligatorio.
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalSlug">Slug</label>
+        <input #editSlugModel="ngModel" id="modalSlug" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editSlug" name="editSlug" placeholder="admin, user, editor" pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$" />
+        <div class="invalid-feedback d-block" *ngIf="(editSlugModel.touched || editForm.submitted) && editSlugModel.invalid">
+          Usa solo letras minusculas, numeros y guiones.
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalDescription">Descripcion</label>
+        <textarea id="modalDescription" class="form-control bg-transparent border-white/10 text-on-surface" rows="2" [(ngModel)]="editDescription" name="editDescription"></textarea>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <input class="form-check-input m-0" type="checkbox" id="modalIsSystem" [(ngModel)]="editIsSystem" name="editIsSystem" />
+        <label class="form-check-label fw-semibold small" for="modalIsSystem">{{ editIsSystem ? 'Rol del sistema' : 'Rol normal' }}</label>
+      </div>
+    </form>
   </div>
 </app-modal-shell>

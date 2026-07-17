@@ -20,12 +20,12 @@
 
   <div *ngIf="loading" class="text-secondary py-4">Cargando rol...</div>
 
-  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="row g-3">
       <div class="col-lg-6">
         <label class="form-label" for="name">Nombre</label>
         <input id="name" class="form-control" type="text" formControlName="name">
-        <div class="text-danger small mt-1" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.name.touched && form.controls.name.invalid">
           El nombre es obligatorio.
         </div>
       </div>
@@ -33,7 +33,7 @@
       <div class="col-lg-6">
         <label class="form-label" for="slug">Slug</label>
         <input id="slug" class="form-control" type="text" formControlName="slug" placeholder="admin, user, editor">
-        <div class="text-danger small mt-1" *ngIf="form.controls.slug.touched && form.controls.slug.invalid">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.slug.touched && form.controls.slug.invalid">
           Usa solo letras minúsculas, números y guiones.
         </div>
       </div>

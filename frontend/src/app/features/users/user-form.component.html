@@ -20,12 +20,12 @@
 
   <div *ngIf="loading" class="text-secondary py-4">Cargando informacion...</div>
 
-  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="row g-3">
       <div class="col-lg-6">
         <label class="form-label" for="name">Nombre</label>
         <input id="name" class="form-control" type="text" formControlName="name">
-        <div class="text-danger small mt-1" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.name.touched && form.controls.name.invalid">
           El nombre es obligatorio.
         </div>
       </div>
@@ -33,7 +33,7 @@
       <div class="col-lg-6">
         <label class="form-label" for="email">Correo</label>
         <input id="email" class="form-control" type="email" formControlName="email">
-        <div class="text-danger small mt-1" *ngIf="form.controls.email.touched && form.controls.email.invalid">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.email.touched && form.controls.email.invalid">
           Ingresa un correo valido.
         </div>
       </div>
@@ -44,7 +44,7 @@
           <option [ngValue]="null">Selecciona una empresa</option>
           <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
         </select>
-        <div class="text-danger small mt-1" *ngIf="form.controls.empresa_id.touched && form.controls.empresa_id.invalid">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.empresa_id.touched && form.controls.empresa_id.invalid">
           Selecciona una empresa valida.
         </div>
       </div>
@@ -52,7 +52,7 @@
       <div class="col-lg-6">
         <label class="form-label" for="password">Contrasena {{ isEditMode() ? '(opcional)' : '' }}</label>
         <input id="password" class="form-control" type="password" formControlName="password">
-        <div class="text-danger small mt-1" *ngIf="form.controls.password.touched && form.controls.password.value && (form.controls.password.value?.length ?? 0) < 8">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.password.touched && form.controls.password.value && (form.controls.password.value?.length ?? 0) < 8">
           La contrasena debe tener al menos 8 caracteres.
         </div>
       </div>
@@ -67,7 +67,7 @@
         <select id="role" class="form-select" formControlName="role">
           <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
         </select>
-        <div class="text-danger small mt-1" *ngIf="form.controls.role.touched && form.controls.role.invalid">
+        <div class="invalid-feedback d-block" *ngIf="form.controls.role.touched && form.controls.role.invalid">
           Selecciona un rol valido.
         </div>
       </div>

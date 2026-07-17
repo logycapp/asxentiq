@@ -49,7 +49,7 @@
             <span>{{ errorMessage }}</span>
           </div>
 
-          <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+          <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <label class="field" for="login-email">
               <span>Correo electronico</span>
               <input

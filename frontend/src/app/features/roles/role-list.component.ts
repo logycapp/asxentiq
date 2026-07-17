@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -36,6 +36,7 @@ export class RoleListComponent implements OnInit {
   editDescription = '';
   editIsSystem = false;
   saving = false;
+  @ViewChild('editForm') private editForm?: NgForm;
 
   ngOnInit(): void {
     this.loadRoles();
@@ -71,7 +72,14 @@ export class RoleListComponent implements OnInit {
     this.editingRole = null;
   }
 
-  saveEdit(): void {
+  saveEdit(editForm?: NgForm): void {
+    const formInstance = editForm ?? this.editForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.editingRole || !this.editName) return;
 
     const payload: RolePayload = {

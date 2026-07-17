@@ -130,41 +130,61 @@
 >
   <div modal-body>
     <div *ngIf="createErrorMessage" class="alert alert-danger py-2 mb-3 small">{{ createErrorMessage }}</div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="createName">Nombre</label>
-      <input id="createName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createName" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="createEmail">Correo</label>
-      <input id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="createEmpresa">Empresa</label>
-      <select id="createEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createEmpresaId" [disabled]="empresaId !== null">
-        <option [ngValue]="null">Selecciona una empresa</option>
-        <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
-      </select>
-    </div>
-    <div class="row g-3 mb-3">
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="createPassword">Contrasena</label>
-        <input id="createPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="createPassword" />
+    <form #createForm="ngForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="createName">Nombre</label>
+        <input #createNameModel="ngModel" id="createName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createName" name="createName" required />
+        <div class="invalid-feedback d-block" *ngIf="(createNameModel.touched || createForm.submitted) && createNameModel.invalid">
+          El nombre es obligatorio.
+        </div>
       </div>
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="createPasswordConfirm">Confirmar</label>
-        <input id="createPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="createPasswordConfirmation" />
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="createEmail">Correo</label>
+        <input #createEmailModel="ngModel" id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" name="createEmail" required />
+        <div class="invalid-feedback d-block" *ngIf="(createEmailModel.touched || createForm.submitted) && createEmailModel.invalid">
+          Ingresa un correo valido.
+        </div>
       </div>
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="createRole">Rol</label>
-      <select id="createRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createRole">
-        <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
-      </select>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <input class="form-check-input m-0" type="checkbox" id="createActive" [(ngModel)]="createActive" />
-      <label class="form-check-label fw-semibold small" for="createActive">{{ createActive ? 'Activo' : 'Inactivo' }}</label>
-    </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="createEmpresa">Empresa</label>
+        <select #createEmpresaModel="ngModel" id="createEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createEmpresaId" name="createEmpresaId" [disabled]="empresaId !== null" required>
+          <option [ngValue]="null">Selecciona una empresa</option>
+          <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
+        </select>
+        <div class="invalid-feedback d-block" *ngIf="(createEmpresaModel.touched || createForm.submitted) && createEmpresaModel.invalid">
+          Selecciona una empresa valida.
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="createPassword">Contrasena</label>
+          <input #createPasswordModel="ngModel" id="createPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="createPassword" name="createPassword" required minlength="8" />
+          <div class="invalid-feedback d-block" *ngIf="(createPasswordModel.touched || createForm.submitted) && createPasswordModel.invalid">
+            La contrasena debe tener al menos 8 caracteres.
+          </div>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="createPasswordConfirm">Confirmar</label>
+          <input #createPasswordConfirmModel="ngModel" id="createPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="createPasswordConfirmation" name="createPasswordConfirmation" required />
+          <div class="invalid-feedback d-block" *ngIf="(createPasswordConfirmModel.touched || createForm.submitted) && createPasswordConfirmModel.invalid">
+            Confirma la contrasena.
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="createRole">Rol</label>
+        <select #createRoleModel="ngModel" id="createRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createRole" name="createRole" required>
+          <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
+        </select>
+        <div class="invalid-feedback d-block" *ngIf="(createRoleModel.touched || createForm.submitted) && createRoleModel.invalid">
+          Selecciona un rol valido.
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <input class="form-check-input m-0" type="checkbox" id="createActive" [(ngModel)]="createActive" name="createActive" />
+        <label class="form-check-label fw-semibold small" for="createActive">{{ createActive ? 'Activo' : 'Inactivo' }}</label>
+      </div>
+    </form>
   </div>
 </app-modal-shell>
 
@@ -296,40 +316,60 @@
 >
   <div modal-body>
     <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>
-      <input id="modalName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalEmail">Correo</label>
-      <input id="modalEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="editEmail" />
-    </div>
-    <div class="row g-3 mb-3">
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="modalPassword">Contrasena <span class="text-on-surface-variant opacity-50">(opcional)</span></label>
-        <input id="modalPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPassword" />
+    <form #editForm="ngForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>
+        <input #editNameModel="ngModel" id="modalName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" name="editName" required />
+        <div class="invalid-feedback d-block" *ngIf="(editNameModel.touched || editForm.submitted) && editNameModel.invalid">
+          El nombre es obligatorio.
+        </div>
       </div>
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="modalPasswordConfirm">Confirmar</label>
-        <input id="modalPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPasswordConfirmation" />
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalEmail">Correo</label>
+        <input #editEmailModel="ngModel" id="modalEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="editEmail" name="editEmail" required />
+        <div class="invalid-feedback d-block" *ngIf="(editEmailModel.touched || editForm.submitted) && editEmailModel.invalid">
+          Ingresa un correo valido.
+        </div>
       </div>
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalRole">Rol</label>
-      <select id="modalRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editRole">
-        <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalEmpresa">Empresa</label>
-      <select id="modalEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editEmpresaId">
-        <option [ngValue]="null">Selecciona una empresa</option>
-        <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
-      </select>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <input class="form-check-input m-0" type="checkbox" id="modalActive" [(ngModel)]="editActive" />
-      <label class="form-check-label fw-semibold small" for="modalActive">{{ editActive ? 'Activo' : 'Inactivo' }}</label>
-    </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="modalPassword">Contrasena <span class="text-on-surface-variant opacity-50">(opcional)</span></label>
+          <input #editPasswordModel="ngModel" id="modalPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPassword" name="editPassword" minlength="8" />
+          <div class="invalid-feedback d-block" *ngIf="(editPasswordModel.touched || editForm.submitted) && editPasswordModel.invalid && editPassword">
+            La contrasena debe tener al menos 8 caracteres.
+          </div>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="modalPasswordConfirm">Confirmar</label>
+          <input #editPasswordConfirmModel="ngModel" id="modalPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPasswordConfirmation" name="editPasswordConfirmation" [required]="!!editPassword" />
+          <div class="invalid-feedback d-block" *ngIf="(editPasswordConfirmModel.touched || editForm.submitted) && editPasswordConfirmModel.invalid">
+            Confirma la contrasena.
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalRole">Rol</label>
+        <select #editRoleModel="ngModel" id="modalRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editRole" name="editRole" required>
+          <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
+        </select>
+        <div class="invalid-feedback d-block" *ngIf="(editRoleModel.touched || editForm.submitted) && editRoleModel.invalid">
+          Selecciona un rol valido.
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalEmpresa">Empresa</label>
+        <select #editEmpresaModel="ngModel" id="modalEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editEmpresaId" name="editEmpresaId" required>
+          <option [ngValue]="null">Selecciona una empresa</option>
+          <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
+        </select>
+        <div class="invalid-feedback d-block" *ngIf="(editEmpresaModel.touched || editForm.submitted) && editEmpresaModel.invalid">
+          Selecciona una empresa valida.
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <input class="form-check-input m-0" type="checkbox" id="modalActive" [(ngModel)]="editActive" name="editActive" />
+        <label class="form-check-label fw-semibold small" for="modalActive">{{ editActive ? 'Activo' : 'Inactivo' }}</label>
+      </div>
+    </form>
   </div>
 </app-modal-shell>

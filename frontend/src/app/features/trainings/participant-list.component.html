@@ -171,24 +171,35 @@
 >
   <div modal-body>
     <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="createDocumentNumber">Cedula</label>
-      <input id="createDocumentNumber" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createDocumentNumber" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="createFullName">Nombre completo</label>
-      <input id="createFullName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createFullName" />
-    </div>
-    <div class="row g-3 mb-3">
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="createEmail">Email</label>
-        <input id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" />
+    <form #createForm="ngForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="createDocumentNumber">Cedula</label>
+        <input #createDocumentModel="ngModel" id="createDocumentNumber" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createDocumentNumber" name="createDocumentNumber" required />
+        <div class="invalid-feedback d-block" *ngIf="(createDocumentModel.touched || createForm.submitted) && createDocumentModel.invalid">
+          La cedula es obligatoria.
+        </div>
       </div>
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="createPhone">Telefono</label>
-        <input id="createPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createPhone" />
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="createFullName">Nombre completo</label>
+        <input #createFullNameModel="ngModel" id="createFullName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createFullName" name="createFullName" required />
+        <div class="invalid-feedback d-block" *ngIf="(createFullNameModel.touched || createForm.submitted) && createFullNameModel.invalid">
+          El nombre completo es obligatorio.
+        </div>
       </div>
-    </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="createEmail">Email</label>
+          <input #createEmailModel="ngModel" id="createEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="createEmail" name="createEmail" />
+          <div class="invalid-feedback d-block" *ngIf="(createEmailModel.touched || createForm.submitted) && createEmailModel.invalid">
+            Ingresa un correo valido.
+          </div>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="createPhone">Telefono</label>
+          <input id="createPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createPhone" name="createPhone" />
+        </div>
+      </div>
+    </form>
   </div>
 </app-modal-shell>
 
@@ -214,23 +225,34 @@
 >
   <div modal-body>
     <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalDocumentNumber">Cedula</label>
-      <input id="modalDocumentNumber" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editDocumentNumber" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label small text-on-surface-variant" for="modalFullName">Nombre completo</label>
-      <input id="modalFullName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editFullName" />
-    </div>
-    <div class="row g-3 mb-3">
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="modalEmail">Email</label>
-        <input id="modalEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="editEmail" />
+    <form #editForm="ngForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalDocumentNumber">Cedula</label>
+        <input #editDocumentModel="ngModel" id="modalDocumentNumber" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editDocumentNumber" name="editDocumentNumber" required />
+        <div class="invalid-feedback d-block" *ngIf="(editDocumentModel.touched || editForm.submitted) && editDocumentModel.invalid">
+          La cedula es obligatoria.
+        </div>
       </div>
-      <div class="col-6">
-        <label class="form-label small text-on-surface-variant" for="modalPhone">Telefono</label>
-        <input id="modalPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editPhone" />
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant" for="modalFullName">Nombre completo</label>
+        <input #editFullNameModel="ngModel" id="modalFullName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editFullName" name="editFullName" required />
+        <div class="invalid-feedback d-block" *ngIf="(editFullNameModel.touched || editForm.submitted) && editFullNameModel.invalid">
+          El nombre completo es obligatorio.
+        </div>
       </div>
-    </div>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="modalEmail">Email</label>
+          <input #editEmailModel="ngModel" id="modalEmail" class="form-control bg-transparent border-white/10 text-on-surface" type="email" [(ngModel)]="editEmail" name="editEmail" />
+          <div class="invalid-feedback d-block" *ngIf="(editEmailModel.touched || editForm.submitted) && editEmailModel.invalid">
+            Ingresa un correo valido.
+          </div>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-on-surface-variant" for="modalPhone">Telefono</label>
+          <input id="modalPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editPhone" name="editPhone" />
+        </div>
+      </div>
+    </form>
   </div>
 </app-modal-shell>

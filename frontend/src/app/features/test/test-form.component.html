@@ -13,12 +13,12 @@
     {{ errorMessage }}
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="submit()">
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="row g-3">
       <div class="col-12">
         <label class="form-label" for="titulo">Titulo</label>
         <input id="titulo" class="form-control" type="text" formControlName="titulo" placeholder="Nombre del video">
-        <div class="text-danger small mt-1" *ngIf="form.controls.titulo.touched && form.controls.titulo.invalid">El titulo es obligatorio.</div>
+        <div class="invalid-feedback d-block" *ngIf="form.controls.titulo.touched && form.controls.titulo.invalid">El titulo es obligatorio.</div>
       </div>
 
       <div class="col-12">
@@ -69,7 +69,7 @@
         <div class="col-12">
           <label class="form-label" for="videoPath">Ruta del video</label>
           <input id="videoPath" class="form-control" type="text" formControlName="videoPath" placeholder="test-videos/mi-video.mp4">
-          <div class="text-danger small mt-1" *ngIf="audioForm.controls.videoPath.touched && audioForm.controls.videoPath.invalid">
+          <div class="invalid-feedback d-block" *ngIf="audioForm.controls.videoPath.touched && audioForm.controls.videoPath.invalid">
             La ruta del video es obligatoria.
           </div>
         </div>
@@ -113,7 +113,7 @@
           <div class="col-12">
             <label class="form-label" for="audioPath">Ruta del MP3</label>
             <input id="audioPath" class="form-control" type="text" formControlName="audioPath" placeholder="test-audio/mi-video.mp3">
-            <div class="text-danger small mt-1" *ngIf="analysisForm.controls.audioPath.touched && analysisForm.controls.audioPath.invalid">
+          <div class="invalid-feedback d-block" *ngIf="analysisForm.controls.audioPath.touched && analysisForm.controls.audioPath.invalid">
               La ruta del MP3 es obligatoria.
             </div>
           </div>

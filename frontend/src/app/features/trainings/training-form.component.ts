@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -39,7 +39,7 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
           <div class="text-on-surface-variant font-body-md">Cargando capacitacion...</div>
         </div>
 
-        <form (ngSubmit)="save()" #form="ngForm" id="training-form" *ngIf="!loading">
+        <form (ngSubmit)="save(trainingForm)" #trainingForm="ngForm" id="training-form" novalidate *ngIf="!loading">
           <div class="row g-3">
             <div *ngIf="categories.length === 0" class="col-12">
               <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
@@ -50,24 +50,33 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-6">
               <label class="form-label small text-on-surface-variant">Titulo *</label>
-              <input class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.title" name="title" required />
+              <input #titleModel="ngModel" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.title" name="title" required />
+              <div class="invalid-feedback d-block" *ngIf="(titleModel.touched || trainingForm.submitted) && titleModel.invalid">
+                El titulo es obligatorio.
+              </div>
             </div>
 
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Programa *</label>
-              <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.training_category_id" name="training_category_id" required [disabled]="categories.length === 0">
+              <select #categoryModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.training_category_id" name="training_category_id" required [disabled]="categories.length === 0">
                 <option [ngValue]="null">Selecciona un programa</option>
                 <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
               </select>
+              <div class="invalid-feedback d-block" *ngIf="(categoryModel.touched || trainingForm.submitted) && categoryModel.invalid">
+                Selecciona un programa.
+              </div>
             </div>
 
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Estado *</label>
-              <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.status" name="status" required>
+              <select #statusModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.status" name="status" required>
                 <option value="scheduled">Programada</option>
                 <option value="completed">Realizada</option>
                 <option value="cancelled">Cancelada</option>
               </select>
+              <div class="invalid-feedback d-block" *ngIf="(statusModel.touched || trainingForm.submitted) && statusModel.invalid">
+                Selecciona un estado.
+              </div>
             </div>
 
             <div class="col-12">
@@ -77,21 +86,27 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-4">
               <label class="form-label small text-on-surface-variant">Tipo *</label>
-              <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.type" name="type" required>
+              <select #typeModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.type" name="type" required>
                 <option value="medical_exam">Examen Medico</option>
                 <option value="sst_training">Capacitacion SST</option>
                 <option value="drill">Simulacro</option>
                 <option value="induction">Induccion</option>
               </select>
+              <div class="invalid-feedback d-block" *ngIf="(typeModel.touched || trainingForm.submitted) && typeModel.invalid">
+                Selecciona un tipo.
+              </div>
             </div>
 
             <div class="col-md-4">
               <label class="form-label small text-on-surface-variant">Modalidad *</label>
-              <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.modality" name="modality" required>
+              <select #modalityModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.modality" name="modality" required>
                 <option value="presential">Presencial</option>
                 <option value="virtual">Virtual</option>
                 <option value="mixed">Mixto</option>
               </select>
+              <div class="invalid-feedback d-block" *ngIf="(modalityModel.touched || trainingForm.submitted) && modalityModel.invalid">
+                Selecciona una modalidad.
+              </div>
             </div>
 
             <div class="col-md-4">
@@ -104,7 +119,10 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Fecha Programada *</label>
-              <input type="date" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.scheduled_date" name="scheduled_date" required />
+              <input #scheduledDateModel="ngModel" type="date" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.scheduled_date" name="scheduled_date" required />
+              <div class="invalid-feedback d-block" *ngIf="(scheduledDateModel.touched || trainingForm.submitted) && scheduledDateModel.invalid">
+                Selecciona una fecha programada.
+              </div>
             </div>
 
             <div class="col-md-3">
@@ -206,6 +224,7 @@ export class TrainingFormComponent implements OnInit {
   trainingMaterials: NonNullable<Training['materials']> = [];
   trainingMaterialFile: File | null = null;
   trainingMaterialType = 'pdf';
+  @ViewChild('trainingForm') private trainingForm?: NgForm;
 
   model: Partial<Training> = {
     training_category_id: undefined,
@@ -265,7 +284,14 @@ export class TrainingFormComponent implements OnInit {
       });
   }
 
-  save(): void {
+  save(form?: NgForm): void {
+    const formInstance = form ?? this.trainingForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
     if (!this.model.training_category_id) {
       this.errorMessage = 'Selecciona un programa.';
       return;

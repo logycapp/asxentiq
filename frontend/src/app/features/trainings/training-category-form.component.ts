@@ -34,11 +34,14 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
         <div class="text-on-surface-variant font-body-md">Cargando programa...</div>
       </div>
 
-      <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+      <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="row g-3">
           <div class="col-md-8">
             <label class="form-label small text-on-surface-variant">Nombre *</label>
             <input class="form-control bg-transparent border-white/10 text-on-surface" formControlName="name" />
+            <div class="invalid-feedback d-block" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+              El nombre es obligatorio.
+            </div>
           </div>
 
           <div class="col-12">
