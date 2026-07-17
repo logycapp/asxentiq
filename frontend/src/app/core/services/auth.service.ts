@@ -104,7 +104,6 @@ export class AuthService {
   clearSession(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('asxentiq_user');
-    localStorage.removeItem('asxentiq_theme');
     this.userSubject.next(null);
   }
 

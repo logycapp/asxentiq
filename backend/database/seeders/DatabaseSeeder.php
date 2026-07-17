@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\MenuItem;
+use App\Models\Training;
+use App\Models\TrainingCategory;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -125,6 +127,19 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $programsItem = MenuItem::query()->updateOrCreate(
+            ['route' => '/trainings_programs'],
+            [
+                'label' => 'Programas',
+                'icon' => 'category',
+                'sort_order' => 1,
+                'parent_id' => $trainingsItem->id,
+                'role_id' => null,
+                'enabled' => true,
+                'exact' => false,
+            ]
+        );
+
         $dashboardItem->roles()->sync([$adminRole->id, $userRole->id]);
         $usersItem->roles()->sync([$adminRole->id]);
         $rolesItem->roles()->sync([$adminRole->id]);
@@ -132,5 +147,18 @@ class DatabaseSeeder extends Seeder
         $adminItem->roles()->sync([$adminRole->id]);
         $trainingsItem->roles()->sync([$adminRole->id]);
         $participantsItem->roles()->sync([$adminRole->id]);
+        $programsItem->roles()->sync([$adminRole->id]);
+
+        $defaultTrainingCategory = TrainingCategory::query()->updateOrCreate(
+            ['name' => 'Capacitaciones de seguridad vial'],
+            [
+                'description' => 'Grupo inicial de capacitaciones sobre seguridad vial.',
+                'sort_order' => 1,
+            ]
+        );
+
+        Training::query()
+            ->whereNull('training_category_id')
+            ->update(['training_category_id' => $defaultTrainingCategory->id]);
     }
 }

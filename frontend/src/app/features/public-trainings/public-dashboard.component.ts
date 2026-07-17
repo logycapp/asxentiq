@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { LoadingService } from '../../core/services/loading.service';
-import { TrainingService, Training, PublicUser } from '../../core/services/training.service';
+import { TrainingService, Training, PublicUser, TrainingCategory } from '../../core/services/training.service';
 
 @Component({
   selector: 'app-public-dashboard',
@@ -39,17 +39,30 @@ import { TrainingService, Training, PublicUser } from '../../core/services/train
           No tienes capacitaciones pendientes.
         </div>
 
-        <div *ngFor="let t of pending" class="card mb-2">
-          <div class="card-body d-flex justify-content-between align-items-center">
+        <div *ngFor="let group of pendingGroups" class="card mb-3">
+          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
             <div>
-              <h6 class="mb-1">{{ t.title }}</h6>
-              <small class="text-muted">
-                {{ typeLabel(t.type) }} | {{ t.questions_count }} preguntas
-              </small>
+              <strong>Programa: {{ categoryLabel(group.category) }}</strong>
             </div>
-            <a [routerLink]="['/public/trainings', t.id, 'take']" class="btn btn-primary btn-sm">
-              Realizar
-            </a>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm btn-outline-primary" type="button" (click)="togglePendingGroup(group.category)">
+                {{ isPendingGroupExpanded(group.category) ? 'Ocultar capacitaciones' : 'Abrir capacitaciones' }}
+              </button>
+              <span class="badge bg-secondary">{{ group.trainings.length }}</span>
+            </div>
+          </div>
+          <div *ngIf="isPendingGroupExpanded(group.category)" class="card-body">
+            <div *ngFor="let t of group.trainings" class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
+              <div>
+                <h6 class="mb-1">{{ t.title }}</h6>
+                <small class="text-muted">
+                  {{ typeLabel(t.type) }} | {{ t.questions_count }} preguntas
+                </small>
+              </div>
+              <a [routerLink]="['/public/trainings', t.id, 'take']" class="btn btn-primary btn-sm">
+                Realizar
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -60,9 +73,20 @@ import { TrainingService, Training, PublicUser } from '../../core/services/train
           No has completado ninguna capacitacion.
         </div>
 
-        <div *ngFor="let t of completed" class="card mb-2">
-          <div class="card-body">
-            <div class="d-flex justify-content-between">
+        <div *ngFor="let group of completedGroups" class="card mb-3">
+          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <div>
+              <strong>Programa: {{ categoryLabel(group.category) }}</strong>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm btn-outline-primary" type="button" (click)="toggleCompletedGroup(group.category)">
+                {{ isCompletedGroupExpanded(group.category) ? 'Ocultar capacitaciones' : 'Abrir capacitaciones' }}
+              </button>
+              <span class="badge bg-secondary">{{ group.trainings.length }}</span>
+            </div>
+          </div>
+          <div *ngIf="isCompletedGroupExpanded(group.category)" class="card-body">
+            <div *ngFor="let t of group.trainings" class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
               <div>
                 <h6 class="mb-1">{{ t.title }}</h6>
                 <small class="text-muted">{{ typeLabel(t.type) }}</small>
@@ -104,6 +128,8 @@ export class PublicDashboardComponent implements OnInit {
   pending: Training[] = [];
   completed: Training[] = [];
   tab: 'pending' | 'completed' = 'pending';
+  expandedPendingProgramKeys = new Set<string>();
+  expandedCompletedProgramKeys = new Set<string>();
 
   ngOnInit(): void {
     const stored = localStorage.getItem('public_user');
@@ -127,6 +153,14 @@ export class PublicDashboardComponent implements OnInit {
     });
   }
 
+  get pendingGroups(): Array<{ category: TrainingCategory | null; trainings: Training[] }> {
+    return this.groupTrainings(this.pending);
+  }
+
+  get completedGroups(): Array<{ category: TrainingCategory | null; trainings: Training[] }> {
+    return this.groupTrainings(this.completed);
+  }
+
   logout(): void {
     localStorage.removeItem('public_token');
     localStorage.removeItem('public_user');
@@ -141,5 +175,75 @@ export class PublicDashboardComponent implements OnInit {
       induction: 'Induccion'
     };
     return labels[type] || type;
+  }
+
+  categoryLabel(category: TrainingCategory | null): string {
+    return category?.name || 'Sin programa';
+  }
+
+  programKey(category: TrainingCategory | null): string {
+    return category ? `program-${category.id}` : 'program-uncategorized';
+  }
+
+  isPendingGroupExpanded(category: TrainingCategory | null): boolean {
+    return this.expandedPendingProgramKeys.has(this.programKey(category));
+  }
+
+  isCompletedGroupExpanded(category: TrainingCategory | null): boolean {
+    return this.expandedCompletedProgramKeys.has(this.programKey(category));
+  }
+
+  togglePendingGroup(category: TrainingCategory | null): void {
+    const key = this.programKey(category);
+
+    if (this.expandedPendingProgramKeys.has(key)) {
+      this.expandedPendingProgramKeys.delete(key);
+      return;
+    }
+
+    this.expandedPendingProgramKeys.add(key);
+  }
+
+  toggleCompletedGroup(category: TrainingCategory | null): void {
+    const key = this.programKey(category);
+
+    if (this.expandedCompletedProgramKeys.has(key)) {
+      this.expandedCompletedProgramKeys.delete(key);
+      return;
+    }
+
+    this.expandedCompletedProgramKeys.add(key);
+  }
+
+  private groupTrainings(trainings: Training[]): Array<{ category: TrainingCategory | null; trainings: Training[] }> {
+    const groups = new Map<string, { category: TrainingCategory | null; trainings: Training[] }>();
+
+    trainings.forEach((training) => {
+      const category = training.category ?? null;
+      const key = category ? `category-${category.id}` : 'uncategorized';
+
+      if (!groups.has(key)) {
+        groups.set(key, { category, trainings: [] });
+      }
+
+      groups.get(key)?.trainings.push(training);
+    });
+
+    return Array.from(groups.values()).sort((left, right) => {
+      if (!left.category && !right.category) {
+        return 0;
+      }
+
+      if (!left.category) {
+        return 1;
+      }
+
+      if (!right.category) {
+        return -1;
+      }
+
+      const orderDiff = (left.category.sort_order ?? 0) - (right.category.sort_order ?? 0);
+      return orderDiff !== 0 ? orderDiff : left.category.name.localeCompare(right.category.name);
+    });
   }
 }

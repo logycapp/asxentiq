@@ -18,7 +18,13 @@ class TrainingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Training::query()
+            ->with('category')
             ->withCount(['questions', 'users']);
+
+        $categoryId = (int) $request->input('training_category_id', 0);
+        if ($categoryId > 0) {
+            $query->where('training_category_id', $categoryId);
+        }
 
         $search = trim((string) $request->input('search', ''));
 
@@ -31,12 +37,17 @@ class TrainingController extends Controller
                     ->orWhere('modality', 'like', '%' . $search . '%')
                     ->orWhere('status', 'like', '%' . $search . '%')
                     ->orWhere('location', 'like', '%' . $search . '%')
-                    ->orWhere('instructor', 'like', '%' . $search . '%');
+                    ->orWhere('instructor', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($categoryQuery) use ($search): void {
+                        $categoryQuery->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('description', 'like', '%' . $search . '%');
+                    });
             });
         }
 
         $allowedSorts = [
             'id',
+            'training_category_id',
             'title',
             'type',
             'modality',
@@ -85,6 +96,7 @@ class TrainingController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            'training_category_id' => ['required', 'integer', 'exists:training_categories,id'],
             'description' => ['nullable', 'string'],
             'type' => ['required', 'string', 'in:medical_exam,sst_training,drill,induction'],
             'modality' => ['required', 'string', 'in:presential,virtual,mixed'],
@@ -102,13 +114,13 @@ class TrainingController extends Controller
 
         return response()->json([
             'message' => 'Capacitacion creada correctamente.',
-            'training' => $training,
+            'training' => $training->load('category'),
         ], 201);
     }
 
     public function show(Training $training): JsonResponse
     {
-        $relations = ['questions.options', 'materials', 'users', 'participants'];
+        $relations = ['category', 'questions.options', 'materials', 'users', 'participants'];
 
         if (Schema::hasTable('training_audio_indexations')) {
             $relations[] = 'audioIndexation';
@@ -123,6 +135,7 @@ class TrainingController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            'training_category_id' => ['required', 'integer', 'exists:training_categories,id'],
             'description' => ['nullable', 'string'],
             'type' => ['required', 'string', 'in:medical_exam,sst_training,drill,induction'],
             'modality' => ['required', 'string', 'in:presential,virtual,mixed'],
@@ -138,7 +151,7 @@ class TrainingController extends Controller
 
         $training->update($data);
 
-        $relations = ['questions.options', 'materials'];
+        $relations = ['category', 'questions.options', 'materials'];
 
         if (Schema::hasTable('training_audio_indexations')) {
             $relations[] = 'audioIndexation';

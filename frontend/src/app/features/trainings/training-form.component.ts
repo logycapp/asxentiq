@@ -6,7 +6,7 @@ import { finalize } from 'rxjs';
 
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
-import { TrainingService, Training } from '../../core/services/training.service';
+import { TrainingCategory, TrainingService, Training } from '../../core/services/training.service';
 
 @Component({
   selector: 'app-training-form',
@@ -26,7 +26,7 @@ import { TrainingService, Training } from '../../core/services/training.service'
       [showSecondaryButton]="true"
       [primaryLabel]="isEdit ? 'Actualizar' : 'Crear'"
       secondaryLabel="Cancelar"
-      [primaryDisabled]="loading || saving"
+      [primaryDisabled]="loading || saving || categories.length === 0"
       [primaryLoading]="saving"
       (secondaryRequested)="closeModal()"
       (primaryRequested)="save()"
@@ -41,12 +41,27 @@ import { TrainingService, Training } from '../../core/services/training.service'
 
         <form (ngSubmit)="save()" #form="ngForm" id="training-form" *ngIf="!loading">
           <div class="row g-3">
-            <div class="col-md-8">
+            <div *ngIf="categories.length === 0" class="col-12">
+              <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                <span>Primero debes crear un programa para poder guardar la capacitacion.</span>
+                <button type="button" class="btn btn-sm btn-outline-dark fw-semibold" (click)="goToPrograms()">Gestionar programas</button>
+              </div>
+            </div>
+
+            <div class="col-md-6">
               <label class="form-label small text-on-surface-variant">Titulo *</label>
               <input class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.title" name="title" required />
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
+              <label class="form-label small text-on-surface-variant">Programa *</label>
+              <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.training_category_id" name="training_category_id" required [disabled]="categories.length === 0">
+                <option [ngValue]="null">Selecciona un programa</option>
+                <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Estado *</label>
               <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.status" name="status" required>
                 <option value="scheduled">Programada</option>
@@ -187,11 +202,13 @@ export class TrainingFormComponent implements OnInit {
   loading = true;
   saving = false;
   errorMessage = '';
+  categories: TrainingCategory[] = [];
   trainingMaterials: NonNullable<Training['materials']> = [];
   trainingMaterialFile: File | null = null;
   trainingMaterialType = 'pdf';
 
   model: Partial<Training> = {
+    training_category_id: undefined,
     title: '',
     description: '',
     type: 'sst_training',
@@ -207,6 +224,7 @@ export class TrainingFormComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.loadCategories();
     const id = this.trainingIdInput ?? Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.isEdit = true;
@@ -223,6 +241,7 @@ export class TrainingFormComponent implements OnInit {
       .subscribe({
         next: (training) => {
           this.model = {
+            training_category_id: training.training_category_id ?? training.category?.id ?? undefined,
             title: training.title,
             description: training.description,
             type: training.type,
@@ -247,6 +266,11 @@ export class TrainingFormComponent implements OnInit {
   }
 
   save(): void {
+    if (!this.model.training_category_id) {
+      this.errorMessage = 'Selecciona un programa.';
+      return;
+    }
+
     this.saving = true;
     this.errorMessage = '';
 
@@ -297,6 +321,21 @@ export class TrainingFormComponent implements OnInit {
     this.trainingMaterialType = 'pdf';
   }
 
+  loadCategories(): void {
+    this.loadingService.track(this.trainingService.getCategories()).subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: () => {
+        this.categories = [];
+      }
+    });
+  }
+
+  goToPrograms(): void {
+    this.router.navigate(['/trainings_programs']);
+  }
+
   removeTrainingMaterial(material: NonNullable<Training['materials']>[number]): void {
     if (!this.trainingId || !window.confirm(`Eliminar ${material.filename}?`)) {
       return;
@@ -319,7 +358,14 @@ export class TrainingFormComponent implements OnInit {
   }
 
   closeModal(): void {
-    this.router.navigate(['/trainings']);
+    const programId = Number(this.route.parent?.snapshot.paramMap.get('programId') ?? this.route.snapshot.paramMap.get('programId') ?? 0);
+
+    if (programId > 0) {
+      void this.router.navigate(['/trainings_programs', programId, 'trainings']);
+      return;
+    }
+
+    void this.router.navigate(['/trainings_programs']);
   }
 
   get isModal(): boolean {

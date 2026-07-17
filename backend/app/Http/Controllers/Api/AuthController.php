@@ -119,8 +119,14 @@ class AuthController extends Controller
         $status = Password::sendResetLink($data);
 
         if ($status !== Password::RESET_LINK_SENT) {
+            $message = match ($status) {
+                Password::INVALID_USER => 'El correo no esta registrado en el sistema.',
+                Password::RESET_THROTTLED => 'Ya enviamos un enlace recientemente. Espera unos minutos antes de intentarlo de nuevo.',
+                default => 'No fue posible enviar el correo de restauracion.',
+            };
+
             throw ValidationException::withMessages([
-                'email' => ['No fue posible enviar el correo de restauracion.'],
+                'email' => [$message],
             ]);
         }
 

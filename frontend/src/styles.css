@@ -17,3 +17,26 @@ body {
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
+.dashboard-table-search::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+  opacity: 1;
+}
+
+html.light .dashboard-table-search::placeholder {
+  color: #64748b;
+}
+
+.dashboard-table-search::-webkit-input-placeholder {
+  color: inherit;
+  opacity: 1;
+}
+
+.dashboard-table-search::-moz-placeholder {
+  color: inherit;
+  opacity: 1;
+}
+
+.dashboard-table-search:-ms-input-placeholder {
+  color: inherit;
+}

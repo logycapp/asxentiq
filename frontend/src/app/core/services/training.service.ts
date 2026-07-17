@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 
 export interface Training {
   id: number;
+  training_category_id?: number;
   title: string;
   description?: string;
   type: string;
@@ -22,6 +23,7 @@ export interface Training {
   participants_count?: number;
   created_at?: string;
   updated_at?: string;
+  category?: TrainingCategory | null;
   questions?: Question[];
   materials?: TrainingMaterial[];
   audioIndexation?: TrainingAudioIndexation | null;
@@ -193,6 +195,22 @@ export interface TrainingListSummary {
   cancelled: number;
 }
 
+export interface TrainingCategory {
+  id: number;
+  name: string;
+  description?: string | null;
+  sort_order: number;
+  trainings_count?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TrainingCategoryPayload {
+  name: string;
+  description?: string | null;
+  sort_order?: number;
+}
+
 export interface TrainingListResponse {
   data: Training[];
   meta: TrainingListMeta;
@@ -240,12 +258,33 @@ export class TrainingService {
   private readonly apiUrl = `${environment.apiUrl}/trainings`;
 
   // Admin
+  getCategories(): Observable<TrainingCategory[]> {
+    return this.http.get<TrainingCategory[]>(`${this.apiUrl}/categories`);
+  }
+
+  getCategory(id: number): Observable<TrainingCategory> {
+    return this.http.get<TrainingCategory>(`${this.apiUrl}/categories/${id}`);
+  }
+
+  createCategory(payload: TrainingCategoryPayload): Observable<{ message: string; category: TrainingCategory }> {
+    return this.http.post<{ message: string; category: TrainingCategory }>(`${this.apiUrl}/categories`, payload);
+  }
+
+  updateCategory(id: number, payload: TrainingCategoryPayload): Observable<{ message: string; category: TrainingCategory }> {
+    return this.http.put<{ message: string; category: TrainingCategory }>(`${this.apiUrl}/categories/${id}`, payload);
+  }
+
+  deleteCategory(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/categories/${id}`);
+  }
+
   list(params?: {
     page?: number;
     per_page?: number;
     search?: string;
     sort_by?: string;
     sort_dir?: string;
+    training_category_id?: number;
   }): Observable<TrainingListResponse> {
     let httpParams = new HttpParams();
 
@@ -267,6 +306,10 @@ export class TrainingService {
 
     if (params?.sort_dir !== undefined) {
       httpParams = httpParams.set('sort_dir', params.sort_dir);
+    }
+
+    if (params?.training_category_id !== undefined) {
+      httpParams = httpParams.set('training_category_id', String(params.training_category_id));
     }
 
     return this.http.get<TrainingListResponse>(this.apiUrl, { params: httpParams });

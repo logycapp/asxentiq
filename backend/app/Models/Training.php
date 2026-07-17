@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,7 @@ class Training extends Model
 {
     protected $fillable = [
         'title',
+        'training_category_id',
         'description',
         'type',
         'modality',
@@ -34,6 +36,11 @@ class Training extends Model
             'mandatory' => 'boolean',
             'passing_score' => 'decimal:2',
         ];
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(TrainingCategory::class, 'training_category_id');
     }
 
     public function questions(): HasMany

@@ -49,20 +49,22 @@ class MenuController extends Controller
                 'exact' => $child->exact ?? false,
             ])->toArray();
 
-            // Prepender el item padre como primer hijo para que sea clickeable
-            $children = array_merge(
-                [
+            // En Capacitaciones solo mostramos sus subitems reales: Programas y Participantes.
+            $children = $item->route === '/trainings'
+                ? $childrenBase
+                : array_merge(
                     [
-                        'id' => $item->id,
-                        'label' => $item->label,
-                        'route' => $item->route,
-                        'icon' => $item->icon,
-                        'order' => 0,
-                        'exact' => $item->exact ?? false,
+                        [
+                            'id' => $item->id,
+                            'label' => $item->label,
+                            'route' => $item->route,
+                            'icon' => $item->icon,
+                            'order' => 0,
+                            'exact' => $item->exact ?? false,
+                        ],
                     ],
-                ],
-                $childrenBase,
-            );
+                    $childrenBase,
+                );
 
             return [
                 'id' => $item->id,

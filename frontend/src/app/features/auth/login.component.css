@@ -303,6 +303,14 @@
   text-decoration: none;
 }
 
+.help-link-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
 .help-link:hover {
   text-decoration: underline;
 }

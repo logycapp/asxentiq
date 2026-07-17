@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateChildFn, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivateChildFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { LoadingService } from '../services/loading.service';
 import { MenuService } from '../services/menu.service';
@@ -32,11 +32,27 @@ function resolveProtectedRoute(path?: string | null): string | null {
   return null;
 }
 
+function resolveProtectedRouteFromSnapshot(route: Parameters<CanActivateChildFn>[0]): string | null {
+  let current: ActivatedRouteSnapshot | null = route;
+
+  while (current) {
+    const resolved = resolveProtectedRoute(current.routeConfig?.path);
+
+    if (resolved) {
+      return resolved;
+    }
+
+    current = current.parent;
+  }
+
+  return null;
+}
+
 export const moduleAccessGuard: CanActivateChildFn = (route) => {
   const loadingService = inject(LoadingService);
   const menuService = inject(MenuService);
   const router = inject(Router);
-  const requiredRoute = resolveProtectedRoute(route.routeConfig?.path);
+  const requiredRoute = resolveProtectedRouteFromSnapshot(route);
 
   if (!requiredRoute) {
     return true;

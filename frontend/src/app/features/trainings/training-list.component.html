@@ -1,66 +1,32 @@
 <app-page-header
-  *ngIf="!isParticipantsRoute"
+  *ngIf="!isParticipantsRoute && !isCategoriesRoute"
   title="Capacitaciones SST"
   subtitle="Gestiona, monitorea y certifica el crecimiento profesional de tus colaboradores con una vista clara para seguimiento rapido."
   [showDateFilter]="false"
 />
 
-<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
+<div *ngIf="message && !isCategoriesRoute" class="alert alert-success alert-dismissible mb-3">
   <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
   {{ message }}
 </div>
-<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
+<div *ngIf="errorMessage && !isCategoriesRoute" class="alert alert-danger alert-dismissible mb-3">
   <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
   {{ errorMessage }}
 </div>
 
-<!-- Summary cards -->
-<section class="row g-3 mb-4" *ngIf="!loading && !isParticipantsRoute">
-  <div class="col-12 col-lg-4">
-    <div class="card glass-card border-0 rounded-4 p-4 h-100">
-      <div class="d-flex align-items-start justify-content-between mb-3">
-        <span class="d-inline-flex align-items-center gap-2 text-primary">
-          <span class="material-symbols-outlined">layers</span>
-          <span class="font-label-sm text-on-surface-variant">Acumulado</span>
-        </span>
-      </div>
-      <div class="text-on-surface fw-bold" style="font-size: 2rem;">{{ summary.total }}</div>
-      <div class="font-label-sm text-on-surface-variant">Capacitaciones totales</div>
-    </div>
-  </div>
-  <div class="col-12 col-lg-4">
-    <div class="card glass-card border-0 rounded-4 p-4 h-100">
-      <div class="d-flex align-items-start justify-content-between mb-3">
-        <span class="d-inline-flex align-items-center gap-2 text-chart-yellow">
-          <span class="material-symbols-outlined">calendar_month</span>
-          <span class="font-label-sm text-on-surface-variant">Proximas</span>
-        </span>
-      </div>
-      <div class="text-on-surface fw-bold" style="font-size: 2rem;">{{ summary.scheduled }}</div>
-      <div class="font-label-sm text-on-surface-variant">Pendientes por ejecutar</div>
-    </div>
-  </div>
-  <div class="col-12 col-lg-4">
-    <div class="card glass-card border-0 rounded-4 p-4 h-100">
-      <div class="d-flex align-items-start justify-content-between mb-3">
-        <span class="d-inline-flex align-items-center gap-2 text-chart-green">
-          <span class="material-symbols-outlined">check_circle</span>
-          <span class="font-label-sm text-on-surface-variant">Completado</span>
-        </span>
-      </div>
-      <div class="text-on-surface fw-bold" style="font-size: 2rem;">{{ summary.completed }}</div>
-      <div class="font-label-sm text-on-surface-variant">Cerradas exitosamente</div>
-    </div>
-  </div>
-</section>
-
-<div class="card glass-card border-0 rounded-4 p-4 mb-4" *ngIf="!isParticipantsRoute">
+<div class="card glass-card border-0 rounded-4 p-4 mb-4" *ngIf="!isParticipantsRoute && !isCategoriesRoute">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
-      <a routerLink="/trainings/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
-        <span class="material-symbols-outlined text-[18px]">add</span>
-        Nueva capacitacion
-      </a>
+      <div class="d-flex flex-wrap gap-2">
+        <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings', 'create']" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Nueva capacitacion
+        </a>
+        <a *ngIf="!isProgramFilteredView" routerLink="/trainings_programs" class="btn btn-outline-info d-inline-flex align-items-center gap-2 fw-semibold">
+          <span class="material-symbols-outlined text-[18px]">category</span>
+          Programas
+        </a>
+      </div>
     </div>
     <div class="col-12 col-xl-auto">
       <div class="d-flex gap-2 flex-wrap">
@@ -77,82 +43,175 @@
   </div>
 </div>
 
-<div *ngIf="loading && !isParticipantsRoute" class="text-center py-5">
+<div *ngIf="loading && !isParticipantsRoute && !isCategoriesRoute" class="text-center py-5">
   <div class="text-on-surface-variant font-body-md">Cargando capacitaciones...</div>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && trainings.length === 0" class="text-center py-5">
+<div *ngIf="!loading && !isParticipantsRoute && !isCategoriesRoute && trainings.length === 0" class="text-center py-5">
   <div class="text-on-surface-variant font-body-md mb-3">No hay capacitaciones registradas.</div>
-  <a routerLink="/trainings/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+  <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings', 'create']" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
     <span class="material-symbols-outlined text-[18px]">add</span>
     Nueva capacitacion
   </a>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && trainings.length > 0" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0 dashboard-table">
-      <thead class="training-table-head">
-        <tr class="border-bottom border-white/10">
-          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">#</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-            <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')">Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span></button>
-          </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Tipo</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Modalidad</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-            <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')">Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span></button>
-          </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-            <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')">Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span></button>
-          </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Preguntas</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Usuarios</th>
-          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let t of trainings; let i = index">
-          <td class="ps-4 py-3 font-mono text-on-surface">{{ t.id }}</td>
-          <td class="py-3">
-            <span class="text-on-surface fw-semibold">{{ t.title }}</span>
-          </td>
-          <td class="py-3 text-on-surface-variant">{{ typeLabel(t.type) }}</td>
-          <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
-          <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
-          <td class="py-3">
-            <span [class]="statusBadgeClass(t.status)">
-              {{ statusLabel(t.status) }}
-            </span>
-          </td>
-          <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.questions_count ?? 0 }}</span></td>
-          <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.users_count ?? 0 }}</span></td>
-          <td class="pe-4 py-3 text-end">
-            <div class="dashboard-action-group">
-              <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
-                <span class="material-symbols-outlined">edit</span>
-              </button>
-              <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">quiz</span>
-              </a>
-              <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings', t.id, 'assign']" title="Asignar" aria-label="Asignar" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">group_add</span>
-              </a>
-              <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings', t.id, 'results']" title="Resultados" aria-label="Resultados" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">assessment</span>
-              </a>
-              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(t)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<div *ngIf="!loading && !isParticipantsRoute && !isCategoriesRoute && trainings.length > 0" class="d-grid gap-4 mb-4">
+  <div *ngIf="isProgramFilteredView" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden">
+    <div class="px-4 py-3 border-bottom border-white/10 d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="material-symbols-outlined text-primary">folder</span>
+        <div>
+          <div class="text-on-surface fw-semibold">Programa: {{ activeProgramName || 'Sin nombre' }}</div>
+          <div class="font-label-sm text-on-surface-variant">{{ trainings.length }} capacitaciones</div>
+        </div>
+      </div>
+      <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ trainings.length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 dashboard-table">
+        <thead class="training-table-head">
+          <tr class="border-bottom border-white/10">
+            <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">#</th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+              <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')">Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span></button>
+            </th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Tipo</th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Modalidad</th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+              <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')">Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span></button>
+            </th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+              <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')">Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span></button>
+            </th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Preguntas</th>
+            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Usuarios</th>
+            <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of trainings; let i = index">
+            <td class="ps-4 py-3 font-mono text-on-surface">{{ t.id }}</td>
+            <td class="py-3">
+              <span class="text-on-surface fw-semibold">{{ t.title }}</span>
+            </td>
+            <td class="py-3 text-on-surface-variant">{{ typeLabel(t.type) }}</td>
+            <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
+            <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
+            <td class="py-3">
+              <span [class]="statusBadgeClass(t.status)">
+                {{ statusLabel(t.status) }}
+              </span>
+            </td>
+            <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.questions_count ?? 0 }}</span></td>
+            <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.users_count ?? 0 }}</span></td>
+            <td class="pe-4 py-3 text-end">
+              <div class="dashboard-action-group">
+                <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
+                  <span class="material-symbols-outlined">quiz</span>
+                </a>
+                <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'assign']" title="Asignar" aria-label="Asignar" data-bs-toggle="tooltip" data-bs-placement="top">
+                  <span class="material-symbols-outlined">group_add</span>
+                </a>
+                <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'results']" title="Resultados" aria-label="Resultados" data-bs-toggle="tooltip" data-bs-placement="top">
+                  <span class="material-symbols-outlined">assessment</span>
+                </a>
+                <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(t)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="!isProgramFilteredView" class="d-grid gap-4">
+    <div *ngFor="let group of groupedTrainings" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden">
+      <div class="px-4 py-3 border-bottom border-white/10 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="material-symbols-outlined text-primary">folder</span>
+          <div>
+            <div class="text-on-surface fw-semibold">Programa: {{ categoryLabel(group.category) }}</div>
+            <div class="font-label-sm text-on-surface-variant">{{ group.trainings.length }} capacitaciones</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" type="button" (click)="toggleProgram(group.category)">
+            <span class="material-symbols-outlined text-[16px]">{{ isProgramExpanded(group.category) ? 'expand_less' : 'expand_more' }}</span>
+            {{ isProgramExpanded(group.category) ? 'Ocultar capacitaciones' : 'Abrir capacitaciones' }}
+          </button>
+          <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ group.trainings.length }}</span>
+        </div>
+      </div>
+      <div *ngIf="isProgramExpanded(group.category)" class="table-responsive">
+        <table class="table table-hover align-middle mb-0 dashboard-table">
+          <thead class="training-table-head">
+            <tr class="border-bottom border-white/10">
+              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">#</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')">Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span></button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Tipo</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Modalidad</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')">Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span></button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')">Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span></button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Preguntas</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Usuarios</th>
+              <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of group.trainings; let i = index">
+              <td class="ps-4 py-3 font-mono text-on-surface">{{ t.id }}</td>
+              <td class="py-3">
+                <span class="text-on-surface fw-semibold">{{ t.title }}</span>
+              </td>
+              <td class="py-3 text-on-surface-variant">{{ typeLabel(t.type) }}</td>
+              <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
+              <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
+              <td class="py-3">
+                <span [class]="statusBadgeClass(t.status)">
+                  {{ statusLabel(t.status) }}
+                </span>
+              </td>
+              <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.questions_count ?? 0 }}</span></td>
+              <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.users_count ?? 0 }}</span></td>
+              <td class="pe-4 py-3 text-end">
+                <div class="dashboard-action-group">
+                  <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <span class="material-symbols-outlined">quiz</span>
+                  </a>
+                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'assign']" title="Asignar" aria-label="Asignar" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <span class="material-symbols-outlined">group_add</span>
+                  </a>
+                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'results']" title="Resultados" aria-label="Resultados" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <span class="material-symbols-outlined">assessment</span>
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(t)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && trainings.length > 0" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+<div *ngIf="!loading && !isParticipantsRoute && !isCategoriesRoute && trainings.length > 0" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
   <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ meta.from || 0 }}-{{ meta.to || 0 }} de {{ meta.total }} capacitaciones</p>
   <nav aria-label="Paginacion">
     <ul class="pagination pagination-sm mb-0">
@@ -199,7 +258,7 @@
   [showSecondaryButton]="true"
   primaryLabel="Guardar cambios"
   secondaryLabel="Cancelar"
-  [primaryDisabled]="saving"
+  [primaryDisabled]="saving || categories.length === 0"
   [primaryLoading]="saving"
   (secondaryRequested)="closeEditModal()"
   (primaryRequested)="saveEditModal()"
@@ -208,11 +267,24 @@
   <div modal-body>
     <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
     <div class="row g-3">
-      <div class="col-md-8">
+      <div *ngIf="categories.length === 0" class="col-12">
+        <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+          <span>Primero debes crear un programa para poder guardar la capacitacion.</span>
+          <a routerLink="/trainings_programs" class="btn btn-sm btn-outline-dark fw-semibold">Gestionar programas</a>
+        </div>
+      </div>
+      <div class="col-md-6">
         <label class="form-label small text-on-surface-variant">Titulo *</label>
         <input class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editTitle" />
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <label class="form-label small text-on-surface-variant">Programa *</label>
+        <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editTrainingCategoryId" [disabled]="categories.length === 0">
+          <option [ngValue]="null">Selecciona un programa</option>
+          <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
         <label class="form-label small text-on-surface-variant">Estado *</label>
         <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editStatus">
           <option value="scheduled">Programada</option>

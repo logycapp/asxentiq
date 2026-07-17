@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
@@ -199,6 +199,7 @@ export class TrainingQuestionsComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } | null = null;
 
   @Input() trainingIdInput?: number;
@@ -399,8 +400,14 @@ export class TrainingQuestionsComponent implements OnInit {
     if (this.activeModal) {
       this.activeModal.dismiss('close');
     } else {
-      // Standalone page: navigate back
-      window.history.back();
+      const programId = Number(this.route.parent?.snapshot.paramMap.get('programId') ?? this.route.snapshot.paramMap.get('programId') ?? 0);
+
+      if (programId > 0) {
+        void this.router.navigate(['/trainings_programs', programId, 'trainings']);
+        return;
+      }
+
+      void this.router.navigate(['/trainings_programs']);
     }
   }
 }

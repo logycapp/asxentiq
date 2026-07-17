@@ -62,7 +62,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   class="btn fw-semibold d-inline-flex align-items-center gap-1"
                   [ngClass]="primaryButtonClass"
                   [disabled]="primaryDisabled"
-                  (click)="primaryRequested.emit()"
+                  (click)="onPrimaryClick()"
                 >
                   <span *ngIf="primaryLoading" class="spinner-border spinner-border-sm"></span>
                   {{ primaryLabel }}
@@ -97,6 +97,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       padding: 0 0.75rem;
     }
 
+    .modal-shell-dialog.modal-sm {
+      width: min(100%, 28rem);
+      max-width: 28rem;
+      height: auto;
+      max-height: calc(100vh - 2rem);
+      margin: 2rem auto;
+    }
+
     .modal-shell-content {
       display: flex;
       flex-direction: column;
@@ -105,9 +113,19 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       overflow: hidden;
     }
 
+    .modal-shell-dialog.modal-sm .modal-shell-content {
+      height: auto;
+      max-height: none;
+    }
+
     .modal-shell-content .modal-body {
       flex: 1 1 auto;
       overflow: auto;
+    }
+
+    .modal-shell-dialog.modal-sm .modal-shell-content .modal-body {
+      flex: 0 0 auto;
+      overflow: visible;
     }
 
     .modal-shell-content .modal-footer {
@@ -161,5 +179,13 @@ export class ModalShellComponent {
   get primaryButtonClass(): string {
     const variant = this.footerVariant || this.headerVariant;
     return `btn-${variant}`;
+  }
+
+  onPrimaryClick(): void {
+    if (this.primaryDisabled || this.primaryLoading) {
+      return;
+    }
+
+    this.primaryRequested.emit();
   }
 }

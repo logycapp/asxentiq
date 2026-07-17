@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Training;
 use App\Models\TrainingParticipant;
-use App\Models\TrainingUser;
-use App\Models\UserAnswer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -65,6 +63,7 @@ class PublicTrainingController extends Controller
             ->whereHas('participants', function ($q) use ($participantId): void {
                 $q->where('training_participant_id', $participantId)->whereNull('completed_at');
             })
+            ->with('category')
             ->withCount('questions')
             ->orderBy('scheduled_date')
             ->get();
@@ -83,6 +82,7 @@ class PublicTrainingController extends Controller
             ->whereHas('participants', function ($q) use ($participantId): void {
                 $q->where('training_participant_id', $participantId)->whereNotNull('completed_at');
             })
+            ->with('category')
             ->with(['participants' => function ($q) use ($participantId): void {
                 $q->where('training_participant_id', $participantId);
             }])
@@ -109,7 +109,7 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'Ya completaste esta capacitacion.'], 422);
         }
 
-        $training->load(['questions' => function ($q): void {
+        $training->load(['category', 'questions' => function ($q): void {
             $q->with(['options' => function ($opt): void {
                 $opt->select(['id', 'question_id', 'option_text', 'order']);
             }, 'materials'])->orderBy('order');
@@ -240,7 +240,7 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'No has completado esta capacitacion.'], 422);
         }
 
-        $training->load('questions');
+        $training->load(['category', 'questions']);
 
         $passed = $pivot->pivot->passed !== null
             ? (bool) $pivot->pivot->passed

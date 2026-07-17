@@ -87,18 +87,9 @@
             </label>
 
             <div class="form-row">
-              <label class="remember">
-                <input
-                  class="remember-input"
-                  type="checkbox"
-                  id="remember-me"
-                >
-                <span>Recordarme</span>
-              </label>
-
-              <a class="help-link" routerLink="/forgot-password">
+              <button class="help-link help-link-button" type="button" (click)="openRecoveryModal()">
                 Olvidaste tu clave?
-              </a>
+              </button>
             </div>
 
             <button
@@ -122,4 +113,57 @@
       </section>
     </div>
   </main>
+
+  <app-modal-shell
+    *ngIf="recoveryOpen"
+    title="Recuperar contraseña"
+    subtitle="Escribe tu correo y te enviaremos un enlace para restablecer tu clave."
+    kicker="Asxentiq"
+    size="sm"
+    headerVariant="primary"
+    [showPrimaryButton]="true"
+    [showSecondaryButton]="true"
+    [showFooterClose]="false"
+    primaryLabel="Enviar enlace"
+    secondaryLabel="Cancelar"
+    [primaryLoading]="recoveryLoading"
+    [primaryDisabled]="recoveryLoading"
+    (closeRequested)="closeRecoveryModal()"
+    (secondaryRequested)="closeRecoveryModal()"
+    (primaryRequested)="submitRecovery()"
+  >
+    <div modal-body>
+      <div *ngIf="recoveryError" class="login-error mb-3" role="alert">
+        <strong>Error</strong>
+        <span>{{ recoveryError }}</span>
+      </div>
+
+      <div *ngIf="recoveryMessage" class="alert alert-success mb-3" role="alert">
+        {{ recoveryMessage }}
+      </div>
+
+      <label class="field" for="recovery-email">
+        <span>Correo electrónico</span>
+        <input
+          id="recovery-email"
+          type="email"
+          class="form-control"
+          [formControl]="recoveryForm.controls.email"
+          [disabled]="recoveryLoading"
+          placeholder="correo@ejemplo.com"
+          autocomplete="email"
+        >
+        <small
+          class="field-error"
+          *ngIf="recoveryForm.controls.email.touched && recoveryForm.controls.email.invalid"
+        >
+          Ingresa un correo valido.
+        </small>
+      </label>
+
+      <p class="text-secondary small mb-0 mt-3">
+        Si el correo existe en el sistema, recibirás un enlace con validez limitada para crear una nueva contraseña.
+      </p>
+    </div>
+  </app-modal-shell>
 </div>

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Tooltip } from 'bootstrap';
 import { filter, finalize, Subscription } from 'rxjs';
 
@@ -11,6 +11,7 @@ import {
   ParticipantReview,
   Question,
   QuestionOption,
+  TrainingCategory,
   Training,
   TrainingListMeta,
   TrainingListSummary,
@@ -36,6 +37,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly subscriptions = new Subscription();
 
@@ -61,8 +63,13 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   message = '';
   errorMessage = '';
   isParticipantsRoute = false;
+  isCategoriesRoute = false;
+  categories: TrainingCategory[] = [];
+  activeProgramId: number | null = null;
+  activeProgramName = '';
+  expandedProgramKeys = new Set<string>();
   private tooltipInstances = new Map<HTMLElement, { dispose: () => void }>();
-  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
+  private tooltipRefreshTimer: number | null = null;
 
   // Modal state
   editingTraining: Training | null = null;
@@ -97,6 +104,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   reviewScores: Record<number, string> = {};
   editTitle = '';
   editDescription = '';
+  editTrainingCategoryId: number | null = null;
   editType = 'sst_training';
   editModality = 'presential';
   editStatus = 'scheduled';
@@ -110,10 +118,17 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateRouteFlags();
+    this.updateProgramFilterFromUrl();
+    this.loadCategories();
     this.subscriptions.add(
       this.router.events
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-        .subscribe(() => this.updateRouteFlags())
+        .subscribe(() => {
+          this.updateRouteFlags();
+          this.updateProgramFilterFromUrl();
+          this.loadCategories();
+          this.loadTrainings();
+        })
     );
 
     this.loadTrainings();
@@ -157,7 +172,8 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
         per_page: this.meta.per_page,
         search: this.searchTerm || undefined,
         sort_by: this.sortBy,
-        sort_dir: this.sortDir
+        sort_dir: this.sortDir,
+        training_category_id: this.activeProgramId ?? undefined
       })
     )
       .pipe(finalize(() => (this.loading = false)))
@@ -170,6 +186,18 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: () => (this.errorMessage = 'No fue posible cargar las capacitaciones.')
       });
+  }
+
+  loadCategories(): void {
+    this.loadingService.track(this.trainingService.getCategories()).subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.syncActiveProgramName();
+      },
+      error: () => {
+        this.categories = [];
+      }
+    });
   }
 
   applyFilters(): void {
@@ -192,6 +220,10 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.meta = { ...this.meta, current_page: 1 };
     this.loadTrainings();
+  }
+
+  clearProgramFilter(): void {
+    this.router.navigate(['/trainings_programs']);
   }
 
   getSortIcon(key: string): string {
@@ -226,6 +258,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reviewScores = {};
     this.editTitle = training.title;
     this.editDescription = training.description || '';
+    this.editTrainingCategoryId = training.training_category_id ?? training.category?.id ?? null;
     this.editType = training.type;
     this.editModality = training.modality;
     this.editStatus = training.status;
@@ -255,6 +288,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.trainingMaterials = [];
     this.trainingMaterialFile = null;
     this.trainingMaterialType = 'pdf';
+    this.editTrainingCategoryId = null;
     this.loadingEditDetails = false;
     this.allParticipants = [];
     this.assignedParticipants = [];
@@ -292,8 +326,14 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   saveEditModal(): void {
     if (!this.editingTraining || !this.editTitle) return;
 
+    if (!this.editTrainingCategoryId) {
+      this.errorMessage = 'Selecciona un programa.';
+      return;
+    }
+
     const payload: Partial<Training> = {
       title: this.editTitle,
+      training_category_id: this.editTrainingCategoryId,
       description: this.editDescription || undefined,
       type: this.editType,
       modality: this.editModality,
@@ -350,6 +390,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadingService.track(this.trainingService.get(trainingId)).subscribe({
       next: (training) => {
         this.editingTraining = training;
+        this.editTrainingCategoryId = training.training_category_id ?? training.category?.id ?? this.editTrainingCategoryId;
         this.trainingMaterials = training.materials ?? [];
         this.loadingEditDetails = false;
       },
@@ -797,6 +838,65 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     return labels[type] || type;
   }
 
+  categoryLabel(category: TrainingCategory | null | undefined): string {
+    return category?.name || 'Sin programa';
+  }
+
+  get isProgramFilteredView(): boolean {
+    return this.activeProgramId !== null;
+  }
+
+  programKey(category: TrainingCategory | null | undefined): string {
+    return category ? `program-${category.id}` : 'program-uncategorized';
+  }
+
+  isProgramExpanded(category: TrainingCategory | null | undefined): boolean {
+    return this.expandedProgramKeys.has(this.programKey(category));
+  }
+
+  toggleProgram(category: TrainingCategory | null | undefined): void {
+    const key = this.programKey(category);
+
+    if (this.expandedProgramKeys.has(key)) {
+      this.expandedProgramKeys.delete(key);
+      return;
+    }
+
+    this.expandedProgramKeys.add(key);
+  }
+
+  get groupedTrainings(): Array<{ category: TrainingCategory | null; trainings: Training[] }> {
+    const groups = new Map<string, { category: TrainingCategory | null; trainings: Training[] }>();
+
+    this.trainings.forEach((training) => {
+      const category = training.category ?? null;
+      const key = category ? `category-${category.id}` : 'uncategorized';
+
+      if (!groups.has(key)) {
+        groups.set(key, { category, trainings: [] });
+      }
+
+      groups.get(key)?.trainings.push(training);
+    });
+
+    return Array.from(groups.values()).sort((left, right) => {
+      if (!left.category && !right.category) {
+        return 0;
+      }
+
+      if (!left.category) {
+        return 1;
+      }
+
+      if (!right.category) {
+        return -1;
+      }
+
+      const orderDiff = (left.category.sort_order ?? 0) - (right.category.sort_order ?? 0);
+      return orderDiff !== 0 ? orderDiff : left.category.name.localeCompare(right.category.name);
+    });
+  }
+
   modalityLabel(modality: string): string {
     const labels: Record<string, string> = {
       presential: 'Presencial',
@@ -826,7 +926,25 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private updateRouteFlags(): void {
     const currentUrl = this.router.url.split('?')[0].split('#')[0].replace(/\/$/, '');
-    this.isParticipantsRoute = currentUrl === '/trainings/participants';
+    this.isParticipantsRoute = currentUrl.endsWith('/participants');
+    this.isCategoriesRoute = false;
+  }
+
+  private updateProgramFilterFromUrl(): void {
+    const rawProgramId = this.route.snapshot.paramMap.get('programId') ?? this.route.snapshot.queryParamMap.get('training_category_id');
+    const programId = rawProgramId ? Number(rawProgramId) : 0;
+
+    this.activeProgramId = Number.isFinite(programId) && programId > 0 ? programId : null;
+    this.syncActiveProgramName();
+  }
+
+  private syncActiveProgramName(): void {
+    if (!this.activeProgramId) {
+      this.activeProgramName = '';
+      return;
+    }
+
+    this.activeProgramName = this.categories.find((category) => category.id === this.activeProgramId)?.name ?? '';
   }
 
   private refreshTooltips(): void {

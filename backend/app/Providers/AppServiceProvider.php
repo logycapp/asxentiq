@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,6 +14,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        File::ensureDirectoryExists(storage_path('framework/cache/data'));
+        File::ensureDirectoryExists(storage_path('framework/sessions'));
+        File::ensureDirectoryExists(storage_path('framework/views'));
     }
 }

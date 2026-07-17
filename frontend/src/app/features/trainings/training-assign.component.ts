@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
@@ -25,7 +25,7 @@ import { TrainingService, TrainingParticipant } from '../../core/services/traini
     >
       <div modal-body>
         <div *ngIf="!isModal" class="mb-3">
-          <a routerLink="/trainings" class="btn btn-outline-secondary btn-sm">&larr; Capacitaciones</a>
+          <a [routerLink]="['/trainings_programs', trainingProgramId, 'trainings']" class="btn btn-outline-secondary btn-sm">&larr; Capacitaciones</a>
         </div>
 
         <div *ngIf="message" class="alert alert-success alert-dismissible">{{ message }}
@@ -76,6 +76,7 @@ export class TrainingAssignComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } | null = null;
 
   @Input() trainingIdInput?: number;
@@ -83,6 +84,7 @@ export class TrainingAssignComponent implements OnInit {
   @Output() saved = new EventEmitter<void>();
 
   trainingId = 0;
+  trainingProgramId = 0;
   trainingTitle = '';
   allParticipants: TrainingParticipant[] = [];
   assignedParticipants: TrainingParticipant[] = [];
@@ -102,6 +104,7 @@ export class TrainingAssignComponent implements OnInit {
 
   ngOnInit(): void {
     this.trainingId = this.trainingIdInput ?? +(this.route.snapshot.paramMap.get('id') ?? 0);
+    this.trainingProgramId = Number(this.route.parent?.snapshot.paramMap.get('programId') ?? this.route.snapshot.paramMap.get('programId') ?? 0);
     this.trainingTitle = this.trainingTitleInput ?? '';
     this.loadData();
   }
@@ -162,7 +165,14 @@ export class TrainingAssignComponent implements OnInit {
     if (this.activeModal) {
       this.activeModal.dismiss('close');
     } else {
-      window.history.back();
+      const programId = Number(this.route.parent?.snapshot.paramMap.get('programId') ?? this.route.snapshot.paramMap.get('programId') ?? 0);
+
+      if (programId > 0) {
+        void this.router.navigate(['/trainings_programs', programId, 'trainings']);
+        return;
+      }
+
+      void this.router.navigate(['/trainings_programs']);
     }
   }
 }

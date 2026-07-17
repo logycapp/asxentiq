@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ParticipantController;
 use App\Http\Controllers\Api\QuestionController;
+use App\Http\Controllers\Api\TrainingCategoryController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\TestController;
@@ -70,6 +71,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::middleware('menu.access:/trainings')->group(function (): void {
+        // Training categories
+        Route::get('/trainings/categories', [TrainingCategoryController::class, 'index']);
+        Route::post('/trainings/categories', [TrainingCategoryController::class, 'store']);
+        Route::get('/trainings/categories/{category}', [TrainingCategoryController::class, 'show']);
+        Route::put('/trainings/categories/{category}', [TrainingCategoryController::class, 'update']);
+        Route::delete('/trainings/categories/{category}', [TrainingCategoryController::class, 'destroy']);
+
         // Trainings CRUD
         Route::get('/trainings', [TrainingController::class, 'index']);
         Route::post('/trainings', [TrainingController::class, 'store']);

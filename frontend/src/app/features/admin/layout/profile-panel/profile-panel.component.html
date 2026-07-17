@@ -5,8 +5,8 @@
   [class.invisible]="!open"
   [class.opacity-0]="!open"
 >
-  <div class="p-4 p-lg-5 border-bottom border-white/5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-    <h2 class="font-headline-md text-on-surface tracking-tight">Account</h2>
+  <div class="px-4 pt-3 pb-3 p-lg-4 border-bottom border-white/5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <h2 class="font-headline-md text-on-surface tracking-tight">Cuenta</h2>
     <button
       class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95"
       type="button"
@@ -15,8 +15,8 @@
       <span class="material-symbols-outlined">close</span>
     </button>
   </div>
-  <div class="p-xl flex flex-col items-center text-center">
-    <div class="d-flex align-items-center justify-content-center gap-3 mb-lg profile-brand-avatar-row">
+  <div class="pt-3 px-4 pb-4 flex flex-col items-center text-center">
+    <div class="d-flex align-items-center justify-content-center gap-3 mb-3 profile-brand-avatar-row">
       <div class="profile-company-logo-frame">
         <img *ngIf="companyLogoUrl; else companyLogoFallback" [src]="companyLogoUrl" alt="Logo de la empresa" class="profile-company-logo-img" />
         <ng-template #companyLogoFallback>
@@ -42,7 +42,7 @@
     </div>
     <h3 class="font-headline-md text-on-surface font-bold tracking-tight">{{ userName }}</h3>
     <p class="text-on-surface-variant text-body-sm font-mono opacity-70">{{ userEmail }}</p>
-    <div class="flex items-center gap-2 mt-lg bg-white/5 px-4 py-2 rounded-full border border-white/5">
+    <div class="flex items-center gap-2 mt-3 bg-white/5 px-4 py-2 rounded-full border border-white/5">
       <div class="flex -space-x-2">
         <div class="w-6 h-6 rounded-full bg-chart-cyan/20 flex items-center justify-center text-[10px] font-bold text-chart-cyan border border-white/10">SP</div>
         <div class="w-6 h-6 rounded-full bg-chart-green/20 flex items-center justify-center text-[10px] font-bold text-chart-green border border-white/10">DS</div>

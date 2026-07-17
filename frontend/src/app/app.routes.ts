@@ -22,6 +22,8 @@ import { TrainingFormComponent } from './features/trainings/training-form.compon
 import { TrainingListComponent } from './features/trainings/training-list.component';
 import { TrainingQuestionsComponent } from './features/trainings/training-questions.component';
 import { TrainingResultsComponent } from './features/trainings/training-results.component';
+import { TrainingCategoryFormComponent } from './features/trainings/training-category-form.component';
+import { TrainingCategoryListComponent } from './features/trainings/training-category-list.component';
 import { PublicDashboardComponent } from './features/public-trainings/public-dashboard.component';
 import { PublicExamComponent } from './features/public-trainings/public-exam.component';
 import { PublicLoginComponent } from './features/public-trainings/public-login.component';
@@ -74,8 +76,34 @@ export const appRoutes: Routes = [
       { path: 'users/:id/menu-permissions', component: UserMenuPermissionsComponent, data: { pageTitle: 'Usuarios' } },
       { path: 'video_indexaction', component: VideoIndexActionComponent, data: { pageTitle: 'Video Index Action' } },
       { path: 'video-indexaction', redirectTo: 'video_indexaction', pathMatch: 'full' },
+      { path: 'trainings', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/create', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/participants', component: ParticipantListComponent, data: { pageTitle: 'Capacitaciones' } },
+      { path: 'trainings/:id/edit', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/:id/questions', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/:id/assign', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/:id/results', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings_all', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/categories', redirectTo: 'trainings_programs', pathMatch: 'full' },
+      { path: 'trainings/categories/create', redirectTo: 'trainings_programs/create', pathMatch: 'full' },
+      { path: 'trainings/categories/:id/edit', redirectTo: 'trainings_programs/:id/edit', pathMatch: 'full' },
       {
-        path: 'trainings',
+        path: 'trainings_programs',
+        component: TrainingCategoryListComponent,
+        data: { pageTitle: 'Programas de capacitaciones' }
+      },
+      {
+        path: 'trainings_programs/create',
+        component: TrainingCategoryFormComponent,
+        data: { pageTitle: 'Programas de capacitaciones' }
+      },
+      {
+        path: 'trainings_programs/:id/edit',
+        component: TrainingCategoryFormComponent,
+        data: { pageTitle: 'Programas de capacitaciones' }
+      },
+      {
+        path: 'trainings_programs/:programId/trainings',
         component: TrainingListComponent,
         data: { pageTitle: 'Capacitaciones' },
         children: [

@@ -35,22 +35,35 @@ SSH_KEYS=(
   "$HOME/.ssh/id_ed25519_asxentiq"
   "$HOME/.ssh/id_ed25519"
 )
-SSH_CMD=(ssh -o BatchMode=yes)
 SSH_KEY=""
 for candidate in "${SSH_KEYS[@]}"; do
   if [[ -f "$candidate" ]]; then
     SSH_KEY="$candidate"
-    SSH_CMD+=(-i "$SSH_KEY" -o IdentitiesOnly=yes)
-    export GIT_SSH_COMMAND="ssh -i $SSH_KEY -o IdentitiesOnly=yes"
     break
   fi
 done
 
 if [[ -z "$SSH_KEY" ]]; then
-  echo "No se encontró una llave SSH utilizable en ~/.ssh/id_ed25519_asxentiq ni ~/.ssh/id_ed25519." >&2
+  echo "No se encontró una llave SSH utilizable en ~/.ssh/id_ed25519_github, ~/.ssh/id_ed25519_asxentiq ni ~/.ssh/id_ed25519." >&2
   exit 1
 fi
 
+SSH_KEY_FINGERPRINT="$(ssh-keygen -lf "${SSH_KEY}.pub" 2>/dev/null | awk 'NR==1 {print $2}')"
+
+if ! ssh-add -l >/dev/null 2>&1; then
+  eval "$(ssh-agent -s)" >/dev/null
+fi
+
+if [[ -n "$SSH_KEY_FINGERPRINT" ]] && ! ssh-add -l 2>/dev/null | grep -q "$SSH_KEY_FINGERPRINT"; then
+  echo "Cargando la llave SSH en ssh-agent: $SSH_KEY" >&2
+  if ! ssh-add "$SSH_KEY"; then
+    echo "No se pudo cargar la llave SSH." >&2
+    echo "Verifica que la passphrase sea correcta o vuelve a crear la llave si ya no la recuerdas." >&2
+    exit 1
+  fi
+fi
+
+SSH_CMD=(ssh -o BatchMode=yes)
 SSH_CHECK_OUTPUT="$("${SSH_CMD[@]}" -T "git@${SSH_HOST}" 2>&1 || true)"
 if [[ "$SSH_CHECK_OUTPUT" != *"successfully authenticated"* ]]; then
   echo "La autenticación SSH no está lista para $SSH_HOST." >&2

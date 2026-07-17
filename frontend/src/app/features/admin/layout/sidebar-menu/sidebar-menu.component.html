@@ -47,7 +47,7 @@
           </div>
           <span class="material-symbols-outlined text-[18px] expand-icon group-hover:text-primary" [class.rotated]="isSubmenuOpen(submenuId(item))">expand_more</span>
         </button>
-        <div class="submenu ml-10 space-y-1 mt-1 border-l border-white/5" [id]="submenuId(item)" [class.open]="isSubmenuOpen(submenuId(item))">
+        <div class="submenu ml-6 space-y-1 mt-1 border-l border-white/5" [id]="submenuId(item)" [class.open]="isSubmenuOpen(submenuId(item))">
           <a
             *ngFor="let child of item.children; trackBy: trackByChildRoute"
             class="flex items-center gap-md py-2 px-4 text-on-surface-variant hover:text-primary font-label-sm transition-colors"
