@@ -241,53 +241,128 @@
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Light table card */
-.light .dashboard-table-card {
-    background: linear-gradient(180deg, #ffffff 0%, #f6f8fd 100%) !important;
-    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+/* Shared data table system */
+.dashboard-table-card table,
+.surface-card table,
+.roi-table,
+.table-sm.align-middle {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #e4e2e4;
 }
 
-.light .dashboard-table-card thead th {
-    background: #edf4ff;
-    color: #0f172a;
-    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+.dashboard-table-card thead th,
+.surface-card thead th,
+.roi-table thead th,
+.table-sm.align-middle thead th {
+    padding: 1rem 1rem;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    vertical-align: middle;
+    color: #c5c6cd;
 }
 
-.light .dashboard-table-card tbody tr {
-    background: #ffffff;
+.dashboard-table-card tbody td,
+.surface-card tbody td,
+.roi-table tbody td,
+.table-sm.align-middle tbody td {
+    padding: 1rem 1rem;
+    vertical-align: middle;
+    color: #e4e2e4;
 }
 
-.light .dashboard-table-card tbody tr:hover {
-    background: #eef4ff;
+.dashboard-table-card tbody tr,
+.surface-card tbody tr,
+.roi-table tbody tr,
+.table-sm.align-middle tbody tr {
+    transition: background-color 0.2s ease;
 }
 
-.light .dashboard-table-card tbody td,
-.light .dashboard-table-card tbody .text-on-surface,
-.light .dashboard-table-card tbody .text-on-surface-variant {
-    color: #0f172a !important;
+.dashboard-table-card tbody tr:hover,
+.surface-card tbody tr:hover,
+.roi-table tbody tr:hover,
+.table-sm.align-middle tbody tr:hover {
+    background: rgba(34, 75, 143, 0.22);
 }
 
-.light .dashboard-table-card tbody td {
-    border-top-color: rgba(15, 23, 42, 0.06) !important;
-    border-bottom-color: rgba(15, 23, 42, 0.06) !important;
+.dashboard-table-card tbody tr + tr td,
+.surface-card tbody tr + tr td,
+.roi-table tbody tr + tr td,
+.table-sm.align-middle tbody tr + tr td {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.dashboard-table-card .table {
+.dashboard-table-card .table,
+.surface-card .table {
     --bs-table-bg: transparent;
     --bs-table-color: #e4e2e4;
     --bs-table-hover-bg: rgba(34, 75, 143, 0.32);
     --bs-table-hover-color: #ffffff;
 }
 
-.dashboard-table-card .table > :not(caption) > * > * {
+.dashboard-table-card .table > :not(caption) > * > *,
+.surface-card .table > :not(caption) > * > * {
     background-color: transparent !important;
     box-shadow: inset 0 0 0 9999px transparent !important;
 }
 
-.dashboard-table-card thead th,
-.dashboard-table-card tbody td {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+.dashboard-table-card .table thead th,
+.surface-card .table thead th {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Light table card */
+.light .dashboard-table-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f6f8fd 100%) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+.light .dashboard-table-card thead th,
+.light .surface-card thead th,
+.light .roi-table thead th,
+.light .table-sm.align-middle thead th {
+    background: #edf4ff;
+    color: #0f172a;
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.light .dashboard-table-card tbody tr,
+.light .surface-card tbody tr,
+.light .roi-table tbody tr,
+.light .table-sm.align-middle tbody tr {
+    background: #ffffff;
+}
+
+.light .dashboard-table-card tbody tr:hover,
+.light .surface-card tbody tr:hover,
+.light .roi-table tbody tr:hover,
+.light .table-sm.align-middle tbody tr:hover {
+    background: #eef4ff;
+}
+
+.light .dashboard-table-card tbody td,
+.light .surface-card tbody td,
+.light .roi-table tbody td,
+.light .table-sm.align-middle tbody td,
+.light .dashboard-table-card tbody .text-on-surface,
+.light .surface-card tbody .text-on-surface,
+.light .roi-table tbody .text-on-surface,
+.light .table-sm.align-middle tbody .text-on-surface,
+.light .dashboard-table-card tbody .text-on-surface-variant,
+.light .surface-card tbody .text-on-surface-variant,
+.light .roi-table tbody .text-on-surface-variant,
+.light .table-sm.align-middle tbody .text-on-surface-variant {
+    color: #0f172a !important;
+}
+
+.light .dashboard-table-card tbody td {
+    border-top-color: rgba(15, 23, 42, 0.06) !important;
+    border-bottom-color: rgba(15, 23, 42, 0.06) !important;
 }
 
 .dashboard-chart-wrap {
