@@ -7,11 +7,12 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
   templateUrl: './profile.component.html',
   styles: [`
     .profile-media-card {

@@ -11,14 +11,8 @@
     <a routerLink="/empresas" class="btn btn-outline-primary">Volver al listado</a>
   </div>
 
-  <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
-    <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
-    {{ message }}
-  </div>
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
-    <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
-    {{ errorMessage }}
-  </div>
+  <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+  <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
   <div *ngIf="loading" class="text-secondary py-4">Cargando informacion...</div>
 

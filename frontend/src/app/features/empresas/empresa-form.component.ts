@@ -4,13 +4,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-empresa-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
   templateUrl: './empresa-form.component.html',
   styles: []
 })

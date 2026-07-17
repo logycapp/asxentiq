@@ -4,14 +4,8 @@
   [showDateFilter]="false"
 />
 
-<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
-  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
-  {{ message }}
-</div>
-<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
-  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
-  {{ errorMessage }}
-</div>
+<app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+<app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
 <div class="card glass-card border-0 rounded-4 p-4 mb-4">
   <div class="row g-3 align-items-center justify-content-between">
@@ -129,7 +123,7 @@
   (closeRequested)="closeCreateModal()"
 >
   <div modal-body>
-    <div *ngIf="createErrorMessage" class="alert alert-danger py-2 mb-3 small">{{ createErrorMessage }}</div>
+    <app-swal-alert *ngIf="createErrorMessage" [message]="createErrorMessage" type="danger" (closed)="createErrorMessage = ''"></app-swal-alert>
     <form #createForm="ngForm" novalidate>
       <div class="mb-3">
         <label class="form-label small text-on-surface-variant" for="createName">Nombre</label>
@@ -209,11 +203,8 @@
   (closeRequested)="closePermModal()"
 >
   <div modal-body>
-    <div *ngIf="permMessage" class="alert alert-success alert-dismissible py-2 mb-3 small">
-      <button type="button" class="btn-close" aria-label="Close" (click)="permMessage = ''"></button>
-      {{ permMessage }}
-    </div>
-    <div *ngIf="permErrorMessage" class="alert alert-danger py-2 mb-3 small">{{ permErrorMessage }}</div>
+    <app-swal-alert *ngIf="permMessage" [message]="permMessage" type="success" (closed)="permMessage = ''"></app-swal-alert>
+    <app-swal-alert *ngIf="permErrorMessage" [message]="permErrorMessage" type="danger" (closed)="permErrorMessage = ''"></app-swal-alert>
 
     <div *ngIf="permLoading" class="text-center py-4 text-on-surface-variant">Cargando permisos...</div>
 
@@ -315,7 +306,7 @@
   (closeRequested)="closeEditModal()"
 >
   <div modal-body>
-    <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
+    <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
     <form #editForm="ngForm" novalidate>
       <div class="mb-3">
         <label class="form-label small text-on-surface-variant" for="modalName">Nombre</label>

@@ -4,6 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RolePayload, RoleService } from '../../core/services/role.service';
@@ -12,7 +13,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 @Component({
   selector: 'app-role-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent],
   templateUrl: './role-list.component.html',
   styleUrls: ['./role-list.component.css']
 })

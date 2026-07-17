@@ -2658,6 +2658,7 @@ body.styles-page {
    opacity: 0.78;
 }
 .light .modal-themed-header .font-label-sm.text-on-surface-variant,
+.light .modal-themed-header .font-label-md.text-on-surface-variant.opacity-75.mb-1,
 .light .modal-themed-header .modal-subtitle {
    color: rgba(255, 255, 255, 0.92) !important;
    opacity: 1;

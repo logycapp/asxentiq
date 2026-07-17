@@ -4,13 +4,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { RolePayload, RoleService } from '../../core/services/role.service';
 
 @Component({
   selector: 'app-role-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
   templateUrl: './role-form.component.html'
 })
 export class RoleFormComponent implements OnInit {

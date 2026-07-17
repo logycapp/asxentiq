@@ -4,7 +4,7 @@
   [showDateFilter]="false"
 />
 
-<div *ngIf="errorMessage" class="alert alert-danger mb-3">{{ errorMessage }}</div>
+<app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
 <div class="row g-4 row-cols-1 row-cols-md-2">
   <div class="col" *ngIf="!loading && canShowUserAccess">

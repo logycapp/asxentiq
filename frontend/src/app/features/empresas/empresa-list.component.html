@@ -4,22 +4,16 @@
   [showDateFilter]="false"
 />
 
-<div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
-  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
-  {{ message }}
-</div>
-<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
-  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
-  {{ errorMessage }}
-</div>
+<app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+<app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
 <div class="card glass-card border-0 rounded-4 p-4 mb-4">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
-      <a routerLink="/empresas/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+      <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" (click)="openCreateModal()">
         <span class="material-symbols-outlined text-[18px]">add</span>
         Nueva empresa
-      </a>
+      </button>
     </div>
     <div class="col-12 col-xl-auto">
       <div style="width: min(100%, 360px);">
@@ -85,9 +79,9 @@
               <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/users', empresa.id]">
                 <span class="material-symbols-outlined">group</span>
               </a>
-              <a class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/empresas', empresa.id, 'edit']">
+              <button type="button" class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" (click)="openEditModal(empresa)">
                 <span class="material-symbols-outlined">edit</span>
-              </a>
+              </button>
               <button
                 class="btn btn-sm fw-semibold d-inline-flex align-items-center gap-1"
                 [class.btn-outline-success]="!empresa.active"
@@ -113,3 +107,107 @@
 <div *ngIf="!loading" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
   <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ filteredEmpresas.length }} de {{ empresas.length }} empresas</p>
 </div>
+
+<app-modal-shell
+  *ngIf="empresaModalMode"
+  kicker="Empresas"
+  [title]="empresaModalTitle"
+  [subtitle]="empresaModalSubtitle"
+  [headerVariant]="isEmpresaEditMode ? 'warning' : 'info'"
+  [footerVariant]="isEmpresaEditMode ? 'warning' : 'info'"
+  size="lg"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  [primaryLabel]="isEmpresaEditMode ? 'Actualizar empresa' : 'Crear empresa'"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="empresaModalSaving || empresaModalLoading"
+  [primaryLoading]="empresaModalSaving"
+  (secondaryRequested)="closeEmpresaModal()"
+  (primaryRequested)="saveEmpresaModal()"
+  (closeRequested)="closeEmpresaModal()"
+>
+  <div modal-body>
+    <app-swal-alert
+      *ngIf="empresaModalErrorMessage"
+      [message]="empresaModalErrorMessage"
+      type="danger"
+      (closed)="empresaModalErrorMessage = ''"
+    ></app-swal-alert>
+
+    <div *ngIf="empresaModalLoading" class="text-center py-5">
+      <div class="text-on-surface-variant font-body-md">Cargando empresa...</div>
+    </div>
+
+    <form *ngIf="!empresaModalLoading" [formGroup]="empresaForm" novalidate>
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 p-3 rounded-4 border border-white/10">
+            <div class="flex-shrink-0">
+              <div
+                class="d-flex align-items-center justify-content-center rounded-3 overflow-hidden border border-white/10 bg-transparent"
+                style="width: 96px; height: 96px;"
+              >
+                <img *ngIf="displayLogoUrl; else logoPlaceholder" [src]="displayLogoUrl" alt="Logo de empresa" style="width: 100%; height: 100%; object-fit: contain;" />
+                <ng-template #logoPlaceholder>
+                  <span class="text-on-surface-variant small text-center px-2">Sin logo</span>
+                </ng-template>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <label class="form-label" for="logo">Logo PNG</label>
+              <input
+                id="logo"
+                class="form-control"
+                type="file"
+                accept="image/png,.png"
+                (change)="onLogoSelected($event)"
+              >
+              <div class="text-secondary small mt-2">
+                Sube un logo en formato PNG. Se guardara como parte de la empresa.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <label class="form-label" for="name">Nombre</label>
+          <input id="name" class="form-control" type="text" formControlName="name">
+          <div class="invalid-feedback d-block" *ngIf="empresaForm.controls.name.touched && empresaForm.controls.name.invalid">
+            El nombre es obligatorio.
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <label class="form-label" for="tax_id">NIT</label>
+          <input id="tax_id" class="form-control" type="text" formControlName="tax_id">
+        </div>
+
+        <div class="col-lg-6">
+          <label class="form-label" for="email">Correo</label>
+          <input id="email" class="form-control" type="email" formControlName="email">
+        </div>
+
+        <div class="col-lg-6">
+          <label class="form-label" for="phone">Telefono</label>
+          <input id="phone" class="form-control" type="text" formControlName="phone">
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="address">Direccion</label>
+          <textarea id="address" class="form-control" rows="3" formControlName="address"></textarea>
+        </div>
+
+        <div class="col-12">
+          <div class="d-flex align-items-center gap-3 p-3 rounded-4" style="background: var(--surface-muted);">
+            <input class="form-check-input m-0" type="checkbox" id="active" formControlName="active">
+            <label class="form-check-label fw-semibold" for="active">
+              {{ empresaForm.controls.active.value ? 'Empresa activa' : 'Empresa inactiva' }}
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</app-modal-shell>

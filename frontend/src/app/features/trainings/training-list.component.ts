@@ -5,6 +5,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from 
 import { Tooltip } from 'bootstrap';
 import { filter, finalize, Subscription } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import {
@@ -29,7 +30,8 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
     RouterLink,
     RouterOutlet,
     PageHeaderComponent,
-    ModalShellComponent
+    ModalShellComponent,
+    SwalAlertComponent
   ],
   templateUrl: './training-list.component.html',
   styleUrls: ['./training-list.component.css']

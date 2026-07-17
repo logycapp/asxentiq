@@ -10,11 +10,12 @@ import {
   TestService,
   TestUploadResponse
 } from '../../core/services/test.service';
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 
 @Component({
   selector: 'app-test-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
   templateUrl: './test-form.component.html',
   styles: []
 })

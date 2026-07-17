@@ -9,9 +9,7 @@
     <a routerLink="/users" class="btn btn-outline-primary">Volver al listado</a>
   </div>
 
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
-    {{ errorMessage }}
-  </div>
+  <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="row g-3">
@@ -60,9 +58,7 @@
       </p>
     </div>
 
-    <div *ngIf="extractErrorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="extractErrorMessage = ''"></button>
-      {{ extractErrorMessage }}
-    </div>
+    <app-swal-alert *ngIf="extractErrorMessage" [message]="extractErrorMessage" type="danger" (closed)="extractErrorMessage = ''"></app-swal-alert>
 
     <form [formGroup]="audioForm" (ngSubmit)="extractAudio()">
       <div class="row g-3">
@@ -104,9 +100,7 @@
     <div class="mt-4" *ngIf="extractedAudio">
       <h3 class="h5 mb-3">Indice inteligente</h3>
 
-      <div *ngIf="analysisErrorMessage" class="alert alert-danger alert-dismissible mb-3">  <button type="button" class="btn-close" aria-label="Close" (click)="analysisErrorMessage = ''"></button>
-        {{ analysisErrorMessage }}
-      </div>
+      <app-swal-alert *ngIf="analysisErrorMessage" [message]="analysisErrorMessage" type="danger" (closed)="analysisErrorMessage = ''"></app-swal-alert>
 
       <form [formGroup]="analysisForm" (ngSubmit)="analyzeAudio()">
         <div class="row g-3">

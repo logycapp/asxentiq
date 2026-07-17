@@ -6,12 +6,13 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { RoleMenuItem, RoleService } from '../../core/services/role.service';
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [CommonModule, RouterLink, PageHeaderComponent],
+  imports: [CommonModule, RouterLink, PageHeaderComponent, SwalAlertComponent],
   templateUrl: './admin-panel.component.html'
 })
 export class AdminPanelComponent implements OnInit {

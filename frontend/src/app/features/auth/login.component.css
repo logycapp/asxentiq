@@ -30,9 +30,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: clamp(1.5rem, 4vw, 4rem);
+  justify-content: flex-start;
+  gap: 1.75rem;
+  padding: clamp(0.9rem, 2.5vw, 2.25rem) clamp(1.5rem, 4vw, 4rem) clamp(1.5rem, 4vw, 4rem);
   background:
     linear-gradient(140deg, rgba(4, 41, 79, 0.99) 0%, rgba(3, 20, 42, 1) 100%);
   color: #e4e2e4;
@@ -118,6 +118,7 @@
 
 .signal-panel {
   max-width: 30rem;
+  margin-top: auto;
   padding: 1.1rem 1.2rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.08);

@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
@@ -15,7 +16,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css']
 })

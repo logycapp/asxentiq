@@ -10,7 +10,6 @@ import { LayoutComponent } from './features/layout/layout.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 import { PasswordRecoveryComponent } from './features/auth/password-recovery.component';
 import { ProfileComponent } from './features/profile/profile.component';
-import { EmpresaFormComponent } from './features/empresas/empresa-form.component';
 import { EmpresaListComponent } from './features/empresas/empresa-list.component';
 import { RoleFormComponent } from './features/roles/role-form.component';
 import { RoleListComponent } from './features/roles/role-list.component';
@@ -65,8 +64,8 @@ export const appRoutes: Routes = [
       { path: 'roles/:id/edit', component: RoleFormComponent, data: { pageTitle: 'Roles' } },
       { path: 'roles/:id/menu-permissions', component: RoleMenuPermissionsComponent, data: { pageTitle: 'Roles' } },
       { path: 'empresas', component: EmpresaListComponent, data: { pageTitle: 'Empresas' } },
-      { path: 'empresas/create', component: EmpresaFormComponent, data: { pageTitle: 'Empresas' } },
-      { path: 'empresas/:id/edit', component: EmpresaFormComponent, data: { pageTitle: 'Empresas' } },
+      { path: 'empresas/create', component: EmpresaListComponent, data: { pageTitle: 'Empresas' } },
+      { path: 'empresas/:id/edit', component: EmpresaListComponent, data: { pageTitle: 'Empresas' } },
       { path: 'test', component: TestFormComponent, data: { pageTitle: 'Prueba' } },
       { path: 'users', component: UserListComponent, data: { pageTitle: 'Usuarios' } },
       { path: 'users/create', component: UserFormComponent, data: { pageTitle: 'Usuarios' } },

@@ -7,12 +7,13 @@ import { finalize } from 'rxjs';
 import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleService } from '../../core/services/role.service';
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { UserPayload, UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
   templateUrl: './user-form.component.html',
   styles: []
 })

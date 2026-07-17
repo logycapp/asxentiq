@@ -5,14 +5,8 @@
   [showDateFilter]="false"
 />
 
-<div *ngIf="message && !isCategoriesRoute" class="alert alert-success alert-dismissible mb-3">
-  <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
-  {{ message }}
-</div>
-<div *ngIf="errorMessage && !isCategoriesRoute" class="alert alert-danger alert-dismissible mb-3">
-  <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
-  {{ errorMessage }}
-</div>
+<app-swal-alert *ngIf="message && !isCategoriesRoute" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+<app-swal-alert *ngIf="errorMessage && !isCategoriesRoute" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
 <div class="card glass-card border-0 rounded-4 p-4 mb-4" *ngIf="!isParticipantsRoute && !isCategoriesRoute">
   <div class="row g-3 align-items-center justify-content-between">
@@ -265,7 +259,7 @@
   (closeRequested)="closeEditModal()"
 >
   <div modal-body>
-    <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">{{ errorMessage }}</div>
+    <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
     <div class="row g-3">
       <div *ngIf="categories.length === 0" class="col-12">
         <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">

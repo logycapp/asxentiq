@@ -1,3 +1,11 @@
 :host {
   display: contents;
 }
+
+.top-header-clock {
+  color: #ffffff;
+}
+
+:host-context(html.light) .top-header-clock {
+  color: #ffffff;
+}

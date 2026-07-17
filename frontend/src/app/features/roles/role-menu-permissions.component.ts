@@ -3,13 +3,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleMenuItem, RoleService } from '../../core/services/role.service';
 
 @Component({
   selector: 'app-role-menu-permissions',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, SwalAlertComponent],
   templateUrl: './role-menu-permissions.component.html'
 })
 export class RoleMenuPermissionsComponent implements OnInit {

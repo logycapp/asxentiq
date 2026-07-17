@@ -5,11 +5,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 
 @Component({
   selector: 'app-password-recovery',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
   templateUrl: './password-recovery.component.html'
 })
 export class PasswordRecoveryComponent implements OnInit {
