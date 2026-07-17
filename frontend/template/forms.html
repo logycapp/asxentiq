@@ -289,7 +289,423 @@
       </header>
       <!-- Content Area -->
       <div class="container-fluid px-4 py-5" style="height: calc(100vh - 64px); overflow-y: auto;">
+         <div class="row g-4">
+            <div class="col-12">
+               <div class="glass-card rounded-4 border border-white/10 p-4 p-lg-5 shadow-lg">
+                  <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-lg-start">
+                     <div class="flex-grow-1">
+                        <p class="text-[11px] uppercase tracking-[0.3em] text-on-surface-variant mb-2">Forms guide</p>
+                        <h1 class="font-headline-lg text-on-surface mb-3">Documentacion de formularios y validacion</h1>
+                        <p class="text-on-surface-variant mb-0" style="max-width: 900px;">
+                           Aqui tienes una referencia completa de formularios Bootstrap con todos los controles comunes
+                           y la validacion base que normalmente se usa en el frontend.
+                        </p>
+                     </div>
+                     <div class="d-flex flex-wrap gap-2">
+                        <span class="badge rounded-pill text-bg-primary px-3 py-2">Bootstrap 5</span>
+                        <span class="badge rounded-pill text-bg-dark border border-white/10 px-3 py-2">All inputs</span>
+                        <span class="badge rounded-pill text-bg-dark border border-white/10 px-3 py-2">Validation</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
 
+            <div class="col-12">
+               <div class="glass-card rounded-4 border border-white/10 p-4 p-lg-5">
+                  <div class="d-flex align-items-center gap-3 mb-4">
+                     <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary d-flex align-items-center justify-content-center">
+                        <span class="material-symbols-outlined">edit_note</span>
+                     </div>
+                     <div>
+                        <h2 class="font-headline-md text-on-surface mb-1">Formulario completo de ejemplo</h2>
+                        <p class="text-on-surface-variant mb-0">Incluye los tipos de inputs mas usados en Bootstrap para que sirva como plantilla base.</p>
+                     </div>
+                  </div>
+
+                  <form id="main-form" class="row g-3 needs-validation" novalidate>
+                     <div class="col-md-6">
+                        <label for="fullName" class="form-label text-on-surface">Nombre completo</label>
+                        <input type="text" class="form-control" id="fullName" placeholder="Juan Perez" required>
+                        <div class="invalid-feedback">Ingresa tu nombre completo.</div>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="userEmail" class="form-label text-on-surface">Correo electronico</label>
+                        <input type="email" class="form-control" id="userEmail" placeholder="correo@dominio.com" required>
+                        <div class="invalid-feedback">Ingresa un correo valido.</div>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="password" class="form-label text-on-surface">Contraseña</label>
+                        <input type="password" class="form-control" id="password" placeholder="Minimo 8 caracteres" minlength="8" required>
+                        <div class="invalid-feedback">La contraseña debe tener al menos 8 caracteres.</div>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="phone" class="form-label text-on-surface">Telefono</label>
+                        <input type="tel" class="form-control" id="phone" placeholder="+57 300 123 4567">
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="website" class="form-label text-on-surface">Sitio web</label>
+                        <input type="url" class="form-control" id="website" placeholder="https://example.com">
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="readonlyInfo" class="form-label text-on-surface">Solo lectura</label>
+                        <input type="text" class="form-control" id="readonlyInfo" value="Valor bloqueado" readonly>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="disabledInfo" class="form-label text-on-surface">Deshabilitado</label>
+                        <input type="text" class="form-control" id="disabledInfo" value="No disponible" disabled>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="browserChoice" class="form-label text-on-surface">Con datalist</label>
+                        <input class="form-control" list="browserOptions" id="browserChoice" placeholder="Escribe o selecciona">
+                        <datalist id="browserOptions">
+                           <option value="Chrome">
+                           <option value="Firefox">
+                           <option value="Edge">
+                           <option value="Safari">
+                        </datalist>
+                     </div>
+
+                     <div class="col-md-3">
+                        <label for="age" class="form-label text-on-surface">Edad</label>
+                        <input type="number" class="form-control" id="age" min="18" max="99" value="25">
+                     </div>
+
+                     <div class="col-md-3">
+                        <label for="searchTerm" class="form-label text-on-surface">Busqueda</label>
+                        <input type="search" class="form-control" id="searchTerm" placeholder="Buscar...">
+                     </div>
+
+                     <div class="col-md-4">
+                        <label class="form-label text-on-surface" for="birthDateTrigger">Fecha de nacimiento</label>
+                        <div class="date-picker" data-date-picker data-required="true">
+                           <input type="hidden" id="birthDate" name="birthDate" value="">
+                           <button type="button" id="birthDateTrigger" class="date-picker-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="dialog" aria-expanded="false" aria-controls="birthDatePanel">
+                              <span class="date-picker-label text-on-surface-variant">Selecciona una fecha</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">calendar_month</span>
+                           </button>
+                           <div id="birthDatePanel" class="date-picker-panel shadow-lg" role="dialog" aria-label="Selector de fecha">
+                              <div class="date-picker-header">
+                                 <button type="button" class="date-picker-nav" data-date-prev aria-label="Mes anterior">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                 </button>
+                                 <div class="date-picker-month" data-date-month>Julio 2026</div>
+                                 <button type="button" class="date-picker-nav" data-date-next aria-label="Mes siguiente">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                 </button>
+                              </div>
+                              <div class="date-picker-weekdays">
+                                 <span>LU</span><span>MA</span><span>MI</span><span>JU</span><span>VI</span><span>SA</span><span>DO</span>
+                              </div>
+                              <div class="date-picker-days" data-date-days></div>
+                           </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona una fecha.</div>
+                        </div>
+                     </div>
+
+                     <div class="col-md-4">
+                        <label class="form-label text-on-surface" for="meetingTimeTrigger">Hora</label>
+                        <div class="searchable-select time-picker" data-time-picker data-required="true">
+                           <input type="hidden" id="meetingTime" name="meetingTime" value="10:30">
+                           <button type="button" id="meetingTimeTrigger" class="searchable-select-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="listbox" aria-expanded="false" aria-controls="meetingTimePanel">
+                              <span class="searchable-select-label text-on-surface">10:30</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+                           </button>
+                           <div id="meetingTimePanel" class="searchable-select-panel shadow-lg" role="listbox">
+                              <div class="p-2 border-bottom border-white/10">
+                                 <input type="text" class="form-control searchable-select-search" placeholder="Buscar hora..." inputmode="numeric" maxlength="5">
+                              </div>
+                              <div class="searchable-select-options">
+                                 <button type="button" class="searchable-select-option" data-value="08:00">08:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="08:30">08:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="09:00">09:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="09:30">09:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="10:00">10:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="10:30">10:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="11:00">11:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="11:30">11:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="12:00">12:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="12:30">12:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="13:00">13:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="13:30">13:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="14:00">14:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="14:30">14:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="15:00">15:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="15:30">15:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="16:00">16:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="16:30">16:30</button>
+                                 <button type="button" class="searchable-select-option" data-value="17:00">17:00</button>
+                                 <button type="button" class="searchable-select-option" data-value="17:30">17:30</button>
+                              </div>
+                           </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona una hora.</div>
+                        </div>
+                     </div>
+
+                     <div class="col-md-4">
+                        <label class="form-label text-on-surface" for="launchMomentTrigger">Fecha y hora</label>
+                        <div class="datetime-picker" data-datetime-picker data-required="true">
+                           <input type="hidden" id="launchMoment" name="launchMoment" value="">
+                           <button type="button" id="launchMomentTrigger" class="datetime-picker-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="dialog" aria-expanded="false" aria-controls="launchMomentPanel">
+                              <span class="datetime-picker-label text-on-surface-variant">Selecciona fecha y hora</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">calendar_month</span>
+                           </button>
+                           <div id="launchMomentPanel" class="datetime-picker-panel shadow-lg" role="dialog" aria-label="Selector de fecha y hora">
+                              <div class="datetime-picker-layout">
+                                 <div class="datetime-picker-calendar">
+                                    <div class="datetime-picker-header">
+                                       <button type="button" class="datetime-picker-nav" data-datetime-prev aria-label="Mes anterior">
+                                          <span class="material-symbols-outlined">chevron_left</span>
+                                       </button>
+                                       <div class="datetime-picker-month" data-datetime-month>Julio 2026</div>
+                                       <button type="button" class="datetime-picker-nav" data-datetime-next aria-label="Mes siguiente">
+                                          <span class="material-symbols-outlined">chevron_right</span>
+                                       </button>
+                                    </div>
+                                    <div class="datetime-picker-weekdays">
+                                       <span>LU</span><span>MA</span><span>MI</span><span>JU</span><span>VI</span><span>SA</span><span>DO</span>
+                                    </div>
+                                    <div class="datetime-picker-days" data-datetime-days></div>
+                                 </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona fecha y hora.</div>
+                                 <div class="datetime-picker-time">
+                                    <div class="datetime-picker-time-head">
+                                       <span class="text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">Hora</span>
+                                       <span class="text-[11px] font-mono text-on-surface-variant" data-datetime-time-label>--:--</span>
+                                    </div>
+                                    <div class="datetime-picker-time-options" data-datetime-times></div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="col-md-4">
+                        <label class="form-label text-on-surface" for="monthValueTrigger">Mes</label>
+                        <div class="month-picker" data-month-picker data-required="true">
+                           <input type="hidden" id="monthValue" name="monthValue" value="">
+                           <button type="button" id="monthValueTrigger" class="month-picker-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="dialog" aria-expanded="false" aria-controls="monthValuePanel">
+                              <span class="month-picker-label text-on-surface-variant">Selecciona un mes</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">calendar_month</span>
+                           </button>
+                           <div id="monthValuePanel" class="month-picker-panel shadow-lg" role="dialog" aria-label="Selector de mes">
+                              <div class="month-picker-header">
+                                 <button type="button" class="month-picker-nav" data-month-prev aria-label="Año anterior">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                 </button>
+                                 <div class="month-picker-year" data-month-year>2026</div>
+                                 <button type="button" class="month-picker-nav" data-month-next aria-label="Año siguiente">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                 </button>
+                              </div>
+                              <div class="month-picker-months" data-month-months></div>
+                           </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona un mes.</div>
+                        </div>
+                     </div>
+
+                     <div class="col-md-4">
+                        <label class="form-label text-on-surface" for="weekValueTrigger">Semana</label>
+                        <div class="week-picker" data-week-picker data-required="true">
+                           <input type="hidden" id="weekValue" name="weekValue" value="">
+                           <button type="button" id="weekValueTrigger" class="week-picker-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="dialog" aria-expanded="false" aria-controls="weekValuePanel">
+                              <span class="week-picker-label text-on-surface-variant">Selecciona una semana</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">date_range</span>
+                           </button>
+                           <div id="weekValuePanel" class="week-picker-panel shadow-lg" role="dialog" aria-label="Selector de semana">
+                              <div class="week-picker-header">
+                                 <button type="button" class="week-picker-nav" data-week-prev aria-label="Mes anterior">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                 </button>
+                                 <div class="week-picker-month" data-week-month>Julio 2026</div>
+                                 <button type="button" class="week-picker-nav" data-week-next aria-label="Mes siguiente">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                 </button>
+                              </div>
+                              <div class="week-picker-weeks" data-week-weeks></div>
+                           </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona una semana.</div>
+                        </div>
+                     </div>
+
+                     <div class="col-md-4">
+                        <label for="favoriteColor" class="form-label text-on-surface">Color</label>
+                        <input type="color" class="form-control form-control-color" id="favoriteColor" value="#0298E2" title="Choose your color">
+                     </div>
+
+                     <div class="col-12">
+                        <label for="profileFile" class="form-label text-on-surface">Archivo</label>
+                        <input class="form-control" type="file" id="profileFile">
+                     </div>
+
+                     <div class="col-12">
+                        <label class="form-label text-on-surface" for="countrySearchTrigger">Pais con busqueda</label>
+                        <div class="searchable-select" data-searchable-select data-placeholder="Selecciona un pais" data-required="true">
+                           <input type="hidden" name="countrySearch" value="">
+                           <button type="button" id="countrySearchTrigger" class="searchable-select-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="listbox" aria-expanded="false" aria-controls="countrySearchPanel">
+                              <span class="searchable-select-label text-on-surface-variant">Selecciona un pais</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+                           </button>
+                           <div id="countrySearchPanel" class="searchable-select-panel shadow-lg" role="listbox">
+                              <div class="p-2 border-bottom border-white/10">
+                                 <input id="countrySearchInput" type="text" class="form-control searchable-select-search" placeholder="Buscar pais...">
+                              </div>
+                              <div class="searchable-select-options">
+                                 <button type="button" class="searchable-select-option" data-value="Argentina">Argentina</button>
+                                 <button type="button" class="searchable-select-option" data-value="Bolivia">Bolivia</button>
+                                 <button type="button" class="searchable-select-option" data-value="Chile">Chile</button>
+                                 <button type="button" class="searchable-select-option" data-value="Colombia">Colombia</button>
+                                 <button type="button" class="searchable-select-option" data-value="Ecuador">Ecuador</button>
+                                 <button type="button" class="searchable-select-option" data-value="Mexico">Mexico</button>
+                                 <button type="button" class="searchable-select-option" data-value="Peru">Peru</button>
+                                 <button type="button" class="searchable-select-option" data-value="Uruguay">Uruguay</button>
+                                 <button type="button" class="searchable-select-option" data-value="Venezuela">Venezuela</button>
+                              </div>
+                           </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona un pais.</div>
+                        </div>
+                     </div>
+
+                     <div class="col-12">
+                        <label class="form-label text-on-surface" for="roleSearchTrigger">Rol con busqueda</label>
+                        <div class="searchable-select" data-searchable-select data-placeholder="Selecciona un rol" data-required="true">
+                           <input type="hidden" name="role" value="Usuario">
+                           <button type="button" id="roleSearchTrigger" class="searchable-select-trigger form-control text-start d-flex justify-content-between align-items-center" aria-haspopup="listbox" aria-expanded="false" aria-controls="roleSearchPanel">
+                              <span class="searchable-select-label text-on-surface">Usuario</span>
+                              <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+                           </button>
+                           <div id="roleSearchPanel" class="searchable-select-panel shadow-lg" role="listbox">
+                              <div class="p-2 border-bottom border-white/10">
+                                 <input id="roleSearchInput" type="text" class="form-control searchable-select-search" placeholder="Buscar rol...">
+                              </div>
+                              <div class="searchable-select-options">
+                                 <button type="button" class="searchable-select-option" data-value="Usuario">Usuario</button>
+                                 <button type="button" class="searchable-select-option" data-value="Administrador">Administrador</button>
+                                 <button type="button" class="searchable-select-option" data-value="Editor">Editor</button>
+                                 <button type="button" class="searchable-select-option" data-value="Invitado">Invitado</button>
+                              </div>
+                           </div>
+                        <div class="invalid-feedback custom-field-feedback d-none">Selecciona un rol.</div>
+                        </div>
+                     </div>
+
+                     <div class="col-12">
+                        <label for="about" class="form-label text-on-surface">Descripcion</label>
+                        <textarea class="form-control" id="about" rows="4" placeholder="Escribe una breve descripcion..."></textarea>
+                     </div>
+
+                     <div class="col-12">
+                        <div class="form-floating">
+                           <input type="text" class="form-control" id="floatingName" placeholder="Nombre flotante">
+                           <label for="floatingName">Floating label</label>
+                        </div>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="budget" class="form-label text-on-surface d-flex justify-content-between">
+                           <span>Rango</span>
+                           <span class="text-on-surface-variant">75</span>
+                        </label>
+                        <input type="range" class="form-range" id="budget" min="0" max="100" value="75">
+                     </div>
+
+                     <div class="col-md-6">
+                        <label class="form-label text-on-surface d-block">Opciones</label>
+                        <div class="d-flex flex-wrap gap-3">
+                           <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="termsCheck">
+                              <label class="form-check-label text-on-surface" for="termsCheck">Acepto terminos</label>
+                           </div>
+                           <div class="form-check form-switch">
+                              <input class="form-check-input" type="checkbox" role="switch" id="notificationsSwitch" checked>
+                              <label class="form-check-label text-on-surface" for="notificationsSwitch">Notificaciones</label>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="col-12">
+                        <label class="form-label text-on-surface d-block mb-2">Preferencia de contacto</label>
+                        <div class="d-flex flex-wrap gap-4">
+                           <div class="form-check">
+                              <input class="form-check-input" type="radio" name="contactMethod" id="contactEmail" checked>
+                              <label class="form-check-label text-on-surface" for="contactEmail">Email</label>
+                           </div>
+                           <div class="form-check">
+                              <input class="form-check-input" type="radio" name="contactMethod" id="contactPhone">
+                              <label class="form-check-label text-on-surface" for="contactPhone">Telefono</label>
+                           </div>
+                           <div class="form-check">
+                              <input class="form-check-input" type="radio" name="contactMethod" id="contactWhatsApp">
+                              <label class="form-check-label text-on-surface" for="contactWhatsApp">WhatsApp</label>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="col-12">
+                        <label class="form-label text-on-surface">Monto</label>
+                        <div class="input-group">
+                           <span class="input-group-text">$</span>
+                           <input type="text" class="form-control" placeholder="1000" aria-label="Amount">
+                           <span class="input-group-text">.00</span>
+                        </div>
+                     </div>
+
+                     <div class="col-12 d-flex flex-wrap gap-3 pt-2">
+                        <button type="submit" class="btn btn-primary fw-semibold">Guardar</button>
+                        <button type="reset" class="btn btn-outline-light fw-semibold">Limpiar</button>
+                     </div>
+                  </form>
+               </div>
+            </div>
+
+            <div class="col-12">
+               <div class="glass-card rounded-4 border border-white/10 p-4 p-lg-5">
+                  <div class="d-flex align-items-center gap-3 mb-4">
+                     <div class="w-10 h-10 rounded-lg bg-chart-green/10 text-chart-green d-flex align-items-center justify-content-center">
+                        <span class="material-symbols-outlined">verified_user</span>
+                     </div>
+                     <div>
+                        <h2 class="font-headline-md text-on-surface mb-1">Validacion de campos</h2>
+                        <p class="text-on-surface-variant mb-0">Combina validacion nativa del navegador con feedback visual claro.</p>
+                     </div>
+                  </div>
+
+                  <div class="bg-black/30 border border-white/10 rounded-3 p-3 p-lg-4">
+                     <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">JS validation</span>
+                        <span class="text-[11px] font-mono text-chart-green">submit + class toggles</span>
+                     </div>
+<pre class="mb-0 text-on-surface-variant font-mono text-sm" style="white-space: pre-wrap;"><code>const forms = document.querySelectorAll('.needs-validation');
+
+forms.forEach((form) =&gt; {
+  form.addEventListener('submit', (event) =&gt; {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  }, false);
+});</code></pre>
+                  </div>
+
+                  <div class="alert alert-info border-0 bg-info/10 text-on-surface mt-4 mb-0">
+                     <div class="d-flex gap-3">
+                        <span class="material-symbols-outlined text-info">info</span>
+                        <div>
+                           <strong class="d-block mb-1">Regla practica</strong>
+                           <span class="text-on-surface-variant">Valida en el cliente para guiar al usuario y vuelve a validar en el servidor antes de guardar.</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
 
 <div class="modal fade" id="modalSuccess" tabindex="-1" aria-labelledby="modalSuccessLabel" aria-hidden="true">
@@ -449,10 +865,83 @@
       </div>
    </div>
    <script src="vendor/bootstrap/5.3.8/bootstrap.bundle.min.js"></script>
-   <script src="assets/js/dashboard.js"></script>
+      <script src="assets/js/dashboard.js"></script>
+   <script>
+      const validationForm = document.getElementById('main-form');
+
+      if (validationForm) {
+         const customFields = Array.from(validationForm.querySelectorAll('[data-searchable-select], [data-time-picker], [data-date-picker], [data-datetime-picker], [data-month-picker], [data-week-picker]'));
+
+         const syncCustomValidation = () => {
+            let customValid = true;
+
+            customFields.forEach((root) => {
+               const trigger = root.querySelector('.searchable-select-trigger, .date-picker-trigger, .month-picker-trigger, .week-picker-trigger, .datetime-picker-trigger');
+               const feedback = root.querySelector('.custom-field-feedback');
+               const hidden = root.querySelector('input[type="hidden"]');
+               const isRequired = root.dataset.required !== 'false';
+               const hasValue = Boolean(hidden?.value?.trim());
+               const isInvalid = isRequired && !hasValue;
+
+               trigger?.classList.toggle('is-invalid', isInvalid);
+               trigger?.setAttribute('aria-invalid', String(isInvalid));
+               feedback?.classList.toggle('d-none', !isInvalid);
+               feedback?.classList.toggle('d-block', isInvalid);
+
+               if (isInvalid) {
+                  customValid = false;
+               }
+            });
+
+            return customValid;
+         };
+
+         validationForm.addEventListener('submit', (event) => {
+            const nativeValid = validationForm.checkValidity();
+            const customValid = syncCustomValidation();
+
+            if (!nativeValid || !customValid) {
+               event.preventDefault();
+               event.stopPropagation();
+            }
+
+            validationForm.classList.add('was-validated');
+         });
+
+         validationForm.addEventListener('change', () => {
+            if (validationForm.classList.contains('was-validated')) {
+               syncCustomValidation();
+            }
+         });
+
+         validationForm.addEventListener('reset', () => {
+            validationForm.classList.remove('was-validated');
+            customFields.forEach((root) => {
+               const trigger = root.querySelector('.searchable-select-trigger, .date-picker-trigger, .month-picker-trigger, .week-picker-trigger, .datetime-picker-trigger');
+               const feedback = root.querySelector('.custom-field-feedback');
+               trigger?.classList.remove('is-invalid');
+               trigger?.removeAttribute('aria-invalid');
+               feedback?.classList.add('d-none');
+               feedback?.classList.remove('d-block');
+            });
+         });
+      }
+   </script>
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
