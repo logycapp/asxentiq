@@ -57,7 +57,7 @@
           <div class="avatar-panel">
             <p class="muted mb-2">Original</p>
             <div class="profile-media-card profile-media-card--compact">
-              <img *ngIf="displayOriginalUrl; else originalFallback" [src]="displayOriginalUrl"
+              <img class="profile-media-image profile-media-image--original" *ngIf="displayOriginalUrl; else originalFallback" [src]="displayOriginalUrl"
                 [alt]="form.controls.name.value || 'Foto original'">
               <ng-template #originalFallback>
                 <div class="profile-media-placeholder">U</div>
@@ -68,7 +68,7 @@
           <div class="avatar-panel">
             <p class="muted mb-2">Avatar</p>
             <div class="profile-media-card profile-media-card--compact">
-              <img *ngIf="displayAvatarUrl; else avatarFallback" [src]="displayAvatarUrl"
+              <img class="profile-media-image profile-media-image--face" *ngIf="displayAvatarUrl; else avatarFallback" [src]="displayAvatarUrl"
                 [alt]="form.controls.name.value || 'Avatar generado'">
               <ng-template #avatarFallback>
                 <div class="profile-media-placeholder">

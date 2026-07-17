@@ -39,9 +39,20 @@ import { ProfileService } from '../../core/services/profile.service';
     .profile-media-card img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
       padding: 10px;
       display: block;
+    }
+
+    .profile-media-image--original {
+      object-fit: contain;
+      object-position: center center;
+    }
+
+    .profile-media-image--face {
+      object-fit: cover;
+      object-position: center 18%;
+      transform: scale(1.04);
+      padding: 0;
     }
 
     .profile-media-placeholder {

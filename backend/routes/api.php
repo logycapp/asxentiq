@@ -26,6 +26,15 @@ Route::get('/storage/{path}', [StorageController::class, 'show'])->where('path',
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/time', function (): \Illuminate\Http\JsonResponse {
+        $serverNow = now(config('app.timezone'));
+
+        return response()->json([
+            'server_time' => $serverNow->toIso8601String(),
+            'timezone' => config('app.timezone'),
+            'timezone_abbr' => $serverNow->format('T'),
+        ]);
+    });
     Route::get('/menu', [MenuController::class, 'index']);
     Route::post('/test', [TestController::class, 'store']);
     Route::post('/test/extract-audio', [TestController::class, 'extractAudio']);

@@ -1,18 +1,20 @@
-<!-- Dashboard Title & Filters -->
-<div class="row g-4 align-items-end mb-5 dashboard-hero-row">
-  <div class="col-12 col-xl-8">
-    <div class="d-flex flex-column gap-2">
-      <h2 class="font-headline-lg text-on-surface mb-0">{{ title }}</h2>
-      <p class="text-on-surface-variant font-body-md mb-0 dashboard-subtitle">
-        {{ subtitle }}
-      </p>
+<div class="page-header-card glass-card border-0 rounded-4 p-3 p-xl-4 mb-4 dashboard-hero-row">
+  <div class="row g-3 align-items-center justify-content-between">
+    <div class="col-12" [class.col-xl-8]="showDateFilter">
+      <div class="page-header-copy d-flex flex-column gap-1">
+        <span class="page-header-kicker">Modulo</span>
+        <h2 class="font-headline-lg text-on-surface mb-0">{{ title }}</h2>
+        <p class="text-on-surface-variant font-body-md mb-0 dashboard-subtitle">
+          {{ subtitle }}
+        </p>
+      </div>
     </div>
-  </div>
-  <div class="col-12 col-xl-4 d-flex justify-content-xl-end" *ngIf="showDateFilter">
-    <div class="dashboard-date-filter d-inline-flex align-items-center bg-card-navy border border-white/10 rounded-pill px-4 py-3 gap-2 cursor-pointer hover:bg-card-navy/80 transition-colors">
-      <span class="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
-      <span class="font-label-sm text-on-surface text-nowrap">{{ rangeLabel }}</span>
-      <span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+    <div class="col-12 col-xl-4 d-flex justify-content-xl-end" *ngIf="showDateFilter">
+      <div class="dashboard-date-filter d-inline-flex align-items-center bg-card-navy border border-white/10 rounded-pill px-3 py-2 gap-2 cursor-pointer hover:bg-card-navy/80 transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
+        <span class="font-label-sm text-on-surface text-nowrap">{{ rangeLabel }}</span>
+        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+      </div>
     </div>
   </div>
 </div>

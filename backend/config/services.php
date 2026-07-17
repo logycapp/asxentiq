@@ -4,7 +4,7 @@ return [
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'avatar_model' => env('GEMINI_AVATAR_MODEL', 'gemini-2.5-flash-image'),
-        'avatar_prompt' => env('GEMINI_AVATAR_PROMPT', 'Convierte esta foto en un avatar tipo muñeco 3D, limpio, simpatico y profesional, con rasgos suaves y expresivos, cabeza y hombros centrados, sin fondo visible, fondo transparente, formato PNG, sin texto, sin marcas de agua, sin accesorios extra y sin elementos de escenario.'),
+        'avatar_prompt' => env('GEMINI_AVATAR_PROMPT', 'Convierte esta foto en un avatar tipo muñeco 3D, limpio, simpatico y profesional, con rasgos suaves y expresivos. Genera un retrato ultra cerrado enfocado unicamente en el rostro: ojos, nariz, boca y frente, con la cara centrada y ocupando casi todo el encuadre. No incluyas hombros, torso, manos ni cuerpo. Evita planos medios o completos. Fondo transparente, formato PNG, sin texto, sin marcas de agua, sin accesorios extra y sin elementos de escenario.'),
         'audio_index_model' => env('GEMINI_AUDIO_INDEX_MODEL', 'gemini-2.5-flash'),
         'audio_index_prompt' => env('GEMINI_AUDIO_INDEX_PROMPT', <<<'PROMPT'
 Analiza todo el audio y crea un indice inteligente en JSON para una base de datos.

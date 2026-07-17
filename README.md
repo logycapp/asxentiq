@@ -56,7 +56,7 @@ CREATE DATABASE asxentiq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ## Backend
 
-Archivo `.env` esperado en `backend/.env`:
+El backend usa únicamente `backend/.env`. Créalo manualmente con tus valores locales o de despliegue:
 
 ```env
 DB_CONNECTION=mysql
@@ -128,13 +128,14 @@ Backend:
 
 ```bash
 cd /mnt/d/htdocs/asxentiq/backend
-cp .env.example .env
 composer install
 php artisan key:generate
 mysql -h 127.0.0.1 -P 3307 -u root -p1234 -e "CREATE DATABASE IF NOT EXISTS asxentiq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 php artisan migrate --seed
 php artisan serve --host=127.0.0.1 --port=8000
 ```
+
+Si todavía no existe `backend/.env`, créalo antes de ejecutar Composer y coloca ahí las variables de conexión, URLs y credenciales del proyecto.
 
 Frontend:
 

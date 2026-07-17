@@ -67,6 +67,10 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   searchTerm = '';
 
   private clockTimerId: ReturnType<typeof window.setInterval> | null = null;
+  private serverClockBaseMs = 0;
+  private serverClockSyncedAtMs = 0;
+  private serverClockTimezone = 'America/Bogota';
+  private serverClockTimezoneLabel = 'COT';
 
   ngOnInit(): void {
     if (typeof document !== 'undefined') {
@@ -83,7 +87,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.updatePageHeading();
     this.loadMenu();
-    this.updateClock();
+    this.loadServerClock();
 
     this.clockTimerId = window.setInterval(() => {
       this.updateClock();
@@ -427,9 +431,40 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
       : 'assets/template/logos/logo_principal/logo_light.png';
   }
 
+  private loadServerClock(): void {
+    this.subscriptions.add(
+      this.http.get<{ server_time: string; timezone: string; timezone_abbr: string }>(`${this.apiUrl}/time`).subscribe({
+        next: (response) => {
+          this.serverClockBaseMs = new Date(response.server_time).getTime();
+          this.serverClockSyncedAtMs = Date.now();
+          this.serverClockTimezone = response.timezone || 'America/Bogota';
+          this.serverClockTimezoneLabel = response.timezone_abbr || this.serverClockTimezone;
+          this.updateClock();
+        },
+        error: () => {
+          this.serverClockBaseMs = Date.now();
+          this.serverClockSyncedAtMs = Date.now();
+          this.serverClockTimezone = 'UTC';
+          this.serverClockTimezoneLabel = 'UTC';
+          this.updateClock();
+        }
+      })
+    );
+  }
+
   private updateClock(): void {
-    const now = new Date();
-    this.clockLabel = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}:${String(now.getUTCSeconds()).padStart(2, '0')} UTC`;
+    const currentMs = this.serverClockBaseMs > 0
+      ? this.serverClockBaseMs + (Date.now() - this.serverClockSyncedAtMs)
+      : Date.now();
+    const now = new Date(currentMs);
+
+    this.clockLabel = `${new Intl.DateTimeFormat('es-CO', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: this.serverClockTimezone,
+    }).format(now)} ${this.serverClockTimezoneLabel}`;
   }
 
   private loadMenu(): void {

@@ -29,13 +29,13 @@
       "Tests\\": "tests/"
     }
   },
-  "scripts": {
-    "post-autoload-dump": [
+    "scripts": {
+      "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi"
     ],
     "post-root-package-install": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+      "@php -r \"if (!file_exists('.env')) { fwrite(STDERR, '.env missing. Create it manually before running Composer.\\n'); exit(1); }\""
     ],
     "post-create-project-cmd": [
       "@php artisan key:generate --ansi",

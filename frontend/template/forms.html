@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+   <meta charset="utf-8" />
+   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+   <title>Deep Space Intelligence - Terminal</title>
+   <link href="vendor/bootstrap/5.3.8/bootstrap.min.css" rel="stylesheet" />
+   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+   <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet" />
+   <script id="tailwind-config">
+      tailwind.config = {
+         darkMode: "class",
+         theme: {
+            extend: {
+               "colors": {
+                  "secondary-fixed-dim": "#abc8f7",
+                  "outline": "#8e9097",
+                  "on-error-container": "#ffdad6",
+                  "on-secondary": "#103157",
+                  "inverse-surface": "#e4e2e4",
+                  "secondary": "#abc8f7",
+                  "on-background": "#e4e2e4",
+                  "tertiary-container": "#260c02",
+                  "background": "#131315",
+                  "surface-variant": "#343537",
+                  "on-tertiary-container": "#a17460",
+                  "tertiary-fixed": "#ffdbcc",
+                  "secondary-fixed": "#d4e3ff",
+                  "surface": "#131315",
+                  "on-secondary-fixed": "#001c3a",
+                  "surface-container-lowest": "#0d0e10",
+                  "outline-variant": "#44474d",
+                  "on-tertiary-fixed-variant": "#633e2d",
+                  "on-secondary-fixed-variant": "#2a486f",
+                  "surface-container-highest": "#343537",
+                  "on-surface-variant": "#c5c6cd",
+                  "inverse-primary": "#505f79",
+                  "error": "#ffb4ab",
+                  "surface-dim": "#131315",
+                  "error-container": "#93000a",
+                  "on-secondary-container": "#9dbae8",
+                  "surface-container": "#1f1f21",
+                  "on-surface": "#e4e2e4",
+                  "primary": "#b7c7e5",
+                  "tertiary": "#f0bba4",
+                  "on-primary-fixed-variant": "#384760",
+                  "primary-container": "#03142a",
+                  "on-primary": "#213148",
+                  "on-tertiary": "#492819",
+                  "primary-fixed-dim": "#b7c7e5",
+                  "surface-container-low": "#1b1b1d",
+                  "surface-bright": "#39393b",
+                  "inverse-on-surface": "#303032",
+                  "on-error": "#690005",
+                  "on-primary-fixed": "#0b1c32",
+                  "tertiary-fixed-dim": "#f0bba4",
+                  "surface-tint": "#b7c7e5",
+                  "surface-container-high": "#292a2c",
+                  "primary-fixed": "#d5e3ff",
+                  "on-tertiary-fixed": "#301406",
+                  "on-primary-container": "#6f7f9a",
+                  "secondary-container": "#2d4a72",
+                  "chart-cyan": "#0298E2",
+                  "chart-green": "#24CFA0",
+                  "card-navy": "#04294F"
+               },
+               "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+               },
+               "spacing": {
+                  "xs": "4px",
+                  "lg": "24px",
+                  "base": "4px",
+                  "md": "16px",
+                  "sm": "8px",
+                  "gutter": "24px",
+                  "xl": "32px",
+                  "margin-mobile": "16px",
+                  "margin-desktop": "40px"
+               },
+               "fontFamily": {
+                  "body-sm": ["Inter", "sans-serif"],
+                  "display-lg": ["Inter", "sans-serif"],
+                  "label-md": ["Inter", "sans-serif"],
+                  "body-md": ["Inter", "sans-serif"],
+                  "headline-lg": ["Inter", "sans-serif"],
+                  "body-lg": ["Inter", "sans-serif"],
+                  "headline-md": ["Inter", "sans-serif"],
+                  "label-sm": ["Inter", "sans-serif"],
+                  "mono": ["JetBrains Mono", "monospace"]
+               },
+               "fontSize": {
+                  "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                  "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                  "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                  "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                  "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                  "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                  "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                  "label-sm": ["12px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+               }
+            },
+         },
+      }
+   </script>
+   <link rel="stylesheet" href="theme.css" />
+<style>
+.modal-themed-header {
+   display: flex;
+   align-items: flex-start;
+   gap: 1rem;
+   padding: 1rem 1.25rem;
+   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.modal-themed-header .modal-title,
+.modal-themed-header .modal-subtitle {
+   color: #ffffff;
+}
+.modal-themed-header .modal-title {
+   font-size: 1.25rem;
+   line-height: 1.35;
+}
+.modal-themed-header .modal-subtitle {
+   font-size: 0.98rem;
+   line-height: 1.45;
+}
+.modal-themed-header .modal-subtitle {
+   opacity: 0.78;
+}
+.modal-themed-header .modal-close-btn {
+   margin-left: auto;
+   flex: 0 0 auto;
+   color: #ffffff;
+   opacity: 0.9;
+}
+.modal-themed-header .modal-close-btn:hover {
+   opacity: 1;
+   color: #ffffff;
+}
+.modal-themed-success {
+   background: linear-gradient(135deg, rgba(36, 207, 160, 0.95) 0%, rgba(4, 41, 79, 1) 100%);
+}
+.modal-themed-info {
+   background: linear-gradient(135deg, rgba(2, 152, 226, 0.95) 0%, rgba(4, 41, 79, 1) 100%);
+}
+.modal-themed-danger {
+   background: linear-gradient(135deg, rgba(220, 38, 38, 0.95) 0%, rgba(73, 40, 25, 1) 100%);
+}
+.modal-themed-warning {
+   background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(73, 40, 25, 1) 100%);
+}
+</style>
+</head>
+
+<body class="dashboard-page button-page bg-primary-container text-on-surface font-body-md overflow-hidden antialiased">
+   <!-- Floating Submenu Popover Container -->
+   <div class="floating-submenu" id="floating-popover">
+      <div class="space-y-1" id="floating-popover-content">
+         <!-- Dynamic content injected via JS -->
+      </div>
+   </div>
+   <button class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-label="Open menu" type="button">
+      <span class="material-symbols-outlined">menu</span>
+   </button>
+   <div class="mobile-sidebar-overlay" id="mobile-sidebar-overlay"></div>
+   <!-- Sidebar Navigation -->
+   <aside
+      class="sidebar-transition fixed left-0 top-0 h-full w-[280px] border-r border-white/10 flex flex-col py-lg z-50 glass-card"
+      id="sidebar">
+      <div class="px-lg mb-xl sidebar-logo relative">
+         <img class="sidebar-brand-logo sidebar-text" id="sidebar-brand-logo" src="logos/logo_principal/logo_dark.png"
+            alt="Asxentiq" />
+         <div class="sidebar-brand-copy sidebar-text">
+            <p class="text-[10px] text-on-surface-variant font-medium uppercase tracking-[0.2em] mt-1">
+               Platform Access
+            </p>
+         </div>
+         <button
+            class="absolute -right-3 top-2 w-8 h-8 bg-surface-container/95 border border-white/10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all z-10 shadow-lg sidebar-toggle-button"
+            id="sidebar-toggle">
+            <span class="material-symbols-outlined text-[18px]" id="toggle-icon">dock_to_left</span>
+         </button>
+      </div>
+      <div class="px-md mb-md sidebar-text">
+         <div
+            class="flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-2 focus-within:border-primary/50 transition-all">
+            <span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-2">search</span>
+            <input
+               class="bg-transparent border-none focus:ring-0 text-body-sm text-on-surface w-full p-0 placeholder:text-on-surface-variant"
+               placeholder="Search..." type="text" />
+         </div>
+      </div>
+      <nav class="flex-1 space-y-1 px-md overflow-y-auto" id="sidebar-nav">
+         <a class="sidebar-item sidebar-item-active flex items-center gap-md text-primary font-semibold bg-primary/5 glow-accent-cyan border-l-2 border-primary pl-4 py-3 hover:bg-primary/10 transition-all"
+            href="#"><span class="material-symbols-outlined opacity-100">dashboard</span><span
+               class="font-label-md sidebar-text tracking-wider">Overview</span></a>
+         <!-- Analytics with Sub-items -->
+         <div class="has-submenu" data-submenu-id="submenu-analytics">
+            <button
+               class="sidebar-item w-full flex items-center justify-between text-on-surface-variant pl-4 pr-2 py-3 hover:bg-white/5 hover:text-on-surface transition-all group"
+               onclick="toggleSubmenu('submenu-analytics', this)">
+               <div class="flex items-center gap-md"><span
+                     class="material-symbols-outlined opacity-70 group-hover:opacity-100 group-hover:text-primary">monitoring</span><span
+                     class="font-label-md sidebar-text tracking-wider">Analytics</span>
+               </div>
+               <span
+                  class="material-symbols-outlined text-[18px] expand-icon group-hover:text-primary">expand_more</span>
+            </button>
+            <div class="submenu ml-10 space-y-1 mt-1 border-l border-white/5" id="submenu-analytics"><a
+                  class="flex items-center gap-md py-2 px-4 text-on-surface-variant hover:text-primary font-label-sm transition-colors"
+                  href="#"><span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>Real-time</a><a
+                  class="flex items-center gap-md py-2 px-4 text-on-surface-variant hover:text-primary font-label-sm transition-colors"
+                  href="#"><span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>Historical</a>
+            </div>
+         </div>
+         <!-- Security with Sub-items -->
+         <div class="has-submenu" data-submenu-id="submenu-security">
+            <button
+               class="sidebar-item w-full flex items-center justify-between text-on-surface-variant pl-4 pr-2 py-3 hover:bg-white/5 hover:text-on-surface transition-all group"
+               onclick="toggleSubmenu('submenu-security', this)">
+               <div class="flex items-center gap-md"><span
+                     class="material-symbols-outlined opacity-70 group-hover:opacity-100 group-hover:text-primary">shield</span><span
+                     class="font-label-md sidebar-text tracking-wider">Security</span>
+               </div>
+               <span
+                  class="material-symbols-outlined text-[18px] expand-icon group-hover:text-primary">expand_more</span>
+            </button>
+            <div class="submenu ml-10 space-y-1 mt-1 border-l border-white/5" id="submenu-security">
+               <a class="flex items-center gap-md py-2 px-4 text-on-surface-variant hover:text-primary font-label-sm transition-colors"
+                  href="#"><span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>Activity
+                  Logs</a><a
+                  class="flex items-center gap-md py-2 px-4 text-on-surface-variant hover:text-primary font-label-sm transition-colors"
+                  href="#"><span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>Policies</a>
+            </div>
+         </div>
+         <a class="sidebar-item flex items-center gap-md text-on-surface-variant pl-4 py-3 hover:bg-white/5 hover:text-on-surface transition-all group"
+            href="#"><span
+               class="material-symbols-outlined opacity-70 group-hover:opacity-100 group-hover:text-primary">database</span><span
+               class="font-label-md sidebar-text tracking-wider">Assets</span></a>
+         <a class="sidebar-item flex items-center gap-md text-on-surface-variant pl-4 py-3 hover:bg-white/5 hover:text-on-surface transition-all group"
+            href="#"><span
+               class="material-symbols-outlined opacity-70 group-hover:opacity-100 group-hover:text-primary">description</span><span
+               class="font-label-md sidebar-text tracking-wider">Reports</span></a>
+      </nav>
+   </aside>
+   <!-- Main Content Wrapper -->
+   <main class="main-content-transition position-relative d-flex flex-column overflow-auto min-vh-100" id="main-content"
+      style="margin-left: 280px;">
+      <!-- Top Navigation Bar -->
+      <header
+         class="sticky-top bg-surface border-bottom border-white/10 d-flex align-items-center justify-content-end px-4 py-3 z-40">
+         <div class="flex items-center gap-lg">
+            <div class="flex items-center gap-sm">
+               <!-- Theme Toggle -->
+               <button
+                  class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200"
+                  id="theme-toggle" title="Toggle Theme">
+                  <span class="material-symbols-outlined" id="theme-toggle-icon">light_mode</span>
+               </button>
+               <button
+                  class="relative p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200">
+                  <span class="material-symbols-outlined">notifications</span>
+                  <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-chart-green rounded-full"></span>
+               </button>
+               <button
+                  class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200">
+                  <span class="material-symbols-outlined">settings</span>
+               </button>
+            </div>
+            <div class="h-8 w-[1px] bg-white/10 mx-2"></div>
+            <div class="text-right">
+               <p class="font-label-sm text-on-surface-variant text-[10px]">SYSTEM TIME</p>
+               <p class="font-label-md text-primary font-mono" id="terminal-clock">00:00:00 UTC
+               </p>
+            </div>
+            <div class="flex items-center gap-md pl-lg border-l border-white/10 cursor-pointer group"
+               id="sidebar-profile-trigger"><img
+                  class="w-8 h-8 rounded-full border border-white/10 shrink-0 group-hover:border-primary/50 transition-colors"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXXpP7CN_DohNV4M-jSm4rVi_X5bvwyt5wcewq4ozXOCgCFua0WWDIVtiOqG6c7pgeLmdkZME7U0R7oSU8MseLxMTc4gJ_YRbxwViI_OeN_s7lkvOaXsuKQr-m3D3H65Rn3v8m-761ZGXoCXCryvMdLMci4xsaJE0pMNisediP1OZNgQqWt9t2v4YWGSmzOyAfzMQsTShoxZSLSdQnQshLLwZAzHldAwChRh2N7h7lXn-cuC_q5wgTeJGMplhdH5dIzfi6PnC5LNE" /><span
+                  class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">expand_more</span>
+            </div>
+         </div>
+      </header>
+      <!-- Content Area -->
+      <div class="container-fluid px-4 py-5" style="height: calc(100vh - 64px); overflow-y: auto;">
+
+      </div>
+
+<div class="modal fade" id="modalSuccess" tabindex="-1" aria-labelledby="modalSuccessLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0 rounded-4">
+         <div class="modal-themed-header modal-themed-success">
+            <div>
+               <h5 class="modal-title font-headline-md mb-1" id="modalSuccessLabel">Success modal</h5>
+               <p class="modal-subtitle font-label-sm mb-0">A positive, reassuring message.</p>
+            </div>
+            <button type="button" class="modal-close-btn p-2 transition-colors active:scale-95" data-bs-dismiss="modal" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+         </div>
+         <div class="modal-body text-on-surface-variant">
+            Perfecto para confirmar que una accion se completo correctamente.
+         </div>
+         <div class="modal-footer border-white/10">
+            <button type="button" class="btn btn-outline-light fw-semibold" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success fw-semibold">Done</button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<div class="modal fade" id="modalInfo" tabindex="-1" aria-labelledby="modalInfoLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0 rounded-4">
+         <div class="modal-themed-header modal-themed-info">
+            <div>
+               <h5 class="modal-title font-headline-md mb-1" id="modalInfoLabel">Info modal</h5>
+            </div>
+            <button type="button" class="modal-close-btn p-2 transition-colors active:scale-95" data-bs-dismiss="modal" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+         </div>
+         <div class="modal-body text-on-surface-variant">
+            Ideal para comunicar contexto, guiar al usuario o mostrar una explicacion breve.
+         </div>
+         <div class="modal-footer border-white/10">
+            <button type="button" class="btn btn-outline-light fw-semibold" data-bs-dismiss="modal">Dismiss</button>
+            <button type="button" class="btn btn-info fw-semibold">Understood</button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<div class="modal fade" id="modalDanger" tabindex="-1" aria-labelledby="modalDangerLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0 rounded-4">
+         <div class="modal-themed-header modal-themed-danger">
+            <div>
+               <h5 class="modal-title font-headline-md mb-1" id="modalDangerLabel">Danger modal</h5>
+            </div>
+            <button type="button" class="modal-close-btn p-2 transition-colors active:scale-95" data-bs-dismiss="modal" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+         </div>
+         <div class="modal-body text-on-surface-variant">
+            Esta version deja claro que la accion puede implicar un riesgo o una eliminacion definitiva.
+         </div>
+         <div class="modal-footer border-white/10">
+            <button type="button" class="btn btn-outline-light fw-semibold" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger fw-semibold">Delete</button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<div class="modal fade" id="modalWarning" tabindex="-1" aria-labelledby="modalWarningLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0 rounded-4">
+         <div class="modal-themed-header modal-themed-warning">
+            <div>
+               <h5 class="modal-title font-headline-md mb-1" id="modalWarningLabel">Warning modal</h5>
+            </div>
+            <button type="button" class="modal-close-btn p-2 transition-colors active:scale-95" data-bs-dismiss="modal" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+         </div>
+         <div class="modal-body text-on-surface-variant">
+            Perfecto para advertencias, validaciones o avisos que no bloquean el flujo pero requieren atencion.
+         </div>
+         <div class="modal-footer border-white/10">
+            <button type="button" class="btn btn-outline-light fw-semibold" data-bs-dismiss="modal">Later</button>
+            <button type="button" class="btn btn-warning fw-semibold">Continue</button>
+         </div>
+      </div>
+   </div>
+</div>
+   <div
+      class="fixed right-0 top-0 h-full w-[320px] glass-card backdrop-blur-xl border-l border-white/10 z-[70] overflow-hidden transition-all duration-500 translate-x-full invisible opacity-0"
+      id="profile-panel">
+      <div
+         class="p-4 p-lg-5 border-bottom border-white/5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+         <h2 class="font-headline-md text-on-surface tracking-tight">Account</h2>
+         <button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95"
+            onclick="document.getElementById('profile-panel').classList.add('translate-x-full', 'invisible', 'opacity-0')">
+            <span class="material-symbols-outlined">close</span>
+         </button>
+      </div>
+      <div class="p-xl flex flex-col items-center text-center">
+         <div class="relative mb-lg">
+            <div class="w-24 h-24 rounded-full border-2 border-primary/30 p-1 glow-accent-cyan relative">
+               <img alt="Shaun Park" class="w-full h-full rounded-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXXpP7CN_DohNV4M-jSm4rVi_X5bvwyt5wcewq4ozXOCgCFua0WWDIVtiOqG6c7pgeLmdkZME7U0R7oSU8MseLxMTc4gJ_YRbxwViI_OeN_s7lkvOaXsuKQr-m3D3H65Rn3v8m-761ZGXoCXCryvMdLMci4xsaJE0pMNisediP1OZNgQqWt9t2v4YWGSmzOyAfzMQsTShoxZSLSdQnQshLLwZAzHldAwChRh2N7h7lXn-cuC_q5wgTeJGMplhdH5dIzfi6PnC5LNE" />
+               <div
+                  class="absolute bottom-0 right-0 w-6 h-6 bg-chart-green border-4 border-surface-container rounded-full status-pulse">
+               </div>
+            </div>
+         </div>
+         <h3 class="font-headline-md text-on-surface font-bold tracking-tight">Shaun Park</h3>
+         <p class="text-on-surface-variant text-body-sm font-mono opacity-70">shaun@mail.com</p>
+         <div class="flex items-center gap-2 mt-lg bg-white/5 px-4 py-2 rounded-full border border-white/5">
+            <div class="flex -space-x-2">
+               <div
+                  class="w-6 h-6 rounded-full bg-chart-cyan/20 flex items-center justify-center text-[10px] font-bold text-chart-cyan border border-white/10">
+                  SP
+               </div>
+               <div
+                  class="w-6 h-6 rounded-full bg-chart-green/20 flex items-center justify-center text-[10px] font-bold text-chart-green border border-white/10">
+                  DS
+               </div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1">Active
+               Projects</span>
+         </div>
+      </div>
+      <div class="flex-1 overflow-y-auto px-md space-y-1">
+         <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+            href="#">
+            <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">person</span>
+            <span class="font-label-md tracking-wide">Profile Settings</span>
+         </a>
+         <a class="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+            href="#">
+            <div class="flex items-center gap-md">
+               <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">folder</span>
+               <span class="font-label-md tracking-wide">Projects</span>
+            </div>
+            <span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">03</span>
+         </a>
+         <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+            href="#">
+            <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">card_membership</span>
+            <span class="font-label-md tracking-wide">Subscription</span>
+         </a>
+         <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+            href="#">
+            <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">security</span>
+            <span class="font-label-md tracking-wide">Security &amp; Privacy</span>
+         </a>
+         <a class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+            href="#">
+            <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">settings</span>
+            <span class="font-label-md tracking-wide">Account Preferences</span>
+         </a>
+      </div>
+      <div class="p-lg border-t border-white/5 bg-white/2">
+         <button
+            class="w-full py-3 bg-error-container/10 hover:bg-error-container/20 text-error rounded-lg font-label-md transition-all border border-error/20 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+            <span>Sign Out</span>
+         </button>
+      </div>
+   </div>
+   <script src="vendor/bootstrap/5.3.8/bootstrap.bundle.min.js"></script>
+   <script src="assets/js/dashboard.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+
