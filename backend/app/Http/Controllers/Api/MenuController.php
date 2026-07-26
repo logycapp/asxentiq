@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 class MenuController extends Controller
 {
     private const HIDDEN_MAIN_MENU_ROUTES = ['/users', '/roles'];
+    private const HIDDEN_CHILD_MENU_ROUTES = ['/trainings/participants'];
 
     public function index(Request $request): JsonResponse
     {
@@ -32,6 +33,7 @@ class MenuController extends Controller
                     $query->orWhereHas('roles', fn ($roleQuery) => $roleQuery->where('roles.id', $roleId));
                 }
             })
+            ->whereNotIn('route', self::HIDDEN_CHILD_MENU_ROUTES)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
@@ -49,7 +51,7 @@ class MenuController extends Controller
                 'exact' => $child->exact ?? false,
             ])->toArray();
 
-            // En Capacitaciones solo mostramos sus subitems reales: Programas y Participantes.
+            // En Capacitaciones solo mostramos el subitem real: Programas.
             $children = $item->route === '/trainings'
                 ? $childrenBase
                 : array_merge(

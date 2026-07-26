@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -27,7 +27,7 @@ import { Select3Component } from '../../shared/select3.component';
       [showSecondaryButton]="true"
       [primaryLabel]="isEdit ? 'Actualizar' : 'Crear'"
       secondaryLabel="Cancelar"
-      [primaryDisabled]="loading || saving || categories.length === 0"
+      [primaryDisabled]="loading || saving || (!fixedTrainingCategoryId && categories.length === 0)"
       [primaryLoading]="saving"
       (secondaryRequested)="closeModal()"
       (primaryRequested)="save()"
@@ -42,7 +42,7 @@ import { Select3Component } from '../../shared/select3.component';
 
         <form (ngSubmit)="save(trainingForm)" #trainingForm="ngForm" id="training-form" novalidate *ngIf="!loading">
           <div class="row g-3">
-            <div *ngIf="categories.length === 0" class="col-12">
+            <div *ngIf="!fixedTrainingCategoryId && categories.length === 0" class="col-12">
               <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
                 <span>Primero debes crear un programa para poder guardar la capacitacion.</span>
                 <button type="button" class="btn btn-sm btn-outline-dark fw-semibold" (click)="goToPrograms()">Gestionar programas</button>
@@ -57,21 +57,32 @@ import { Select3Component } from '../../shared/select3.component';
               </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3" *ngIf="fixedTrainingCategoryId; else programSelectTemplate">
               <label class="form-label small text-on-surface-variant">Programa *</label>
-              <app-select3
-                #categoryModel="ngModel"
-                [options]="categoryOptions"
-                [(ngModel)]="model.training_category_id"
-                name="training_category_id"
-                placeholder="Selecciona un programa"
-                [disabled]="categories.length === 0"
-                required
-              ></app-select3>
-              <div class="invalid-feedback d-block" *ngIf="(categoryModel.touched || trainingForm.submitted) && categoryModel.invalid">
-                Selecciona un programa.
-              </div>
+              <input
+                class="form-control bg-transparent border-white/10 text-on-surface"
+                [value]="fixedTrainingCategoryLabel || selectedCategoryLabel"
+                readonly
+              />
+              <small class="text-on-surface-variant d-block mt-1">El programa queda fijado desde el padre.</small>
             </div>
+            <ng-template #programSelectTemplate>
+              <div class="col-md-3">
+                <label class="form-label small text-on-surface-variant">Programa *</label>
+                <app-select3
+                  #categoryModel="ngModel"
+                  [options]="categoryOptions"
+                  [(ngModel)]="model.training_category_id"
+                  name="training_category_id"
+                  placeholder="Selecciona un programa"
+                  [disabled]="categories.length === 0"
+                  required
+                ></app-select3>
+                <div class="invalid-feedback d-block" *ngIf="(categoryModel.touched || trainingForm.submitted) && categoryModel.invalid">
+                  Selecciona un programa.
+                </div>
+              </div>
+            </ng-template>
 
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Estado *</label>
@@ -88,26 +99,6 @@ import { Select3Component } from '../../shared/select3.component';
               </div>
             </div>
 
-            <div class="col-12">
-              <label class="form-label small text-on-surface-variant">Descripcion</label>
-              <textarea class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.description" name="description" rows="3"></textarea>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label small text-on-surface-variant">Tipo *</label>
-              <app-select3
-                #typeModel="ngModel"
-                [options]="typeOptions"
-                [(ngModel)]="model.type"
-                name="type"
-                placeholder="Selecciona un tipo"
-                required
-              ></app-select3>
-              <div class="invalid-feedback d-block" *ngIf="(typeModel.touched || trainingForm.submitted) && typeModel.invalid">
-                Selecciona un tipo.
-              </div>
-            </div>
-
             <div class="col-md-4">
               <label class="form-label small text-on-surface-variant">Modalidad *</label>
               <app-select3
@@ -121,6 +112,11 @@ import { Select3Component } from '../../shared/select3.component';
               <div class="invalid-feedback d-block" *ngIf="(modalityModel.touched || trainingForm.submitted) && modalityModel.invalid">
                 Selecciona una modalidad.
               </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small text-on-surface-variant">Descripcion</label>
+              <textarea class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.description" name="description" rows="3"></textarea>
             </div>
 
             <div class="col-md-4">
@@ -226,10 +222,15 @@ export class TrainingFormComponent implements OnInit {
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } | null = null;
 
   @Input() trainingIdInput?: number;
+  @Input() embedded = false;
+  @Input() fixedTrainingCategoryId?: number;
+  @Input() fixedTrainingCategoryLabel = '';
   @Output() saved = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   isEdit = false;
   trainingId?: number;
@@ -246,7 +247,6 @@ export class TrainingFormComponent implements OnInit {
     training_category_id: undefined,
     title: '',
     description: '',
-    type: 'sst_training',
     modality: 'presential',
     scheduled_date: '',
     completion_date: undefined,
@@ -262,17 +262,15 @@ export class TrainingFormComponent implements OnInit {
     return this.categories.map((category) => ({ value: category.id, label: category.name }));
   }
 
+  get selectedCategoryLabel(): string {
+    const selectedId = Number(this.model.training_category_id ?? 0);
+    return this.categories.find((category) => category.id === selectedId)?.name ?? 'Programa fijo';
+  }
+
   readonly statusOptions = [
     { value: 'scheduled', label: 'Programada' },
     { value: 'completed', label: 'Realizada' },
     { value: 'cancelled', label: 'Cancelada' },
-  ];
-
-  readonly typeOptions = [
-    { value: 'medical_exam', label: 'Examen Medico' },
-    { value: 'sst_training', label: 'Capacitacion SST' },
-    { value: 'drill', label: 'Simulacro' },
-    { value: 'induction', label: 'Induccion' },
   ];
 
   readonly modalityOptions = [
@@ -296,6 +294,9 @@ export class TrainingFormComponent implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     const id = this.trainingIdInput ?? Number(this.route.snapshot.paramMap.get('id'));
+    if (this.fixedTrainingCategoryId) {
+      this.model.training_category_id = this.fixedTrainingCategoryId;
+    }
     if (id) {
       this.isEdit = true;
       this.trainingId = +id;
@@ -310,11 +311,11 @@ export class TrainingFormComponent implements OnInit {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (training) => {
+          const resolvedCategoryId = this.fixedTrainingCategoryId ?? training.training_category_id ?? training.category?.id ?? undefined;
           this.model = {
-            training_category_id: training.training_category_id ?? training.category?.id ?? undefined,
+            training_category_id: resolvedCategoryId,
             title: training.title,
             description: training.description,
-            type: training.type,
             modality: training.modality,
             scheduled_date: training.scheduled_date,
             completion_date: training.completion_date ?? undefined,
@@ -326,6 +327,9 @@ export class TrainingFormComponent implements OnInit {
             passing_score: training.passing_score,
             materials: training.materials,
           };
+          if (this.fixedTrainingCategoryId) {
+            this.model.training_category_id = this.fixedTrainingCategoryId;
+          }
           this.trainingMaterials = training.materials ?? [];
         },
         error: () => {
@@ -343,10 +347,14 @@ export class TrainingFormComponent implements OnInit {
       return;
     }
 
-    if (!this.model.training_category_id) {
+    const categoryId = this.fixedTrainingCategoryId ?? this.model.training_category_id;
+
+    if (!categoryId) {
       this.errorMessage = 'Selecciona un programa.';
       return;
     }
+
+    this.model.training_category_id = categoryId;
 
     this.saving = true;
     this.errorMessage = '';
@@ -435,6 +443,16 @@ export class TrainingFormComponent implements OnInit {
   }
 
   closeModal(): void {
+    if (this.embedded) {
+      this.closed.emit();
+      return;
+    }
+
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
     const programId = Number(this.route.parent?.snapshot.paramMap.get('programId') ?? this.route.snapshot.paramMap.get('programId') ?? 0);
 
     if (programId > 0) {

@@ -39,7 +39,6 @@ class TrainingController extends Controller
                 $builder
                     ->where('title', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('type', 'like', '%' . $search . '%')
                     ->orWhere('modality', 'like', '%' . $search . '%')
                     ->orWhere('status', 'like', '%' . $search . '%')
                     ->orWhere('location', 'like', '%' . $search . '%')
@@ -55,7 +54,6 @@ class TrainingController extends Controller
             'id',
             'training_category_id',
             'title',
-            'type',
             'modality',
             'scheduled_date',
             'status',
@@ -104,7 +102,6 @@ class TrainingController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'training_category_id' => ['required', 'integer', 'exists:training_categories,id'],
             'description' => ['nullable', 'string'],
-            'type' => ['required', 'string', 'in:medical_exam,sst_training,drill,induction'],
             'modality' => ['required', 'string', 'in:presential,virtual,mixed'],
             'scheduled_date' => ['required', 'date'],
             'completion_date' => ['nullable', 'date', 'after_or_equal:scheduled_date'],
@@ -143,7 +140,6 @@ class TrainingController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'training_category_id' => ['required', 'integer', 'exists:training_categories,id'],
             'description' => ['nullable', 'string'],
-            'type' => ['required', 'string', 'in:medical_exam,sst_training,drill,induction'],
             'modality' => ['required', 'string', 'in:presential,virtual,mixed'],
             'scheduled_date' => ['required', 'date'],
             'completion_date' => ['nullable', 'date', 'after_or_equal:scheduled_date'],
@@ -225,7 +221,60 @@ class TrainingController extends Controller
             ->orderBy('full_name')
             ->get();
 
+        foreach ($participants as $participant) {
+            $score = $this->resolveParticipantScore($training, $participant);
+            $completedAt = $this->resolveParticipantCompletedAt($participant);
+            $hasAnswers = $this->participantHasAnswers($participant);
+
+            if ($score !== null) {
+                $participant->setAttribute('score', $score);
+            }
+
+            if ($completedAt !== null) {
+                $participant->setAttribute('completed_at', $completedAt);
+            }
+
+            $participant->setAttribute('attended', $hasAnswers);
+            $participant->setAttribute('passed', $score !== null ? $score >= $training->passing_score : null);
+        }
+
         return response()->json($participants);
+    }
+
+    private function resolveParticipantScore(Training $training, TrainingParticipant $participant): ?float
+    {
+        $questionIds = $training->questions()
+            ->where('type', '!=', 'open')
+            ->pluck('id');
+
+        if ($questionIds->isEmpty()) {
+            return null;
+        }
+
+        $answerScores = DB::table('participant_answers')
+            ->where('training_participant_id', $participant->id)
+            ->whereIn('question_id', $questionIds)
+            ->pluck('score');
+
+        if ($answerScores->count() !== $questionIds->count() || $answerScores->contains(fn ($value): bool => $value === null)) {
+            return null;
+        }
+
+        return round((float) $answerScores->avg(), 2);
+    }
+
+    private function resolveParticipantCompletedAt(TrainingParticipant $participant): ?string
+    {
+        return DB::table('participant_answers')
+            ->where('training_participant_id', $participant->id)
+            ->max('answered_at');
+    }
+
+    private function participantHasAnswers(TrainingParticipant $participant): bool
+    {
+        return DB::table('participant_answers')
+            ->where('training_participant_id', $participant->id)
+            ->exists();
     }
 
     public function downloadParticipantsReport(Training $training)
@@ -300,6 +349,7 @@ class TrainingController extends Controller
         ]);
 
         $data['empresa_id'] = $empresaId;
+        $data['active'] = true;
         $participant = $training->participants()->create($data);
 
         return response()->json([
@@ -345,6 +395,42 @@ class TrainingController extends Controller
         ]);
     }
 
+    public function activateParticipant(Training $training, TrainingParticipant $participant): JsonResponse
+    {
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
+        }
+
+        DB::transaction(function () use ($participant): void {
+            DB::table('participant_answers')
+                ->where('training_participant_id', $participant->id)
+                ->delete();
+
+            $participant->update([
+                'active' => true,
+            ]);
+        });
+
+        return response()->json([
+            'message' => 'Participante activado correctamente.',
+            'participant' => $participant->fresh()->load('empresa:id,name,active'),
+        ]);
+    }
+
+    public function deactivateParticipant(Training $training, TrainingParticipant $participant): JsonResponse
+    {
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
+        }
+
+        $participant->update(['active' => false]);
+
+        return response()->json([
+            'message' => 'Participante desactivado correctamente.',
+            'participant' => $participant->fresh()->load('empresa:id,name,active'),
+        ]);
+    }
+
     public function destroyParticipant(Training $training, TrainingParticipant $participant): JsonResponse
     {
         if ($participant->training_id !== $training->id) {
@@ -365,7 +451,6 @@ class TrainingController extends Controller
         }
 
         $questions = $training->questions()
-            ->where('type', 'open')
             ->with(['options' => function ($query): void {
                 $query->orderBy('order');
             }])
@@ -389,12 +474,23 @@ class TrainingController extends Controller
 
         $reviewQuestions = $questions->map(function ($question) use ($answers) {
             $answer = $answers->get($question->id);
+            $expectedAnswers = $question->options
+                ->where('is_correct', true)
+                ->pluck('option_text')
+                ->filter()
+                ->values();
 
             return [
                 'id' => $question->id,
                 'question_text' => $question->question_text,
                 'type' => $question->type,
                 'order' => $question->order,
+                'expected_answer_text' => $question->type === 'open'
+                    ? 'Revisión manual'
+                    : ($expectedAnswers->isNotEmpty() ? $expectedAnswers->implode(', ') : 'Sin respuesta correcta configurada'),
+                'participant_answer_text' => $answer ? (
+                    $answer->answer_text ?? $answer->selected_option_text ?? 'Sin respuesta registrada'
+                ) : null,
                 'options' => $question->options->map(fn ($option) => [
                     'id' => $option->id,
                     'option_text' => $option->option_text,
@@ -485,14 +581,29 @@ class TrainingController extends Controller
                 ? (bool) $participant->passed
                 : ($finalScore !== null ? $finalScore >= $training->passing_score : null);
 
-            $participant->update([
-                    'attended' => $participant->attended ?? true,
-                    'score' => $finalScore,
-                    'passed' => $finalPassed,
-                    'observations' => $data['observations'] ?? null,
-                    'completed_at' => $participant->completed_at ?? now(),
-                    'updated_at' => now(),
-                ]);
+            $updates = [];
+
+            if (Schema::hasColumn('training_participants', 'attended')) {
+                $updates['attended'] = $participant->attended ?? true;
+            }
+
+            if (Schema::hasColumn('training_participants', 'score')) {
+                $updates['score'] = $finalScore;
+            }
+
+            if (Schema::hasColumn('training_participants', 'passed')) {
+                $updates['passed'] = $finalPassed;
+            }
+
+            if (Schema::hasColumn('training_participants', 'observations')) {
+                $updates['observations'] = $data['observations'] ?? null;
+            }
+
+            if (Schema::hasColumn('training_participants', 'completed_at')) {
+                $updates['completed_at'] = $participant->completed_at ?? now();
+            }
+
+            $participant->update($updates);
         });
 
         return response()->json([
@@ -512,15 +623,15 @@ class TrainingController extends Controller
                 ->where('training_participant_id', $participant->id)
                 ->delete();
 
-            $participant->update([
-                'attended' => null,
-                'score' => null,
-                'passed' => null,
-                'observations' => null,
-                'attendance_date' => null,
-                'completed_at' => null,
-                'updated_at' => now(),
-            ]);
+            $updates = [];
+
+            foreach (['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'] as $column) {
+                if (Schema::hasColumn('training_participants', $column)) {
+                    $updates[$column] = null;
+                }
+            }
+
+            $participant->update($updates);
         });
 
         return response()->json([

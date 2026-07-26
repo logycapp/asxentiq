@@ -19,9 +19,9 @@
         </a>
       </li>
       <li class="breadcrumb-item" *ngIf="activeProgramId">
-        <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings']" class="d-inline-flex align-items-center gap-1">
+        <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
           <span class="material-symbols-outlined text-[15px]">grid_view</span>
-          {{ activeProgramName || 'Programa' }}
+          Programas
         </a>
       </li>
       <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
@@ -39,10 +39,10 @@
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
       <div class="d-flex flex-wrap gap-2">
-        <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings', 'create']" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" (click)="openCreateModal()">
           <span class="material-symbols-outlined text-[18px]">add</span>
           Nueva capacitacion
-        </a>
+        </button>
         <a *ngIf="!isProgramFilteredView" routerLink="/trainings_programs" class="btn btn-outline-info d-inline-flex align-items-center gap-2 fw-semibold">
           <span class="material-symbols-outlined text-[18px]">category</span>
           Programas
@@ -56,7 +56,7 @@
             <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
               <span class="material-symbols-outlined text-[18px]">search</span>
             </span>
-            <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="trainingSearch" type="search" placeholder="Buscar por titulo, tipo o fecha..." (keyup.enter)="applyFilters()" [(ngModel)]="searchTerm" />
+            <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="trainingSearch" type="search" placeholder="Buscar por titulo o fecha..." (keyup.enter)="applyFilters()" [(ngModel)]="searchTerm" />
           </div>
         </div>
       </div>
@@ -68,12 +68,12 @@
   <div class="text-on-surface-variant font-body-md">Cargando capacitaciones...</div>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute && trainings.length === 0" class="text-center py-5">
+  <div *ngIf="!loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute && trainings.length === 0" class="text-center py-5">
   <div class="text-on-surface-variant font-body-md mb-3">No hay capacitaciones registradas.</div>
-  <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings', 'create']" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+  <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" (click)="openCreateModal()">
     <span class="material-symbols-outlined text-[18px]">add</span>
     Nueva capacitacion
-  </a>
+  </button>
 </div>
 
 <div *ngIf="!loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute && trainings.length > 0" class="d-grid gap-4 mb-4">
@@ -100,11 +100,6 @@
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
                 <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por titulo" aria-label="Ordenar por titulo">
                   Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span>
-                </button>
-              </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('type')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por tipo" aria-label="Ordenar por tipo">
-                  Tipo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('type') }}</span>
                 </button>
               </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
@@ -141,7 +136,6 @@
             <td class="py-3">
               <span class="text-on-surface fw-semibold">{{ t.title }}</span>
             </td>
-            <td class="py-3 text-on-surface-variant">{{ typeLabel(t.type) }}</td>
             <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
             <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
             <td class="py-3">
@@ -156,9 +150,9 @@
                 <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
                   <span class="material-symbols-outlined">edit</span>
                 </button>
-                <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
+                <button type="button" class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" (click)="openQuestionsModal(t)" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
                   <span class="material-symbols-outlined">quiz</span>
-                </a>
+                </button>
                 <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'participants']" title="Participantes" aria-label="Participantes" data-bs-toggle="tooltip" data-bs-placement="top">
                   <span class="material-symbols-outlined">group_add</span>
                 </a>
@@ -206,11 +200,6 @@
                 </button>
               </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('type')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por tipo" aria-label="Ordenar por tipo">
-                  Tipo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('type') }}</span>
-                </button>
-              </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
                 <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('modality')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por modalidad" aria-label="Ordenar por modalidad">
                   Modalidad <span class="material-symbols-outlined sort-icon">{{ getSortIcon('modality') }}</span>
                 </button>
@@ -244,7 +233,6 @@
               <td class="py-3">
                 <span class="text-on-surface fw-semibold">{{ t.title }}</span>
               </td>
-              <td class="py-3 text-on-surface-variant">{{ typeLabel(t.type) }}</td>
               <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
               <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
               <td class="py-3">
@@ -259,9 +247,9 @@
                   <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
                     <span class="material-symbols-outlined">edit</span>
                   </button>
-                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
+                  <button type="button" class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" (click)="openQuestionsModal(t)" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">quiz</span>
-                  </a>
+                  </button>
                   <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'participants']" title="Participantes" aria-label="Participantes" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">group_add</span>
                   </a>
@@ -311,6 +299,24 @@
 
 <router-outlet />
 
+<app-training-form
+  *ngIf="creatingTraining"
+  [embedded]="true"
+  [fixedTrainingCategoryId]="activeProgramId ?? undefined"
+  [fixedTrainingCategoryLabel]="activeProgramName || 'Programa'"
+  (saved)="onCreateSaved()"
+  (closed)="closeCreateModal()"
+></app-training-form>
+
+<app-training-questions
+  *ngIf="managingQuestionsTraining"
+  [embedded]="true"
+  [trainingIdInput]="managingQuestionsTraining.id"
+  [trainingTitleInput]="managingQuestionsTraining.title"
+  (saved)="onQuestionsSaved()"
+  (closed)="closeQuestionsModal()"
+></app-training-questions>
+
 <app-modal-shell
   *ngIf="editingTraining"
   kicker="Capacitaciones"
@@ -318,7 +324,7 @@
   [subtitle]="'Actualiza los datos de ' + editingTraining.title + '.'"
   headerVariant="warning"
   footerVariant="warning"
-  size="lg"
+  size="xl"
   [showHeaderClose]="true"
   [showFooterClose]="false"
   [showPrimaryButton]="activeEditTab === 'general'"
@@ -334,7 +340,7 @@
   <div modal-body>
     <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
     <div class="row g-3">
-      <div *ngIf="categories.length === 0" class="col-12">
+      <div *ngIf="!activeProgramId && categories.length === 0" class="col-12">
         <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
           <span>Primero debes crear un programa para poder guardar la capacitacion.</span>
           <a routerLink="/trainings_programs" class="btn btn-sm btn-outline-dark fw-semibold">Gestionar programas</a>
@@ -344,15 +350,22 @@
         <label class="form-label small text-on-surface-variant">Titulo *</label>
         <input class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editTitle" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3" *ngIf="activeProgramId; else editProgramSelect">
         <label class="form-label small text-on-surface-variant">Programa *</label>
-        <app-select3
-          [options]="categoryOptions"
-          [(ngModel)]="editTrainingCategoryId"
-          placeholder="Selecciona un programa"
-          [disabled]="categories.length === 0"
-        ></app-select3>
+        <input class="form-control bg-transparent border-white/10 text-on-surface" [value]="activeProgramName || 'Programa'" readonly />
+        <small class="text-on-surface-variant d-block mt-1">El programa queda fijado desde el padre.</small>
       </div>
+      <ng-template #editProgramSelect>
+        <div class="col-md-3">
+          <label class="form-label small text-on-surface-variant">Programa *</label>
+          <app-select3
+            [options]="categoryOptions"
+            [(ngModel)]="editTrainingCategoryId"
+            placeholder="Selecciona un programa"
+            [disabled]="categories.length === 0"
+          ></app-select3>
+        </div>
+      </ng-template>
       <div class="col-md-3">
         <label class="form-label small text-on-surface-variant">Estado *</label>
         <app-select3
@@ -364,14 +377,6 @@
       <div class="col-12">
         <label class="form-label small text-on-surface-variant">Descripcion</label>
         <textarea class="form-control bg-transparent border-white/10 text-on-surface" rows="2" [(ngModel)]="editDescription"></textarea>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label small text-on-surface-variant">Tipo *</label>
-        <app-select3
-          [options]="typeOptions"
-          [(ngModel)]="editType"
-          placeholder="Selecciona un tipo"
-        ></app-select3>
       </div>
       <div class="col-md-4">
         <label class="form-label small text-on-surface-variant">Modalidad *</label>

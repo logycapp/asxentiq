@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PublicTrainingController extends Controller
 {
@@ -30,6 +31,9 @@ class PublicTrainingController extends Controller
 
         $participant = TrainingParticipant::query()
             ->where('document_number', $data['document_number'])
+            ->when(Schema::hasColumn('training_participants', 'active'), function ($query): void {
+                $query->where('active', true);
+            })
             ->orderByDesc('updated_at')
             ->first();
 
@@ -61,11 +65,23 @@ class PublicTrainingController extends Controller
 
         $trainings = Training::query()
             ->whereHas('participants', function ($q) use ($documentNumber): void {
-                $q->where('document_number', $documentNumber)->whereNull('completed_at');
+                $q->where('document_number', $documentNumber);
+
+                if (Schema::hasColumn('training_participants', 'active')) {
+                    $q->where('active', true);
+                }
+
+                $q->whereRaw(
+                    'not exists (select 1 from participant_answers pa where pa.training_participant_id = training_participants.id)'
+                );
             })
             ->with('category')
             ->with(['participants' => function ($q) use ($documentNumber): void {
                 $q->where('document_number', $documentNumber);
+
+                if (Schema::hasColumn('training_participants', 'active')) {
+                    $q->where('active', true);
+                }
             }])
             ->withCount([
                 'questions as questions_count' => function ($query): void {
@@ -87,11 +103,23 @@ class PublicTrainingController extends Controller
 
         $trainings = Training::query()
             ->whereHas('participants', function ($q) use ($documentNumber): void {
-                $q->where('document_number', $documentNumber)->whereNotNull('completed_at');
+                $q->where('document_number', $documentNumber);
+
+                if (Schema::hasColumn('training_participants', 'active')) {
+                    $q->where('active', true);
+                }
+
+                $q->whereRaw(
+                    'exists (select 1 from participant_answers pa where pa.training_participant_id = training_participants.id)'
+                );
             })
             ->with('category')
             ->with(['participants' => function ($q) use ($documentNumber): void {
                 $q->where('document_number', $documentNumber);
+
+                if (Schema::hasColumn('training_participants', 'active')) {
+                    $q->where('active', true);
+                }
             }])
             ->orderBy('scheduled_date', 'desc')
             ->get();
@@ -106,13 +134,16 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $participant = $training->participants()->where('document_number', $documentNumber)->first();
+        $participant = $training->participants()
+            ->where('document_number', $documentNumber)
+            ->where('active', true)
+            ->first();
 
         if (! $participant) {
             return response()->json(['message' => 'No estas asignado a esta capacitacion.'], 403);
         }
 
-        if ($participant->completed_at) {
+        if ($this->hasCompletedTraining($training, $participant)) {
             return response()->json(['message' => 'Ya completaste esta capacitacion.'], 422);
         }
 
@@ -133,9 +164,12 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $participant = $training->participants()->where('document_number', $documentNumber)->first();
+        $participant = $training->participants()
+            ->where('document_number', $documentNumber)
+            ->where('active', true)
+            ->first();
 
-        if (! $participant || $participant->completed_at) {
+        if (! $participant || $this->hasCompletedTraining($training, $participant)) {
             return response()->json(['message' => 'No puedes enviar respuestas para esta capacitacion.'], 422);
         }
 
@@ -210,18 +244,36 @@ class PublicTrainingController extends Controller
                 ? round((float) $answerScores->avg(), 2)
                 : null;
 
-            $participant->update([
-                'score' => $score,
-                'passed' => $score !== null ? $score >= $training->passing_score : null,
-                'attended' => true,
-                'attendance_date' => now()->toDateString(),
-                'completed_at' => now(),
-            ]);
+            $updates = [];
+
+            if (Schema::hasColumn('training_participants', 'score')) {
+                $updates['score'] = $score;
+            }
+
+            if (Schema::hasColumn('training_participants', 'passed')) {
+                $updates['passed'] = $score !== null ? $score >= $training->passing_score : null;
+            }
+
+            if (Schema::hasColumn('training_participants', 'attended')) {
+                $updates['attended'] = true;
+            }
+
+            if (Schema::hasColumn('training_participants', 'attendance_date')) {
+                $updates['attendance_date'] = now()->toDateString();
+            }
+
+            if (Schema::hasColumn('training_participants', 'completed_at')) {
+                $updates['completed_at'] = now();
+            }
+
+            if ($updates !== []) {
+                $participant->update($updates);
+            }
         });
 
         return response()->json([
             'message' => 'Respuestas enviadas correctamente.',
-            'score' => $participant->fresh()->score,
+            'score' => $this->resolveParticipantScore($training, $participant) ?? $participant->fresh()->score,
             'total_questions' => $totalQuestions,
             'autograded' => $autogradeQuestions,
             'correct' => $correctAnswers,
@@ -235,9 +287,12 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $participant = $training->participants()->where('document_number', $documentNumber)->first();
+        $participant = $training->participants()
+            ->where('document_number', $documentNumber)
+            ->where('active', true)
+            ->first();
 
-        if (! $participant || ! $participant->completed_at) {
+        if (! $participant || ! $this->hasCompletedTraining($training, $participant)) {
             return response()->json(['message' => 'No has completado esta capacitacion.'], 422);
         }
 
@@ -245,15 +300,53 @@ class PublicTrainingController extends Controller
             $q->where('type', '!=', 'open')->orderBy('order');
         }]);
 
+        $score = $participant->score ?? $this->resolveParticipantScore($training, $participant);
         $passed = $participant->passed !== null
             ? (bool) $participant->passed
-            : ($participant->score !== null ? $participant->score >= $training->passing_score : null);
+            : ($score !== null ? $score >= $training->passing_score : null);
+        $completedAt = $participant->completed_at ?? $this->resolveParticipantCompletedAt($participant);
 
         return response()->json([
             'training' => $training,
-            'score' => $participant->score,
+            'score' => $score,
             'passed' => $passed,
-            'completed_at' => $participant->completed_at,
+            'completed_at' => $completedAt,
         ]);
+    }
+
+    private function resolveParticipantScore(Training $training, TrainingParticipant $participant): ?float
+    {
+        $questionIds = $training->questions()
+            ->where('type', '!=', 'open')
+            ->pluck('id');
+
+        if ($questionIds->isEmpty()) {
+            return null;
+        }
+
+        $answerScores = DB::table('participant_answers')
+            ->where('training_participant_id', $participant->id)
+            ->whereIn('question_id', $questionIds)
+            ->pluck('score');
+
+        if ($answerScores->count() !== $questionIds->count() || $answerScores->contains(fn ($value): bool => $value === null)) {
+            return null;
+        }
+
+        return round((float) $answerScores->avg(), 2);
+    }
+
+    private function resolveParticipantCompletedAt(TrainingParticipant $participant): ?string
+    {
+        return DB::table('participant_answers')
+            ->where('training_participant_id', $participant->id)
+            ->max('answered_at');
+    }
+
+    private function hasCompletedTraining(Training $training, TrainingParticipant $participant): bool
+    {
+        return DB::table('participant_answers')
+            ->where('training_participant_id', $participant->id)
+            ->exists();
     }
 }

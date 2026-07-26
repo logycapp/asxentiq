@@ -56,7 +56,7 @@ import { TrainingService, Training, PublicUser, TrainingCategory } from '../../c
               <div>
                 <h6 class="mb-1">{{ t.title }}</h6>
                 <small class="text-muted">
-                  {{ typeLabel(t.type) }} | {{ t.questions_count }} preguntas
+                  {{ t.questions_count }} preguntas
                 </small>
               </div>
               <a [routerLink]="['/public/trainings', t.id, 'take']" class="btn btn-primary btn-sm">
@@ -89,7 +89,6 @@ import { TrainingService, Training, PublicUser, TrainingCategory } from '../../c
             <div *ngFor="let t of group.trainings" class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
               <div>
                 <h6 class="mb-1">{{ t.title }}</h6>
-                <small class="text-muted">{{ typeLabel(t.type) }}</small>
               </div>
               <div class="text-end">
                 <div *ngIf="t.participants && t.participants[0]" class="mb-1">
@@ -165,16 +164,6 @@ export class PublicDashboardComponent implements OnInit {
     localStorage.removeItem('public_token');
     localStorage.removeItem('public_user');
     this.router.navigate(['/public/trainings']);
-  }
-
-  typeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      medical_exam: 'Examen Medico',
-      sst_training: 'Capacitacion SST',
-      drill: 'Simulacro',
-      induction: 'Induccion'
-    };
-    return labels[type] || type;
   }
 
   categoryLabel(category: TrainingCategory | null): string {

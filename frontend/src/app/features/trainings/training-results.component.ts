@@ -279,7 +279,6 @@ import {
                       (ngModelChange)="applyReviewFilters()"
                     >
                       <option value="all">Todos</option>
-                      <option value="open">Abiertas</option>
                       <option value="multiple_choice">Opcion multiple</option>
                       <option value="yes_no">Si / No</option>
                     </select>
@@ -1076,13 +1075,18 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   participantPassed(participant: TrainingParticipant): boolean {
-    const passed = participant.passed;
+    const passed: any = participant.passed;
 
     if (passed !== null && passed !== undefined) {
-      return passed;
+      return passed === true || passed === 1 || passed === '1';
     }
 
-    return (participant.score ?? 0) >= (this.training?.passing_score ?? 70);
+    const score = Number(participant.score ?? NaN);
+    if (Number.isNaN(score)) {
+      return false;
+    }
+
+    return score >= Number(this.training?.passing_score ?? 70);
   }
 
   presentedLabel(participant: TrainingParticipant): 'Sí' | 'No' | 'Pendiente' {

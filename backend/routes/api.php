@@ -105,6 +105,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/trainings/{training}/participants/import', [TrainingController::class, 'importParticipantsReport']);
         Route::post('/trainings/{training}/participants', [TrainingController::class, 'storeParticipant']);
         Route::put('/trainings/{training}/participants/{participant}', [TrainingController::class, 'updateParticipant']);
+        Route::patch('/trainings/{training}/participants/{participant}/activate', [TrainingController::class, 'activateParticipant']);
+        Route::patch('/trainings/{training}/participants/{participant}/deactivate', [TrainingController::class, 'deactivateParticipant']);
         Route::delete('/trainings/{training}/participants/{participant}', [TrainingController::class, 'destroyParticipant']);
         Route::get('/trainings/{training}/participants/{participant}/review', [TrainingController::class, 'participantReview']);
         Route::put('/trainings/{training}/participants/{participant}/review', [TrainingController::class, 'updateParticipantReview']);

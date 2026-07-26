@@ -114,19 +114,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $participantsItem = MenuItem::query()->updateOrCreate(
-            ['route' => '/trainings/participants'],
-            [
-                'label' => 'Participantes',
-                'icon' => 'people',
-                'sort_order' => 5,
-                'parent_id' => $trainingsItem->id,
-                'role_id' => null,
-                'enabled' => true,
-                'exact' => true,
-            ]
-        );
-
         $programsItem = MenuItem::query()->updateOrCreate(
             ['route' => '/trainings_programs'],
             [
@@ -146,7 +133,6 @@ class DatabaseSeeder extends Seeder
         $empresasItem->roles()->sync([$adminRole->id]);
         $adminItem->roles()->sync([$adminRole->id]);
         $trainingsItem->roles()->sync([$adminRole->id]);
-        $participantsItem->roles()->sync([$adminRole->id]);
         $programsItem->roles()->sync([$adminRole->id]);
 
         $defaultTrainingCategory = TrainingCategory::query()->updateOrCreate(

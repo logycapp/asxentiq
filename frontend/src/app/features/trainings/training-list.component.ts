@@ -20,6 +20,8 @@ import {
   TrainingParticipant,
   TrainingService
 } from '../../core/services/training.service';
+import { TrainingFormComponent } from './training-form.component';
+import { TrainingQuestionsComponent } from './training-questions.component';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
@@ -33,7 +35,9 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
     PageHeaderComponent,
     ModalShellComponent,
     SwalAlertComponent,
-    Select3Component
+    Select3Component,
+    TrainingFormComponent,
+    TrainingQuestionsComponent
   ],
   templateUrl: './training-list.component.html',
   styleUrls: ['./training-list.component.css']
@@ -66,6 +70,8 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = false;
   message = '';
   errorMessage = '';
+  creatingTraining = false;
+  managingQuestionsTraining: Training | null = null;
   isParticipantsRoute = false;
   isAssignRoute = false;
   isCategoriesRoute = false;
@@ -110,7 +116,6 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   editTitle = '';
   editDescription = '';
   editTrainingCategoryId: number | null = null;
-  editType = 'sst_training';
   editModality = 'presential';
   editStatus = 'scheduled';
   editScheduledDate = '';
@@ -129,13 +134,6 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'scheduled', label: 'Programada' },
     { value: 'completed', label: 'Realizada' },
     { value: 'cancelled', label: 'Cancelada' },
-  ];
-
-  readonly typeOptions = [
-    { value: 'medical_exam', label: 'Examen Medico' },
-    { value: 'sst_training', label: 'Capacitacion SST' },
-    { value: 'drill', label: 'Simulacro' },
-    { value: 'induction', label: 'Induccion' },
   ];
 
   readonly modalityOptions = [
@@ -167,7 +165,10 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.updateRouteFlags();
           this.updateProgramFilterFromUrl();
           this.loadCategories();
-          this.loadTrainings();
+
+          if (!this.isChildTrainingRoute()) {
+            this.loadTrainings();
+          }
         })
     );
 
@@ -266,12 +267,46 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/trainings_programs']);
   }
 
+  openCreateModal(): void {
+    this.managingQuestionsTraining = null;
+    this.creatingTraining = true;
+    this.message = '';
+    this.errorMessage = '';
+  }
+
+  closeCreateModal(): void {
+    this.creatingTraining = false;
+  }
+
+  openQuestionsModal(training: Training): void {
+    this.creatingTraining = false;
+    this.editingTraining = null;
+    this.managingQuestionsTraining = training;
+    this.message = '';
+    this.errorMessage = '';
+  }
+
+  closeQuestionsModal(): void {
+    this.managingQuestionsTraining = null;
+  }
+
+  onQuestionsSaved(): void {
+    this.loadTrainings();
+  }
+
+  onCreateSaved(): void {
+    this.closeCreateModal();
+    this.loadTrainings();
+  }
+
   getSortIcon(key: string): string {
     if (this.sortBy !== key) return 'unfold_more';
     return this.sortDir === 'asc' ? 'north' : 'south';
   }
 
   openEditModal(training: Training): void {
+    this.creatingTraining = false;
+    this.managingQuestionsTraining = null;
     this.editingTraining = training;
     this.activeEditTab = 'general';
     this.loadingEditDetails = true;
@@ -298,8 +333,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reviewScores = {};
     this.editTitle = training.title;
     this.editDescription = training.description || '';
-    this.editTrainingCategoryId = training.training_category_id ?? training.category?.id ?? null;
-    this.editType = training.type;
+    this.editTrainingCategoryId = this.activeProgramId ?? training.training_category_id ?? training.category?.id ?? null;
     this.editModality = training.modality;
     this.editStatus = training.status;
     this.editScheduledDate = training.scheduled_date;
@@ -366,16 +400,17 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   saveEditModal(): void {
     if (!this.editingTraining || !this.editTitle) return;
 
-    if (!this.editTrainingCategoryId) {
+    const trainingCategoryId = this.activeProgramId ?? this.editTrainingCategoryId;
+
+    if (!trainingCategoryId) {
       this.errorMessage = 'Selecciona un programa.';
       return;
     }
 
     const payload: Partial<Training> = {
       title: this.editTitle,
-      training_category_id: this.editTrainingCategoryId,
+      training_category_id: trainingCategoryId,
       description: this.editDescription || undefined,
-      type: this.editType,
       modality: this.editModality,
       status: this.editStatus,
       scheduled_date: this.editScheduledDate,
@@ -862,16 +897,6 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  typeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      medical_exam: 'Examen Medico',
-      sst_training: 'Capacitacion SST',
-      drill: 'Simulacro',
-      induction: 'Induccion'
-    };
-    return labels[type] || type;
-  }
-
   categoryLabel(category: TrainingCategory | null | undefined): string {
     return category?.name || 'Sin programa';
   }
@@ -971,6 +996,10 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.activeProgramId = Number.isFinite(programId) && programId > 0 ? programId : null;
     this.syncActiveProgramName();
+  }
+
+  private isChildTrainingRoute(): boolean {
+    return !!this.route.firstChild;
   }
 
   private syncActiveProgramName(): void {

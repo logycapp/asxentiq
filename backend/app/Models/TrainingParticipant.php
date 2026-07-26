@@ -14,6 +14,7 @@ class TrainingParticipant extends Model
         'full_name',
         'email',
         'phone',
+        'active',
         'attended',
         'score',
         'passed',
@@ -25,6 +26,7 @@ class TrainingParticipant extends Model
     protected function casts(): array
     {
         return [
+            'active' => 'boolean',
             'attended' => 'boolean',
             'passed' => 'boolean',
             'score' => 'decimal:2',

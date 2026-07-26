@@ -8,7 +8,6 @@ export interface Training {
   training_category_id?: number;
   title: string;
   description?: string;
-  type: string;
   modality: string;
   scheduled_date: string;
   completion_date?: string;
@@ -94,6 +93,7 @@ export interface TrainingParticipant {
   full_name: string;
   email?: string;
   phone?: string;
+  active?: boolean | null;
   attended?: boolean | null;
   score?: number | null;
   passed?: boolean | null;
@@ -173,6 +173,8 @@ export interface ParticipantReviewQuestion {
   question_text: string;
   type: string;
   order: number;
+  expected_answer_text?: string | null;
+  participant_answer_text?: string | null;
   options: QuestionOption[];
   answer: ParticipantReviewAnswer | null;
 }
@@ -474,6 +476,14 @@ export class TrainingService {
     payload: Partial<TrainingParticipant>
   ): Observable<{ message: string; participant: TrainingParticipant }> {
     return this.http.put<{ message: string; participant: TrainingParticipant }>(`${this.apiUrl}/${trainingId}/participants/${participantId}`, payload);
+  }
+
+  activateTrainingParticipant(trainingId: number, participantId: number): Observable<{ message: string; participant: TrainingParticipant }> {
+    return this.http.patch<{ message: string; participant: TrainingParticipant }>(`${this.apiUrl}/${trainingId}/participants/${participantId}/activate`, {});
+  }
+
+  deactivateTrainingParticipant(trainingId: number, participantId: number): Observable<{ message: string; participant: TrainingParticipant }> {
+    return this.http.patch<{ message: string; participant: TrainingParticipant }>(`${this.apiUrl}/${trainingId}/participants/${participantId}/deactivate`, {});
   }
 
   deleteTrainingParticipant(trainingId: number, participantId: number): Observable<{ message: string }> {

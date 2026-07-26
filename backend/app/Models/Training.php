@@ -16,7 +16,6 @@ class Training extends Model
         'title',
         'training_category_id',
         'description',
-        'type',
         'modality',
         'scheduled_date',
         'completion_date',

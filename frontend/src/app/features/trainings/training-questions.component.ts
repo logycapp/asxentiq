@@ -224,7 +224,9 @@ export class TrainingQuestionsComponent implements OnInit {
 
   @Input() trainingIdInput?: number;
   @Input() trainingTitleInput?: string;
+  @Input() embedded = false;
   @Output() saved = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   trainingId = 0;
   trainingTitle = '';
@@ -435,6 +437,11 @@ export class TrainingQuestionsComponent implements OnInit {
   }
 
   closeModal(): void {
+    if (this.embedded) {
+      this.closed.emit();
+      return;
+    }
+
     if (this.activeModal) {
       this.activeModal.dismiss('close');
     } else {

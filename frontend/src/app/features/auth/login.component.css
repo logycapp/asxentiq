@@ -3,6 +3,7 @@
 :host {
   display: block;
   min-height: 100vh;
+  color-scheme: light;
 }
 
 .login-page {
@@ -14,6 +15,7 @@
   color: #0f172a;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+  color-scheme: light;
 }
 
 .login-shell {
@@ -420,4 +422,41 @@
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+:host-context(.dark) .login-page,
+:host-context(.light) .login-page {
+  background:
+    radial-gradient(circle at top left, rgba(69, 123, 255, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(36, 207, 160, 0.1), transparent 28%),
+    linear-gradient(180deg, #eef4ff 0%, #f8fafc 45%, #f4f7fb 100%);
+  color: #0f172a;
+  color-scheme: light;
+}
+
+:host-context(.dark) .login-card,
+:host-context(.light) .login-card {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+}
+
+:host-context(.dark) .field,
+:host-context(.light) .field {
+  color: #0f172a;
+}
+
+:host-context(.dark) .form-control,
+:host-context(.light) .form-control {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.14);
+}
+
+:host-context(.dark) .subtitle,
+:host-context(.light) .subtitle,
+:host-context(.dark) .footer-copy,
+:host-context(.light) .footer-copy,
+:host-context(.dark) .signal-panel p,
+:host-context(.light) .signal-panel p {
+  color: #64748b;
 }

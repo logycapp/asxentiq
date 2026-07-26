@@ -56,7 +56,6 @@ class CertificateController extends Controller
             'user_name' => $participant->full_name,
             'document_number' => $participant->document_number,
             'training_title' => $training->title,
-            'training_type' => $training->type,
             'score' => $participant->score,
             'passed' => $passed,
             'passing_score' => $training->passing_score,

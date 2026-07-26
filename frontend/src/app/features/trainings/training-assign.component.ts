@@ -150,20 +150,11 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                 </button>
               </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('presented')">
-                  Presento <span class="material-symbols-outlined sort-icon">{{ getSortIcon('presented') }}</span>
-                </button>
-              </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
                 <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('score')">
-                  Puntaje <span class="material-symbols-outlined sort-icon">{{ getSortIcon('score') }}</span>
+                  Puntaje / Resultado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('score') }}</span>
                 </button>
               </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('result')">
-                  Resultado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('result') }}</span>
-                </button>
-              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Estado</th>
               <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end participant-table-th">Acciones</th>
             </tr>
           </thead>
@@ -172,38 +163,79 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
               <td class="ps-4 py-3 font-mono text-on-surface">{{ participant.id }}</td>
               <td class="py-3 font-semibold text-on-surface">{{ participant.document_number }}</td>
               <td class="py-3 text-on-surface">{{ participant.full_name }}</td>
-              <td class="py-3 text-on-surface-variant">{{ participant.email || '-' }}</td>
-              <td class="py-3 text-on-surface-variant">{{ participant.phone || '-' }}</td>
               <td class="py-3">
                 <span
-                  class="badge rounded-pill px-3 py-2 participant-presented-badge"
-                  [ngClass]="{
-                    'participant-presented-yes': presentedLabel(participant) === 'Si',
-                    'participant-presented-no': presentedLabel(participant) === 'No',
-                    'participant-presented-pending': presentedLabel(participant) === 'Pendiente'
-                  }"
+                  class="participant-email-chip d-inline-flex align-items-center justify-content-center"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  [attr.title]="participant.email || 'Sin correo'"
+                  [attr.aria-label]="participant.email || 'Sin correo'"
                 >
-                  {{ presentedLabel(participant) }}
+                  <span class="material-symbols-outlined participant-email-icon">
+                    mail
+                  </span>
                 </span>
               </td>
-              <td class="py-3 text-on-surface-variant">{{ participant.score !== null && participant.score !== undefined ? participant.score + '%' : '-' }}</td>
               <td class="py-3">
-                <span *ngIf="participant.score !== null && participant.score !== undefined" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(participant) ? 'participant-result-approved' : 'participant-result-rejected'">
-                  {{ participantPassed(participant) ? 'Aprobado' : 'No Aprobado' }}
+                <span
+                  class="participant-email-chip d-inline-flex align-items-center justify-content-center"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  [attr.title]="participant.phone || 'Sin telefono'"
+                  [attr.aria-label]="participant.phone || 'Sin telefono'"
+                >
+                  <span class="material-symbols-outlined participant-email-icon">
+                    call
+                  </span>
                 </span>
-                <span *ngIf="participant.score === null || participant.score === undefined" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">
-                  Pendiente de revision
+              </td>
+              <td class="py-3">
+                <div class="d-flex flex-column gap-2">
+                  <span *ngIf="participant.score !== null && participant.score !== undefined" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(participant) ? 'participant-result-approved' : 'participant-result-rejected'">
+                    {{ participantPassed(participant) ? 'Aprobado' : 'No Aprobado' }}<br>{{ participant.score }}%
+                  </span>
+                  <span *ngIf="participant.score === null || participant.score === undefined" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">
+                    Pendiente de revision
+                  </span>
+                </div>
+              </td>
+              <td class="py-3">
+                <span class="badge rounded-pill px-3 py-2 participant-state-badge" [ngClass]="participant.active ? 'participant-state-active' : 'participant-state-inactive'">
+                  {{ participant.active ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
               <td class="pe-4 py-3 text-end">
                 <div class="dashboard-action-group">
+                  <button
+                    *ngIf="participant.active"
+                    type="button"
+                    class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1"
+                    (click)="deactivateParticipant(participant)"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Desactivar participante"
+                    aria-label="Desactivar participante"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">toggle_off</span>
+                  </button>
+                  <button
+                    *ngIf="!participant.active"
+                    type="button"
+                    class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
+                    (click)="activateParticipant(participant)"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Activar participante"
+                    aria-label="Activar participante"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">toggle_on</span>
+                  </button>
                   <button
                     type="button"
                     class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1"
                     (click)="editParticipant(participant)"
                   >
                     <span class="material-symbols-outlined text-[16px]">edit</span>
-                    Editar
                   </button>
                   <button
                     type="button"
@@ -211,7 +243,6 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                     (click)="removeParticipant(participant)"
                   >
                     <span class="material-symbols-outlined text-[16px]">delete</span>
-                    Eliminar
                   </button>
                   <button
                     *ngIf="participant.completed_at"
@@ -226,14 +257,14 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                     <span class="material-symbols-outlined text-[16px]">rate_review</span>
                   </button>
                   <button
-                    *ngIf="participant.completed_at"
+                    *ngIf="participant.active"
                     type="button"
                     class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1"
                     (click)="resetAttempt(participant)"
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
-                    title="Reabrir intento"
-                    aria-label="Reabrir intento"
+                    title="Volver a presentar la capacitacion"
+                    aria-label="Volver a presentar la capacitacion"
                   >
                     <span class="material-symbols-outlined text-[16px]">replay</span>
                   </button>
@@ -306,20 +337,27 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       </div>
     </div>
 
-    <div *ngIf="reviewingParticipant" class="card glass-card border-0 rounded-4 p-4 mb-4">
-      <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-        <div>
-          <h6 class="text-on-surface mb-1">Revision de prueba</h6>
-          <div class="font-label-sm text-on-surface-variant">
-            {{ reviewingParticipant.full_name }} | {{ reviewingParticipant.document_number }}
-          </div>
-        </div>
-        <button type="button" class="btn btn-outline-light fw-semibold btn-sm d-inline-flex align-items-center gap-1" (click)="closeReview()">
-          <span class="material-symbols-outlined text-[16px]">close</span>Cerrar
-        </button>
-      </div>
-
-      <div>
+    <app-modal-shell
+      *ngIf="reviewingParticipant"
+      kicker="Participantes de capacitación"
+      title="Revisión de resultado"
+      [subtitle]="reviewingParticipant.full_name + ' | ' + reviewingParticipant.document_number"
+      headerVariant="info"
+      footerVariant="info"
+      size="xl"
+      [showHeaderClose]="true"
+      [showFooterClose]="false"
+      [showPrimaryButton]="hasOpenQuestions()"
+      [showSecondaryButton]="true"
+      primaryLabel="Guardar calificacion"
+      secondaryLabel="Cerrar"
+      [primaryDisabled]="reviewSaving || !hasPendingOpenQuestions()"
+      [primaryLoading]="reviewSaving"
+      (secondaryRequested)="closeReview()"
+      (primaryRequested)="saveReview()"
+      (closeRequested)="closeReview()"
+    >
+      <div modal-body>
         <div *ngIf="reviewLoading" class="text-center py-4">
           <div class="text-on-surface-variant font-body-md">Cargando revision...</div>
         </div>
@@ -329,7 +367,8 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
         <div *ngIf="reviewData && !reviewLoading">
           <div class="alert alert-info py-2 font-label-sm">
             <span class="material-symbols-outlined text-[16px] align-middle me-1">info</span>
-            Califica cada pregunta abierta de forma individual. El puntaje final se recalcula cuando todas las preguntas tengan nota.
+            Aqui puedes comparar cada pregunta con la respuesta esperada y la respuesta registrada por el participante.
+            Las preguntas abiertas siguen pudiendose calificar manualmente.
           </div>
 
           <div class="row g-3 mb-4">
@@ -382,7 +421,6 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                   (ngModelChange)="applyReviewFilters()"
                 >
                   <option value="all">Todos</option>
-                  <option value="open">Abiertas</option>
                   <option value="multiple_choice">Opcion multiple</option>
                   <option value="yes_no">Si / No</option>
                 </select>
@@ -424,13 +462,16 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                     </th>
                     <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
                       <button type="button" class="sort-trigger review-sort-trigger" (click)="sortReviewBy('answer')">
-                        Respuesta <span class="material-symbols-outlined sort-icon">{{ getReviewSortIcon('answer') }}</span>
+                        Debio contestar <span class="material-symbols-outlined sort-icon">{{ getReviewSortIcon('answer') }}</span>
                       </button>
                     </th>
                     <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
                       <button type="button" class="sort-trigger review-sort-trigger" (click)="sortReviewBy('score')">
-                        Puntaje <span class="material-symbols-outlined sort-icon">{{ getReviewSortIcon('score') }}</span>
+                        Contesto <span class="material-symbols-outlined sort-icon">{{ getReviewSortIcon('score') }}</span>
                       </button>
+                    </th>
+                    <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">
+                      Puntaje
                     </th>
                     <th class="pe-3 py-3 font-label-sm text-on-surface-variant text-uppercase text-end">Estado</th>
                   </tr>
@@ -442,22 +483,21 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                       <div class="fw-semibold text-on-surface">{{ q.question_text }}</div>
                     </td>
                     <td class="py-3">
-                      <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ questionTypeLabel(q.type) }}</span>
+                      <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">
+                        {{ questionTypeLabel(q.type) }}
+                      </span>
                     </td>
                     <td class="py-3">
-                      <div *ngIf="q.answer?.answer_text; else selectedAnswerTemplate">
-                        <span class="text-on-surface-variant d-block font-label-sm">Respuesta abierta</span>
-                        <div class="text-on-surface">{{ q.answer?.answer_text }}</div>
+                      <div class="d-flex flex-column gap-1">
+                        <span class="text-on-surface-variant d-block font-label-sm">Respuesta esperada</span>
+                        <div class="text-on-surface">{{ reviewExpectedAnswerLabel(q) }}</div>
                       </div>
-                      <ng-template #selectedAnswerTemplate>
-                        <div *ngIf="q.answer?.selected_option_text; else noAnswerTemplate">
-                          <span class="text-on-surface-variant d-block font-label-sm">Opcion seleccionada</span>
-                          <div class="text-on-surface">{{ q.answer?.selected_option_text }}</div>
-                        </div>
-                      </ng-template>
-                      <ng-template #noAnswerTemplate>
-                        <div class="text-on-surface-variant">Sin respuesta registrada.</div>
-                      </ng-template>
+                    </td>
+                    <td class="py-3">
+                      <div class="d-flex flex-column gap-1">
+                        <span class="text-on-surface-variant d-block font-label-sm">Respuesta del participante</span>
+                        <div class="text-on-surface">{{ reviewParticipantAnswerLabel(q) }}</div>
+                      </div>
                     </td>
                     <td class="py-3">
                       <div *ngIf="q.type === 'open'; else autoScoreTemplate">
@@ -484,7 +524,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                       </div>
                       <ng-template #autoScoreTemplate>
                         <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-2 py-1">Calificacion automatica</span>
-                        <span *ngIf="q.answer?.score !== null" class="ms-2 badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1">
+                        <span *ngIf="q.answer?.score !== null && q.answer?.score !== undefined" class="ms-2 badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1">
                           {{ q.answer?.score }}%
                         </span>
                       </ng-template>
@@ -496,8 +536,17 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
                       <span *ngIf="q.type === 'open' && q.answer?.score !== null && q.answer?.score !== undefined" class="badge rounded-pill bg-chart-green/10 text-chart-green border border-chart-green/20 px-3 py-2">
                         Calificada
                       </span>
-                      <span *ngIf="q.type !== 'open'" class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">
-                        Automatica
+                      <span *ngIf="q.type !== 'open' && q.answer?.is_correct === true" class="badge rounded-pill bg-chart-green/10 text-chart-green border border-chart-green/20 px-3 py-2">
+                        Correcta
+                      </span>
+                      <span *ngIf="q.type !== 'open' && q.answer?.is_correct === false" class="badge rounded-pill bg-chart-red/10 text-chart-red border border-chart-red/20 px-3 py-2">
+                        Incorrecta
+                      </span>
+                      <span *ngIf="q.type !== 'open' && (q.answer?.is_correct === null || q.answer?.is_correct === undefined) && q.answer" class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">
+                        Revisar
+                      </span>
+                      <span *ngIf="q.type !== 'open' && !q.answer" class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-2">
+                        Sin respuesta
                       </span>
                     </td>
                   </tr>
@@ -506,16 +555,6 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
             </div>
           </div>
 
-          <button
-            *ngIf="hasOpenQuestions()"
-            type="button"
-            class="btn btn-primary fw-semibold d-inline-flex align-items-center gap-1"
-            (click)="saveReview()"
-            [disabled]="reviewSaving || !hasPendingOpenQuestions()"
-          >
-            <span *ngIf="reviewSaving" class="spinner-border spinner-border-sm"></span>
-            Guardar calificacion
-          </button>
           <div *ngIf="hasOpenQuestions() && !hasPendingOpenQuestions()" class="text-on-surface-variant mt-2 font-label-sm">
             Todas las preguntas abiertas ya tienen puntaje guardado.
           </div>
@@ -524,7 +563,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
           </div>
         </div>
       </div>
-    </div>
+    </app-modal-shell>
 
     <app-modal-shell
       *ngIf="creating"
@@ -779,6 +818,53 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       color: #fcd34d;
     }
 
+    :host .participant-email-chip {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: rgba(255, 255, 255, 0.04);
+      color: #60a5fa;
+      transition:
+        transform 160ms ease,
+        background 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease;
+    }
+
+    :host .participant-email-chip:hover,
+    :host .participant-email-chip:focus-visible {
+      transform: translateY(-1px);
+      background: rgba(96, 165, 250, 0.1);
+      border-color: rgba(96, 165, 250, 0.28);
+      color: #93c5fd;
+    }
+
+    :host .participant-email-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    :host .participant-state-badge {
+      min-width: 6.75rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-align: center;
+      border-width: 1px;
+    }
+
+    :host .participant-state-active {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.42);
+      color: #86efac;
+    }
+
+    :host .participant-state-inactive {
+      background: rgba(148, 163, 184, 0.18);
+      border-color: rgba(148, 163, 184, 0.38);
+      color: #cbd5e1;
+    }
+
     @media (max-width: 767.98px) {
       :host .review-table {
         min-width: 920px;
@@ -832,6 +918,31 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       background: rgba(245, 158, 11, 0.12);
       border-color: rgba(245, 158, 11, 0.28);
       color: #b45309;
+    }
+
+    :host-context(.light) .participant-email-chip {
+      background: rgba(15, 23, 42, 0.03);
+      border-color: rgba(100, 116, 139, 0.24);
+      color: #2563eb;
+    }
+
+    :host-context(.light) .participant-email-chip:hover,
+    :host-context(.light) .participant-email-chip:focus-visible {
+      background: rgba(37, 99, 235, 0.08);
+      border-color: rgba(37, 99, 235, 0.28);
+      color: #1d4ed8;
+    }
+
+    :host-context(.light) .participant-state-active {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.28);
+      color: #166534;
+    }
+
+    :host-context(.light) .participant-state-inactive {
+      background: rgba(148, 163, 184, 0.12);
+      border-color: rgba(148, 163, 184, 0.28);
+      color: #475569;
     }
   `]
 })
@@ -982,6 +1093,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
         const presented = this.presentedLabel(participant).toLowerCase();
         const score = participant.score !== null && participant.score !== undefined ? `${participant.score}` : '';
         const resultLabel = this.participantPassed(participant) ? 'aprobado' : 'no aprobado';
+        const activeLabel = participant.active ? 'activo' : 'inactivo';
         return (
           participant.document_number.toLowerCase().includes(term) ||
           participant.full_name.toLowerCase().includes(term) ||
@@ -989,7 +1101,8 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
           (participant.phone || '').toLowerCase().includes(term) ||
           presented.includes(term) ||
           score.toLowerCase().includes(term) ||
-          resultLabel.includes(term)
+          resultLabel.includes(term) ||
+          activeLabel.includes(term)
         );
       });
     }
@@ -1102,11 +1215,17 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   participantPassed(participant: TrainingParticipant): boolean {
-    if (participant.score === null || participant.score === undefined) {
+    const passed: any = participant.passed;
+    if (passed !== null && passed !== undefined) {
+      return passed === true || passed === 1 || passed === '1';
+    }
+
+    const score = Number(participant.score ?? NaN);
+    if (Number.isNaN(score)) {
       return false;
     }
 
-    return participant.score >= (this.training?.passing_score ?? 70);
+    return score >= Number(this.training?.passing_score ?? 70);
   }
 
   participantResultValue(participant: TrainingParticipant): string {
@@ -1115,6 +1234,40 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     return this.participantPassed(participant) ? 'a-aprobado' : 'b-reprobado';
+  }
+
+  activateParticipant(participant: TrainingParticipant): void {
+    if (!this.training) {
+      return;
+    }
+
+    this.loadingService.track(this.trainingService.activateTrainingParticipant(this.training.id, participant.id)).subscribe({
+      next: (response) => {
+        this.message = response.message;
+        this.saved.emit();
+        this.reloadParticipants();
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'No se pudo activar el participante.';
+      }
+    });
+  }
+
+  deactivateParticipant(participant: TrainingParticipant): void {
+    if (!this.training) {
+      return;
+    }
+
+    this.loadingService.track(this.trainingService.deactivateTrainingParticipant(this.training.id, participant.id)).subscribe({
+      next: (response) => {
+        this.message = response.message;
+        this.saved.emit();
+        this.reloadParticipants();
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'No se pudo desactivar el participante.';
+      }
+    });
   }
 
   clearReviewFilters(): void {
@@ -1171,7 +1324,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
 
     const name = participant.full_name || (participant as any).name || 'este participante';
     const confirmed = window.confirm(
-      `Reabrir el intento de ${name}? Esto borrara sus respuestas y le permitira volver a presentar la prueba.`
+      `Volver a presentar la capacitacion de ${name}? Esto borrara sus respuestas y le permitira presentar de nuevo.`
     );
 
     if (!confirmed) {
@@ -1180,7 +1333,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.loadingService.track(this.trainingService.resetParticipantAttempt(this.training.id, participant.id)).subscribe({
       next: () => {
-        this.message = 'Intento reabierto correctamente.';
+        this.message = 'Capacitacion habilitada para volver a presentar.';
         this.closeReview();
         this.reloadParticipants();
       }
@@ -1268,6 +1421,8 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
       result = result.filter((question) =>
         (question.question_text || '').toLowerCase().includes(term) ||
         this.questionTypeLabel(question.type).toLowerCase().includes(term) ||
+        (question.expected_answer_text || '').toLowerCase().includes(term) ||
+        (question.participant_answer_text || '').toLowerCase().includes(term) ||
         (question.answer?.answer_text || '').toLowerCase().includes(term) ||
         (question.answer?.selected_option_text || '').toLowerCase().includes(term) ||
         String(question.order || '').includes(term) ||
@@ -1351,6 +1506,36 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     return '';
+  }
+
+  reviewExpectedAnswerLabel(question: ParticipantReview['questions'][number]): string {
+    if (question.expected_answer_text && question.expected_answer_text.trim() !== '') {
+      return question.expected_answer_text;
+    }
+
+    if (question.type === 'open') {
+      return 'Revision manual';
+    }
+
+    const correctOptions = (question.options ?? [])
+      .filter((option) => option.is_correct)
+      .map((option) => option.option_text)
+      .filter((optionText) => optionText && optionText.trim() !== '');
+
+    if (correctOptions.length > 0) {
+      return correctOptions.join(', ');
+    }
+
+    return 'Sin respuesta correcta configurada';
+  }
+
+  reviewParticipantAnswerLabel(question: ParticipantReview['questions'][number]): string {
+    if (question.participant_answer_text && question.participant_answer_text.trim() !== '') {
+      return question.participant_answer_text;
+    }
+
+    const fallback = this.reviewAnswerLabel(question);
+    return fallback !== '' ? fallback : 'Sin respuesta registrada';
   }
 
   reviewScoreValue(question: ParticipantReview['questions'][number]): number {

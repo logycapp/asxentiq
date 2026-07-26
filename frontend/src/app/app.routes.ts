@@ -18,7 +18,6 @@ import { TestFormComponent } from './features/test/test-form.component';
 import { TrainingAssignComponent } from './features/trainings/training-assign.component';
 import { TrainingFormComponent } from './features/trainings/training-form.component';
 import { TrainingListComponent } from './features/trainings/training-list.component';
-import { TrainingQuestionsComponent } from './features/trainings/training-questions.component';
 import { TrainingCategoryListComponent } from './features/trainings/training-category-list.component';
 import { PublicDashboardComponent } from './features/public-trainings/public-dashboard.component';
 import { PublicExamComponent } from './features/public-trainings/public-exam.component';
@@ -101,9 +100,7 @@ export const appRoutes: Routes = [
         component: TrainingListComponent,
         data: { pageTitle: 'Capacitaciones' },
         children: [
-          { path: 'create', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
           { path: ':id/edit', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
-          { path: ':id/questions', component: TrainingQuestionsComponent, data: { pageTitle: 'Capacitaciones' } },
           { path: ':id/participants', component: TrainingAssignComponent, data: { pageTitle: 'Capacitaciones' } },
           { path: ':id/results', redirectTo: ':id/participants', pathMatch: 'full' }
         ]
