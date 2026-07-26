@@ -55,11 +55,9 @@ class Training extends Model
             ->withTimestamps();
     }
 
-    public function participants(): BelongsToMany
+    public function participants(): HasMany
     {
-        return $this->belongsToMany(TrainingParticipant::class, 'training_participant')
-            ->withPivot(['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'])
-            ->withTimestamps();
+        return $this->hasMany(TrainingParticipant::class);
     }
 
     public function allAssignees(): Collection

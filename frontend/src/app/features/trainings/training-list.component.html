@@ -1,14 +1,14 @@
 <app-page-header
-  *ngIf="!isParticipantsRoute && !isCategoriesRoute"
+  *ngIf="!isParticipantsRoute && !isAssignRoute && !isCategoriesRoute"
   title="Capacitaciones SST"
   subtitle="Gestiona, monitorea y certifica el crecimiento profesional de tus colaboradores con una vista clara para seguimiento rapido."
   [showDateFilter]="false"
 />
 
-<app-swal-alert *ngIf="message && !isCategoriesRoute" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
-<app-swal-alert *ngIf="errorMessage && !isCategoriesRoute" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
+<app-swal-alert *ngIf="message && !isCategoriesRoute && !isAssignRoute" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+<app-swal-alert *ngIf="errorMessage && !isCategoriesRoute && !isAssignRoute" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
-<div class="card glass-card border-0 rounded-4 p-4 mb-4" *ngIf="!isParticipantsRoute && !isCategoriesRoute">
+<div class="card glass-card border-0 rounded-4 p-4 mb-4" *ngIf="!isParticipantsRoute && !isAssignRoute && !isCategoriesRoute">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
       <div class="d-flex flex-wrap gap-2">
@@ -37,11 +37,11 @@
   </div>
 </div>
 
-<div *ngIf="loading && !isParticipantsRoute && !isCategoriesRoute" class="text-center py-5">
+<div *ngIf="loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute" class="text-center py-5">
   <div class="text-on-surface-variant font-body-md">Cargando capacitaciones...</div>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && !isCategoriesRoute && trainings.length === 0" class="text-center py-5">
+<div *ngIf="!loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute && trainings.length === 0" class="text-center py-5">
   <div class="text-on-surface-variant font-body-md mb-3">No hay capacitaciones registradas.</div>
   <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings', 'create']" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
     <span class="material-symbols-outlined text-[18px]">add</span>
@@ -49,7 +49,7 @@
   </a>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && !isCategoriesRoute && trainings.length > 0" class="d-grid gap-4 mb-4">
+<div *ngIf="!loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute && trainings.length > 0" class="d-grid gap-4 mb-4">
   <div *ngIf="isProgramFilteredView" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden">
     <div class="px-4 py-3 border-bottom border-white/10 d-flex flex-wrap justify-content-between align-items-center gap-2">
       <div class="d-flex align-items-center gap-2">
@@ -106,7 +106,7 @@
                 <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
                   <span class="material-symbols-outlined">quiz</span>
                 </a>
-                <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'assign']" title="Asignar" aria-label="Asignar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'participants']" title="Participantes" aria-label="Participantes" data-bs-toggle="tooltip" data-bs-placement="top">
                   <span class="material-symbols-outlined">group_add</span>
                 </a>
                 <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'results']" title="Resultados" aria-label="Resultados" data-bs-toggle="tooltip" data-bs-placement="top">
@@ -186,7 +186,7 @@
                   <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'questions']" title="Preguntas" aria-label="Preguntas" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">quiz</span>
                   </a>
-                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'assign']" title="Asignar" aria-label="Asignar" data-bs-toggle="tooltip" data-bs-placement="top">
+                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'participants']" title="Participantes" aria-label="Participantes" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">group_add</span>
                   </a>
                   <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'results']" title="Resultados" aria-label="Resultados" data-bs-toggle="tooltip" data-bs-placement="top">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div *ngIf="!loading && !isParticipantsRoute && !isCategoriesRoute && trainings.length > 0" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+<div *ngIf="!loading && !isParticipantsRoute && !isAssignRoute && !isCategoriesRoute && trainings.length > 0" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
   <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ meta.from || 0 }}-{{ meta.to || 0 }} de {{ meta.total }} capacitaciones</p>
   <nav aria-label="Paginacion">
     <ul class="pagination pagination-sm mb-0">

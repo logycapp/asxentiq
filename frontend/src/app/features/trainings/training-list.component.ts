@@ -67,6 +67,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   message = '';
   errorMessage = '';
   isParticipantsRoute = false;
+  isAssignRoute = false;
   isCategoriesRoute = false;
   categories: TrainingCategory[] = [];
   activeProgramId: number | null = null;
@@ -638,15 +639,9 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.assignError = '';
 
-    this.loadingService.track(this.trainingService.getAssignedParticipants(this.editingTraining.id)).subscribe({
+    this.loadingService.track(this.trainingService.getTrainingParticipants(this.editingTraining.id)).subscribe({
       next: (participants) => {
         this.assignedParticipants = participants;
-      }
-    });
-
-    this.loadingService.track(this.trainingService.getAllParticipants()).subscribe({
-      next: (participants) => {
-        this.allParticipants = participants;
       }
     });
   }
@@ -733,13 +728,13 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reviewData = null;
     this.reviewError = '';
     this.reviewLoading = true;
-    this.reviewObservations = participant.pivot.observations ?? '';
+    this.reviewObservations = participant.observations ?? '';
     this.reviewScores = {};
 
     this.loadingService.track(this.trainingService.getParticipantReview(this.editingTraining.id, participant.id)).subscribe({
       next: (review) => {
         this.reviewData = review;
-        this.reviewObservations = review.pivot.observations ?? '';
+        this.reviewObservations = review.participant.observations ?? '';
         this.reviewScores = review.questions.reduce((acc, question) => {
           if (question.type === 'open') {
             acc[question.id] = question.answer?.score === null || question.answer?.score === undefined
@@ -835,17 +830,17 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   participantPassed(participant: TrainingParticipant): boolean {
-    const passed = participant.pivot.passed;
+    const passed = participant.passed;
 
     if (passed !== null && passed !== undefined) {
       return passed;
     }
 
-    return (participant.pivot.score ?? 0) >= (this.editingTraining?.passing_score ?? 70);
+    return (participant.score ?? 0) >= (this.editingTraining?.passing_score ?? 70);
   }
 
   presentedLabel(participant: TrainingParticipant): 'Sí' | 'No' | 'Pendiente' {
-    const attended = (participant.pivot as any).attended;
+    const attended = participant.attended as any;
 
     if (attended === null || attended === undefined) {
       return 'Pendiente';
@@ -966,6 +961,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateRouteFlags(): void {
     const currentUrl = this.router.url.split('?')[0].split('#')[0].replace(/\/$/, '');
     this.isParticipantsRoute = currentUrl.endsWith('/participants');
+    this.isAssignRoute = currentUrl.endsWith('/participants');
     this.isCategoriesRoute = false;
   }
 

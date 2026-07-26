@@ -12,15 +12,14 @@ use Illuminate\Support\Facades\DB;
 
 class PublicTrainingController extends Controller
 {
-    private function getParticipantId(Request $request): ?int
+    private function getParticipantDocument(Request $request): ?string
     {
         $token = $request->bearerToken();
         if (!$token || !str_starts_with($token, 'participant_')) {
             return null;
         }
 
-        $parts = explode('_', $token);
-        return isset($parts[1]) ? (int) $parts[1] : null;
+        return Cache::get('pt_' . $token);
     }
 
     public function login(Request $request): JsonResponse
@@ -29,15 +28,18 @@ class PublicTrainingController extends Controller
             'document_number' => ['required', 'string', 'max:20'],
         ]);
 
-        $participant = TrainingParticipant::query()->where('document_number', $data['document_number'])->first();
+        $participant = TrainingParticipant::query()
+            ->where('document_number', $data['document_number'])
+            ->orderByDesc('updated_at')
+            ->first();
 
         if (!$participant) {
             return response()->json(['message' => 'Numero de documento no registrado como participante.'], 404);
         }
 
-        $token = 'participant_' . $participant->id . '_' . bin2hex(random_bytes(16));
+        $token = 'participant_' . $participant->document_number . '_' . bin2hex(random_bytes(16));
 
-        Cache::put('pt_' . $token, $participant->id, now()->addHours(24));
+        Cache::put('pt_' . $token, $participant->document_number, now()->addHours(24));
 
         return response()->json([
             'token' => $token,
@@ -52,18 +54,19 @@ class PublicTrainingController extends Controller
 
     public function pending(Request $request): JsonResponse
     {
-        $participantId = $this->getParticipantId($request);
-        if (!$participantId) {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
         $trainings = Training::query()
-            // La visibilidad del examen publico debe depender de la asignacion del participante
-            // y no del estado global de la capacitacion.
-            ->whereHas('participants', function ($q) use ($participantId): void {
-                $q->where('training_participant_id', $participantId)->whereNull('completed_at');
+            ->whereHas('participants', function ($q) use ($documentNumber): void {
+                $q->where('document_number', $documentNumber)->whereNull('completed_at');
             })
             ->with('category')
+            ->with(['participants' => function ($q) use ($documentNumber): void {
+                $q->where('document_number', $documentNumber);
+            }])
             ->withCount([
                 'questions as questions_count' => function ($query): void {
                     $query->where('type', '!=', 'open');
@@ -77,18 +80,18 @@ class PublicTrainingController extends Controller
 
     public function completed(Request $request): JsonResponse
     {
-        $participantId = $this->getParticipantId($request);
-        if (!$participantId) {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
         $trainings = Training::query()
-            ->whereHas('participants', function ($q) use ($participantId): void {
-                $q->where('training_participant_id', $participantId)->whereNotNull('completed_at');
+            ->whereHas('participants', function ($q) use ($documentNumber): void {
+                $q->where('document_number', $documentNumber)->whereNotNull('completed_at');
             })
             ->with('category')
-            ->with(['participants' => function ($q) use ($participantId): void {
-                $q->where('training_participant_id', $participantId);
+            ->with(['participants' => function ($q) use ($documentNumber): void {
+                $q->where('document_number', $documentNumber);
             }])
             ->orderBy('scheduled_date', 'desc')
             ->get();
@@ -98,18 +101,18 @@ class PublicTrainingController extends Controller
 
     public function take(Training $training, Request $request): JsonResponse
     {
-        $participantId = $this->getParticipantId($request);
-        if (!$participantId) {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $pivot = $training->participants()->where('training_participant_id', $participantId)->first();
+        $participant = $training->participants()->where('document_number', $documentNumber)->first();
 
-        if (!$pivot) {
+        if (! $participant) {
             return response()->json(['message' => 'No estas asignado a esta capacitacion.'], 403);
         }
 
-        if ($pivot->pivot->completed_at) {
+        if ($participant->completed_at) {
             return response()->json(['message' => 'Ya completaste esta capacitacion.'], 422);
         }
 
@@ -125,14 +128,14 @@ class PublicTrainingController extends Controller
 
     public function submit(Request $request, Training $training): JsonResponse
     {
-        $participantId = $this->getParticipantId($request);
-        if (!$participantId) {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $pivot = $training->participants()->where('training_participant_id', $participantId)->first();
+        $participant = $training->participants()->where('document_number', $documentNumber)->first();
 
-        if (!$pivot || $pivot->pivot->completed_at) {
+        if (! $participant || $participant->completed_at) {
             return response()->json(['message' => 'No puedes enviar respuestas para esta capacitacion.'], 422);
         }
 
@@ -152,15 +155,7 @@ class PublicTrainingController extends Controller
         $correctAnswers = 0;
         $autogradeQuestions = 0;
 
-        // Note: Since user_answers currently links to training_user pivot,
-        // we'll store answers using the participant pivot ID
-        // For now, we link to the participant's training_participant row
-        $trainingParticipantPivot = DB::table('training_participant')
-            ->where('training_id', $training->id)
-            ->where('training_participant_id', $participantId)
-            ->first();
-
-        DB::transaction(function () use ($training, $participantId, $data, $questions, &$correctAnswers, &$autogradeQuestions, $trainingParticipantPivot): void {
+        DB::transaction(function () use ($training, $participant, $data, $questions, &$correctAnswers, &$autogradeQuestions): void {
 
             foreach ($data['answers'] as $answerData) {
                 $question = $questions->get($answerData['question_id']);
@@ -193,7 +188,7 @@ class PublicTrainingController extends Controller
 
                 DB::table('participant_answers')->updateOrInsert(
                     [
-                        'training_participant_id' => $trainingParticipantPivot->id,
+                        'training_participant_id' => $participant->id,
                         'question_id' => $question->id,
                     ],
                     [
@@ -207,7 +202,7 @@ class PublicTrainingController extends Controller
             }
 
             $answerScores = DB::table('participant_answers')
-                ->where('training_participant_id', $trainingParticipantPivot->id)
+                ->where('training_participant_id', $participant->id)
                 ->whereIn('question_id', $questions->keys())
                 ->pluck('score');
 
@@ -215,22 +210,18 @@ class PublicTrainingController extends Controller
                 ? round((float) $answerScores->avg(), 2)
                 : null;
 
-                DB::table('training_participant')
-                ->where('id', $trainingParticipantPivot->id)
-                ->update([
-                    'score' => $score,
-                    'passed' => $score !== null ? $score >= $training->passing_score : null,
-                    'attended' => true,
-                    'attendance_date' => now()->toDateString(),
-                    'completed_at' => now(),
-                ]);
+            $participant->update([
+                'score' => $score,
+                'passed' => $score !== null ? $score >= $training->passing_score : null,
+                'attended' => true,
+                'attendance_date' => now()->toDateString(),
+                'completed_at' => now(),
+            ]);
         });
 
         return response()->json([
             'message' => 'Respuestas enviadas correctamente.',
-            'score' => DB::table('training_participant')
-                ->where('id', $trainingParticipantPivot->id)
-                ->value('score'),
+            'score' => $participant->fresh()->score,
             'total_questions' => $totalQuestions,
             'autograded' => $autogradeQuestions,
             'correct' => $correctAnswers,
@@ -239,14 +230,14 @@ class PublicTrainingController extends Controller
 
     public function result(Training $training, Request $request): JsonResponse
     {
-        $participantId = $this->getParticipantId($request);
-        if (!$participantId) {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $pivot = $training->participants()->where('training_participant_id', $participantId)->first();
+        $participant = $training->participants()->where('document_number', $documentNumber)->first();
 
-        if (!$pivot || !$pivot->pivot->completed_at) {
+        if (! $participant || ! $participant->completed_at) {
             return response()->json(['message' => 'No has completado esta capacitacion.'], 422);
         }
 
@@ -254,15 +245,15 @@ class PublicTrainingController extends Controller
             $q->where('type', '!=', 'open')->orderBy('order');
         }]);
 
-        $passed = $pivot->pivot->passed !== null
-            ? (bool) $pivot->pivot->passed
-            : ($pivot->pivot->score !== null ? $pivot->pivot->score >= $training->passing_score : null);
+        $passed = $participant->passed !== null
+            ? (bool) $participant->passed
+            : ($participant->score !== null ? $participant->score >= $training->passing_score : null);
 
         return response()->json([
             'training' => $training,
-            'score' => $pivot->pivot->score,
+            'score' => $participant->score,
             'passed' => $passed,
-            'completed_at' => $pivot->pivot->completed_at,
+            'completed_at' => $participant->completed_at,
         ]);
     }
 }

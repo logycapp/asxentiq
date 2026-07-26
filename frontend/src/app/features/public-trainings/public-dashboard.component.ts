@@ -94,16 +94,16 @@ import { TrainingService, Training, PublicUser, TrainingCategory } from '../../c
               <div class="text-end">
                 <div *ngIf="t.participants && t.participants[0]" class="mb-1">
                   <span
-                    *ngIf="$any(t.participants[0].pivot).score !== null"
-                    [class]="'badge ' + ($any(t.participants[0].pivot).score >= t.passing_score ? 'bg-success' : 'bg-danger')"
+                    *ngIf="t.participants[0].score !== null && t.participants[0].score !== undefined"
+                    [class]="'badge ' + (t.participants[0].score >= t.passing_score ? 'bg-success' : 'bg-danger')"
                   >
-                    {{ $any(t.participants[0].pivot).score }}%
+                    {{ t.participants[0].score }}%
                   </span>
-                  <span *ngIf="$any(t.participants[0].pivot).score === null" class="badge bg-warning text-dark">
+                  <span *ngIf="t.participants[0].score === null || t.participants[0].score === undefined" class="badge bg-warning text-dark">
                     Pendiente de revision
                   </span>
-                  <span *ngIf="$any(t.participants[0].pivot).completed_at" class="d-block small text-muted">
-                    {{ $any(t.participants[0].pivot).completed_at | date:'shortDate' }}
+                  <span *ngIf="t.participants[0].completed_at" class="d-block small text-muted">
+                    {{ t.participants[0].completed_at | date:'shortDate' }}
                   </span>
                 </div>
                 <div class="mt-2">

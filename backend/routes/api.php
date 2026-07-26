@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\ProfileController;
-use App\Http\Controllers\Api\ParticipantController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\TrainingCategoryController;
 use App\Http\Controllers\Api\RoleController;
@@ -99,10 +98,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/trainings/{training}/assign', [TrainingController::class, 'assignUsers']);
         Route::delete('/trainings/{training}/users/{user}', [TrainingController::class, 'removeUser']);
 
-        // Training participants assignment
+        // Training participants
         Route::get('/trainings/{training}/participants', [TrainingController::class, 'participants']);
-        Route::post('/trainings/{training}/assign-participants', [TrainingController::class, 'assignParticipants']);
-        Route::delete('/trainings/{training}/participants/{participant}', [TrainingController::class, 'removeParticipant']);
+        Route::get('/trainings/{training}/participants/export', [TrainingController::class, 'downloadParticipantsReport']);
+        Route::post('/trainings/{training}/participants/import', [TrainingController::class, 'importParticipantsReport']);
+        Route::post('/trainings/{training}/participants', [TrainingController::class, 'storeParticipant']);
+        Route::put('/trainings/{training}/participants/{participant}', [TrainingController::class, 'updateParticipant']);
+        Route::delete('/trainings/{training}/participants/{participant}', [TrainingController::class, 'destroyParticipant']);
         Route::get('/trainings/{training}/participants/{participant}/review', [TrainingController::class, 'participantReview']);
         Route::put('/trainings/{training}/participants/{participant}/review', [TrainingController::class, 'updateParticipantReview']);
         Route::post('/trainings/{training}/participants/{participant}/reset', [TrainingController::class, 'resetParticipantAttempt']);
@@ -128,17 +130,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
         // Question materials
         Route::post('/questions/{question}/materials', [QuestionController::class, 'uploadMaterial']);
         Route::delete('/questions/{question}/materials/{material}', [QuestionController::class, 'deleteMaterial']);
-    });
-
-    // Participants CRUD
-    Route::middleware('menu.access:/trainings')->group(function (): void {
-        Route::get('/participants', [ParticipantController::class, 'index']);
-        Route::get('/participants/export', [ParticipantController::class, 'export']);
-        Route::post('/participants/import', [ParticipantController::class, 'import']);
-        Route::post('/participants', [ParticipantController::class, 'store']);
-        Route::get('/participants/{trainingParticipant}', [ParticipantController::class, 'show']);
-        Route::put('/participants/{trainingParticipant}', [ParticipantController::class, 'update']);
-        Route::delete('/participants/{trainingParticipant}', [ParticipantController::class, 'destroy']);
     });
 
 });

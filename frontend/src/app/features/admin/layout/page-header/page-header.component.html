@@ -9,11 +9,14 @@
         </p>
       </div>
     </div>
-    <div class="col-12 col-xl-4 d-flex justify-content-xl-end" *ngIf="showDateFilter">
-      <div class="dashboard-date-filter d-inline-flex align-items-center bg-card-navy border border-white/10 rounded-pill px-3 py-2 gap-2 cursor-pointer hover:bg-card-navy/80 transition-colors">
-        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
-        <span class="font-label-sm text-on-surface text-nowrap">{{ rangeLabel }}</span>
-        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+    <div class="col-12 col-xl-4 d-flex justify-content-xl-end" *ngIf="showDateFilter || showActions">
+      <div class="d-flex flex-wrap justify-content-xl-end align-items-center gap-2 w-100">
+        <ng-content select="[header-actions]"></ng-content>
+        <div *ngIf="showDateFilter" class="dashboard-date-filter d-inline-flex align-items-center bg-card-navy border border-white/10 rounded-pill px-3 py-2 gap-2 cursor-pointer hover:bg-card-navy/80 transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
+          <span class="font-label-sm text-on-surface text-nowrap">{{ rangeLabel }}</span>
+          <span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+        </div>
       </div>
     </div>
   </div>

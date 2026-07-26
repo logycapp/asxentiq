@@ -88,15 +88,22 @@ export interface TrainingMaterial {
 
 export interface TrainingParticipant {
   id: number;
+  training_id?: number | null;
   empresa_id?: number | null;
   document_number: string;
   full_name: string;
   email?: string;
   phone?: string;
+  attended?: boolean | null;
+  score?: number | null;
+  passed?: boolean | null;
+  observations?: string | null;
+  attendance_date?: string | null;
+  completed_at?: string | null;
   empresa?: { id: number; name: string; active?: boolean } | null;
   created_at?: string;
   updated_at?: string;
-  pivot: {
+  pivot?: {
     training_id?: number;
     training_participant_id?: number;
     attended: boolean | null;
@@ -172,7 +179,6 @@ export interface ParticipantReviewQuestion {
 
 export interface ParticipantReview {
   participant: TrainingParticipant;
-  pivot: TrainingParticipant['pivot'];
   questions: ParticipantReviewQuestion[];
 }
 
@@ -430,6 +436,42 @@ export class TrainingService {
     formData.append('file', file);
 
     return this.http.post<ParticipantsImportResult>(`${environment.apiUrl}/participants/import`, formData);
+  }
+
+  getTrainingParticipants(trainingId: number): Observable<TrainingParticipant[]> {
+    return this.http.get<TrainingParticipant[]>(`${this.apiUrl}/${trainingId}/participants`);
+  }
+
+  downloadTrainingParticipantsReport(trainingId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${trainingId}/participants/export`, {
+      responseType: 'blob'
+    });
+  }
+
+  importTrainingParticipantsReport(trainingId: number, file: File): Observable<ParticipantsImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<ParticipantsImportResult>(`${this.apiUrl}/${trainingId}/participants/import`, formData);
+  }
+
+  createTrainingParticipant(
+    trainingId: number,
+    payload: Partial<TrainingParticipant>
+  ): Observable<{ message: string; participant: TrainingParticipant }> {
+    return this.http.post<{ message: string; participant: TrainingParticipant }>(`${this.apiUrl}/${trainingId}/participants`, payload);
+  }
+
+  updateTrainingParticipant(
+    trainingId: number,
+    participantId: number,
+    payload: Partial<TrainingParticipant>
+  ): Observable<{ message: string; participant: TrainingParticipant }> {
+    return this.http.put<{ message: string; participant: TrainingParticipant }>(`${this.apiUrl}/${trainingId}/participants/${participantId}`, payload);
+  }
+
+  deleteTrainingParticipant(trainingId: number, participantId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/${trainingId}/participants/${participantId}`);
   }
 
   getAssignedParticipants(trainingId: number): Observable<TrainingParticipant[]> {

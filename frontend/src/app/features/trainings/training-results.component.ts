@@ -24,7 +24,7 @@ import {
       subtitle="Revisa asistencia, puntajes y estado final sin salir del modulo."
       [showHeaderClose]="true"
       [showFooterClose]="false"
-      [showFooter]="true"
+      [showFooter]="false"
       size="xl"
       headerVariant="success"
       (closeRequested)="closeModal()"
@@ -119,18 +119,18 @@ import {
                   <span *ngIf="presentedLabel(p) === 'No'" class="badge rounded-pill bg-error-container/20 text-error border border-error/20 px-3 py-2">No</span>
                   <span *ngIf="presentedLabel(p) === 'Pendiente'" class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-2">Pendiente</span>
                 </td>
-                <td class="py-3 text-on-surface-variant">{{ $any(p.pivot).score !== null ? $any(p.pivot).score + '%' : '-' }}</td>
+                <td class="py-3 text-on-surface-variant">{{ p.score !== null && p.score !== undefined ? p.score + '%' : '-' }}</td>
                 <td class="py-3">
-                  <span *ngIf="$any(p.pivot).score !== null" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(p) ? 'participant-result-approved' : 'participant-result-rejected'">
+                  <span *ngIf="p.score !== null && p.score !== undefined" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(p) ? 'participant-result-approved' : 'participant-result-rejected'">
                     {{ participantPassed(p) ? 'Aprobado' : 'No Aprobado' }}
                   </span>
-                  <span *ngIf="$any(p.pivot).score === null" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">Pendiente de revision</span>
+                  <span *ngIf="p.score === null || p.score === undefined" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">Pendiente de revision</span>
                 </td>
-                <td class="py-3 text-on-surface-variant">{{ $any(p.pivot).completed_at ? ($any(p.pivot).completed_at | date:'short') : '-' }}</td>
+                <td class="py-3 text-on-surface-variant">{{ p.completed_at ? (p.completed_at | date:'short') : '-' }}</td>
                 <td class="py-3 text-end">
                   <div class="dashboard-action-group">
                     <button
-                      *ngIf="$any(p.pivot).completed_at"
+                      *ngIf="p.completed_at"
                       type="button"
                       class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1"
                       (click)="openReview(p)"
@@ -142,7 +142,7 @@ import {
                       <span class="material-symbols-outlined text-[16px]">rate_review</span>Revisar
                     </button>
                     <button
-                      *ngIf="$any(p.pivot).completed_at"
+                      *ngIf="p.completed_at"
                       type="button"
                       class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1"
                       (click)="resetAttempt(p)"
@@ -153,9 +153,9 @@ import {
                     >
                       <span class="material-symbols-outlined text-[16px]">replay</span>Reabrir
                     </button>
-                    <span *ngIf="!$any(p.pivot).completed_at" class="text-on-surface-variant font-label-sm">-</span>
+                    <span *ngIf="!p.completed_at" class="text-on-surface-variant font-label-sm">-</span>
                   </div>
-                  <div *ngIf="$any(p.pivot).completed_at" class="mt-1">
+                  <div *ngIf="p.completed_at" class="mt-1">
                     <small class="text-on-surface-variant font-label-sm">
                       Evaluado con: {{ training?.passing_score ?? 70 }}%
                     </small>
@@ -620,14 +620,14 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
     this.reviewData = null;
     this.reviewError = '';
     this.reviewLoading = true;
-    this.reviewObservations = participant.pivot.observations ?? '';
+    this.reviewObservations = participant.observations ?? '';
     this.reviewScores = {};
     this.clearReviewFilters();
 
     this.loadingService.track(this.trainingService.getParticipantReview(this.training.id, participant.id)).subscribe({
       next: (review) => {
         this.reviewData = review;
-        this.reviewObservations = review.pivot.observations ?? '';
+        this.reviewObservations = review.participant.observations ?? '';
         this.reviewScores = review.questions.reduce((acc, question) => {
           if (question.type === 'open') {
             acc[question.id] = question.answer?.score === null || question.answer?.score === undefined
@@ -664,9 +664,9 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
         const fullName = (participant.full_name || (participant as any).name || '').toString().toLowerCase();
         const documentNumber = (participant.document_number || '').toString().toLowerCase();
         const presented = this.presentedLabel(participant).toLowerCase();
-        const score = String((participant as any).pivot?.score ?? '').toLowerCase();
+        const score = String(participant.score ?? '').toLowerCase();
         const resultLabel = this.participantPassed(participant) ? 'aprobado' : 'no aprobado';
-        const completedAt = String((participant as any).pivot?.completed_at ?? '').toLowerCase();
+        const completedAt = String(participant.completed_at ?? '').toLowerCase();
 
         return [fullName, documentNumber, presented, score, resultLabel, completedAt].some((value) => value.includes(term));
       });
@@ -692,7 +692,7 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
           comparison = this.participantResultValue(left).localeCompare(this.participantResultValue(right), 'es', { numeric: true, sensitivity: 'base' });
           break;
         case 'completed_at':
-          comparison = String((left as any).pivot?.completed_at ?? '').localeCompare(String((right as any).pivot?.completed_at ?? ''), 'es', { numeric: true, sensitivity: 'base' });
+          comparison = String(left.completed_at ?? '').localeCompare(String(right.completed_at ?? ''), 'es', { numeric: true, sensitivity: 'base' });
           break;
       }
 
@@ -883,17 +883,17 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   participantPassed(participant: TrainingParticipant): boolean {
-    const passed = participant.pivot.passed;
+    const passed = participant.passed;
 
     if (passed !== null && passed !== undefined) {
       return passed;
     }
 
-    return (participant.pivot.score ?? 0) >= (this.training?.passing_score ?? 70);
+    return (participant.score ?? 0) >= (this.training?.passing_score ?? 70);
   }
 
   presentedLabel(participant: TrainingParticipant): 'Sí' | 'No' | 'Pendiente' {
-    const attended = (participant.pivot as any).attended;
+    const attended = participant.attended as any;
 
     if (attended === null || attended === undefined) {
       return 'Pendiente';
@@ -909,12 +909,12 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   private participantScoreValue(participant: TrainingParticipant): number {
-    const score = (participant as any).pivot?.score;
+    const score = participant.score;
     return score === null || score === undefined ? -1 : Number(score);
   }
 
   private participantResultValue(participant: TrainingParticipant): string {
-    if ((participant as any).pivot?.score === null || (participant as any).pivot?.score === undefined) {
+    if (participant.score === null || participant.score === undefined) {
       return 'Pendiente';
     }
 

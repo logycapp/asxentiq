@@ -15,7 +15,6 @@ import { RoleFormComponent } from './features/roles/role-form.component';
 import { RoleListComponent } from './features/roles/role-list.component';
 import { RoleMenuPermissionsComponent } from './features/roles/role-menu-permissions.component';
 import { TestFormComponent } from './features/test/test-form.component';
-import { ParticipantListComponent } from './features/trainings/participant-list.component';
 import { TrainingAssignComponent } from './features/trainings/training-assign.component';
 import { TrainingFormComponent } from './features/trainings/training-form.component';
 import { TrainingListComponent } from './features/trainings/training-list.component';
@@ -76,10 +75,8 @@ export const appRoutes: Routes = [
       { path: 'video-indexaction', redirectTo: 'video_indexaction', pathMatch: 'full' },
       { path: 'trainings', redirectTo: 'trainings_programs', pathMatch: 'full' },
       { path: 'trainings/create', redirectTo: 'trainings_programs', pathMatch: 'full' },
-      { path: 'trainings/participants', component: ParticipantListComponent, data: { pageTitle: 'Capacitaciones' } },
       { path: 'trainings/:id/edit', redirectTo: 'trainings_programs', pathMatch: 'full' },
       { path: 'trainings/:id/questions', redirectTo: 'trainings_programs', pathMatch: 'full' },
-      { path: 'trainings/:id/assign', redirectTo: 'trainings_programs', pathMatch: 'full' },
       { path: 'trainings/:id/results', redirectTo: 'trainings_programs', pathMatch: 'full' },
       { path: 'trainings_all', redirectTo: 'trainings_programs', pathMatch: 'full' },
       { path: 'trainings/categories', redirectTo: 'trainings_programs', pathMatch: 'full' },
@@ -106,10 +103,9 @@ export const appRoutes: Routes = [
         data: { pageTitle: 'Capacitaciones' },
         children: [
           { path: 'create', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
-          { path: 'participants', component: ParticipantListComponent, data: { pageTitle: 'Capacitaciones' } },
           { path: ':id/edit', component: TrainingFormComponent, data: { pageTitle: 'Capacitaciones' } },
           { path: ':id/questions', component: TrainingQuestionsComponent, data: { pageTitle: 'Capacitaciones' } },
-          { path: ':id/assign', component: TrainingAssignComponent, data: { pageTitle: 'Capacitaciones' } },
+          { path: ':id/participants', component: TrainingAssignComponent, data: { pageTitle: 'Capacitaciones' } },
           { path: ':id/results', component: TrainingResultsComponent, data: { pageTitle: 'Capacitaciones' } }
         ]
       },

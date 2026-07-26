@@ -25,41 +25,42 @@ class CertificateController extends Controller
         }
 
         $parts = explode('_', $token);
-        $participantId = isset($parts[1]) ? (int) $parts[1] : null;
-        if (! $participantId) {
+        $documentNumber = $parts[1] ?? null;
+        if (! $documentNumber) {
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
-        $participant = TrainingParticipant::query()->find($participantId);
+        $participant = TrainingParticipant::query()
+            ->where('document_number', $documentNumber)
+            ->where('training_id', $training->id)
+            ->first();
         if (! $participant) {
             return response()->json(['message' => 'Participante no encontrado.'], 404);
         }
 
-        $pivot = $training->participants()->where('training_participant_id', $participantId)->first();
-
-        if (!$pivot || !$pivot->pivot->completed_at) {
+        if (! $participant->completed_at) {
             return response()->json(['message' => 'No has completado esta capacitacion.'], 422);
         }
 
-        if ($pivot->pivot->score === null) {
+        if ($participant->score === null) {
             return response()->json(['message' => 'La capacitacion requiere revision manual antes de descargar el certificado.'], 422);
         }
 
         File::ensureDirectoryExists(storage_path('framework/views'));
         File::ensureDirectoryExists(storage_path('fonts'));
-        $passed = $pivot->pivot->passed !== null
-            ? (bool) $pivot->pivot->passed
-            : $pivot->pivot->score >= $training->passing_score;
+        $passed = $participant->passed !== null
+            ? (bool) $participant->passed
+            : $participant->score >= $training->passing_score;
 
         $data = [
             'user_name' => $participant->full_name,
             'document_number' => $participant->document_number,
             'training_title' => $training->title,
             'training_type' => $training->type,
-            'score' => $pivot->pivot->score,
+            'score' => $participant->score,
             'passed' => $passed,
             'passing_score' => $training->passing_score,
-            'completed_at' => $pivot->pivot->completed_at,
+            'completed_at' => $participant->completed_at,
             'date' => now()->format('d/m/Y'),
         ];
 

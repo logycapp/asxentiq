@@ -13,4 +13,5 @@ export class PageHeaderComponent {
   @Input() subtitle = '';
   @Input() rangeLabel = 'Oct 01, 2023 - Oct 31, 2023';
   @Input() showDateFilter = true;
+  @Input() showActions = false;
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\TrainingParticipantsExport;
 use App\Http\Controllers\Controller;
+use App\Imports\TrainingParticipantsImport;
 use App\Models\Training;
 use App\Models\TrainingMaterial;
 use App\Models\TrainingParticipant;
@@ -12,6 +14,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingController extends Controller
 {
@@ -212,53 +217,142 @@ class TrainingController extends Controller
         return response()->json($users);
     }
 
-    public function assignParticipants(Request $request, Training $training): JsonResponse
-    {
-        $data = $request->validate([
-            'participant_ids' => ['required', 'array'],
-            'participant_ids.*' => ['integer', 'exists:training_participants,id'],
-        ]);
-
-        $participantIds = collect($data['participant_ids'])->unique()->values();
-
-        DB::transaction(function () use ($training, $participantIds): void {
-            $training->participants()->syncWithoutDetaching($participantIds);
-        });
-
-        return response()->json([
-            'message' => 'Participantes asignados correctamente.',
-        ]);
-    }
-
-    public function removeParticipant(Training $training, TrainingParticipant $participant): JsonResponse
-    {
-        $training->participants()->detach($participant->id);
-
-        return response()->json([
-            'message' => 'Participante removido de la capacitacion.',
-        ]);
-    }
-
     public function participants(Training $training): JsonResponse
     {
-        $participants = $training->participants;
+        $participants = $training->participants()
+            ->with('empresa:id,name,active')
+            ->orderBy('full_name')
+            ->get();
 
         return response()->json($participants);
     }
 
+    public function downloadParticipantsReport(Training $training)
+    {
+        $training->loadMissing('category');
+        if (! $training->category?->empresa_id) {
+            return response()->json(['message' => 'El programa de esta capacitacion no tiene empresa asociada.'], 422);
+        }
+
+        $filename = 'plantilla-participantes-' . Str::slug($training->title) . '.xlsx';
+
+        return Excel::download(new TrainingParticipantsExport($training), $filename);
+    }
+
+    public function importParticipantsReport(Request $request, Training $training): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        $training->loadMissing('category');
+        if (! $training->category?->empresa_id) {
+            return response()->json(['message' => 'El programa de esta capacitacion no tiene empresa asociada.'], 422);
+        }
+
+        $import = new TrainingParticipantsImport($training);
+        Excel::import($import, $request->file('file'));
+
+        $summary = $import->summary();
+
+        return response()->json([
+            'message' => 'Carga masiva procesada correctamente.',
+            'created' => $summary['created'],
+            'updated' => $summary['updated'],
+            'skipped' => $summary['skipped'],
+            'errors' => $summary['errors'],
+        ]);
+    }
+
+    public function storeParticipant(Request $request, Training $training): JsonResponse
+    {
+        $training->loadMissing('category');
+        $empresaId = $training->category?->empresa_id;
+        if (! $empresaId) {
+            return response()->json(['message' => 'El programa de esta capacitacion no tiene empresa asociada.'], 422);
+        }
+
+        $data = $request->validate([
+            'document_number' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('training_participants', 'document_number')->where(function ($query) use ($training): void {
+                    $query->where('training_id', $training->id);
+                }),
+            ],
+            'full_name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'string', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $data['empresa_id'] = $empresaId;
+        $participant = $training->participants()->create($data);
+
+        return response()->json([
+            'message' => 'Participante registrado correctamente.',
+            'participant' => $participant->load('empresa:id,name,active'),
+        ], 201);
+    }
+
+    public function updateParticipant(Request $request, Training $training, TrainingParticipant $participant): JsonResponse
+    {
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
+        }
+
+        $training->loadMissing('category');
+        $empresaId = $training->category?->empresa_id;
+        if (! $empresaId) {
+            return response()->json(['message' => 'El programa de esta capacitacion no tiene empresa asociada.'], 422);
+        }
+
+        $data = $request->validate([
+            'document_number' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('training_participants', 'document_number')
+                    ->where(function ($query) use ($training): void {
+                        $query->where('training_id', $training->id);
+                    })
+                    ->ignore($participant->id),
+            ],
+            'full_name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'string', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $data['empresa_id'] = $empresaId;
+        $participant->update($data);
+
+        return response()->json([
+            'message' => 'Participante actualizado correctamente.',
+            'participant' => $participant->fresh()->load('empresa:id,name,active'),
+        ]);
+    }
+
+    public function destroyParticipant(Training $training, TrainingParticipant $participant): JsonResponse
+    {
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
+        }
+
+        $participant->delete();
+
+        return response()->json([
+            'message' => 'Participante eliminado correctamente.',
+        ]);
+    }
+
     public function participantReview(Training $training, TrainingParticipant $participant): JsonResponse
     {
-        $pivot = DB::table('training_participant')
-            ->where('training_id', $training->id)
-            ->where('training_participant_id', $participant->id)
-            ->first();
-
-        if (! $pivot) {
-            return response()->json(['message' => 'Participante no asignado a esta capacitacion.'], 404);
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
         }
 
         $questions = $training->questions()
-            ->where('type', '!=', 'open')
+            ->where('type', 'open')
             ->with(['options' => function ($query): void {
                 $query->orderBy('order');
             }])
@@ -267,7 +361,7 @@ class TrainingController extends Controller
 
         $answers = DB::table('participant_answers as pa')
             ->leftJoin('question_options as qo', 'pa.selected_option_id', '=', 'qo.id')
-            ->where('pa.training_participant_id', $pivot->id)
+            ->where('pa.training_participant_id', $participant->id)
             ->select([
                 'pa.question_id',
                 'pa.answer_text',
@@ -307,7 +401,6 @@ class TrainingController extends Controller
 
         return response()->json([
             'participant' => $participant,
-            'pivot' => $pivot,
             'questions' => $reviewQuestions,
         ]);
     }
@@ -321,26 +414,21 @@ class TrainingController extends Controller
             'observations' => ['nullable', 'string'],
         ]);
 
-        $pivot = DB::table('training_participant')
-            ->where('training_id', $training->id)
-            ->where('training_participant_id', $participant->id)
-            ->first();
-
-        if (! $pivot) {
-            return response()->json(['message' => 'Participante no asignado a esta capacitacion.'], 404);
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
         }
 
         $questions = $training->questions()
-            ->where('type', '!=', 'open')
+            ->where('type', 'open')
             ->get()
             ->keyBy('id');
         $manualQuestionIds = [];
         $existingAnswers = DB::table('participant_answers')
-            ->where('training_participant_id', $pivot->id)
+            ->where('training_participant_id', $participant->id)
             ->get()
             ->keyBy('question_id');
 
-        DB::transaction(function () use ($data, $questions, $pivot, $training, &$manualQuestionIds, $existingAnswers): void {
+        DB::transaction(function () use ($data, $questions, $participant, $training, &$manualQuestionIds, $existingAnswers): void {
             foreach ($data['answers'] as $answerData) {
                 $question = $questions->get($answerData['question_id']);
 
@@ -361,7 +449,7 @@ class TrainingController extends Controller
                 DB::table('participant_answers')
                     ->updateOrInsert(
                         [
-                            'training_participant_id' => $pivot->id,
+                            'training_participant_id' => $participant->id,
                             'question_id' => $question->id,
                         ],
                         [
@@ -372,7 +460,7 @@ class TrainingController extends Controller
             }
 
             $answerScores = DB::table('participant_answers')
-                ->where('training_participant_id', $pivot->id)
+                ->where('training_participant_id', $participant->id)
                 ->whereIn('question_id', $questions->keys())
                 ->pluck('score');
 
@@ -380,18 +468,16 @@ class TrainingController extends Controller
             $finalScore = $answerScores->count() === $totalQuestions && ! $answerScores->contains(fn ($value): bool => $value === null)
                 ? round((float) $answerScores->avg(), 2)
                 : null;
-            $finalPassed = $pivot->passed !== null
-                ? (bool) $pivot->passed
+            $finalPassed = $participant->passed !== null
+                ? (bool) $participant->passed
                 : ($finalScore !== null ? $finalScore >= $training->passing_score : null);
 
-            DB::table('training_participant')
-                ->where('id', $pivot->id)
-                ->update([
-                    'attended' => $pivot->attended ?? true,
+            $participant->update([
+                    'attended' => $participant->attended ?? true,
                     'score' => $finalScore,
                     'passed' => $finalPassed,
                     'observations' => $data['observations'] ?? null,
-                    'completed_at' => $pivot->completed_at ?? now(),
+                    'completed_at' => $participant->completed_at ?? now(),
                     'updated_at' => now(),
                 ]);
         });
@@ -404,30 +490,24 @@ class TrainingController extends Controller
 
     public function resetParticipantAttempt(Training $training, TrainingParticipant $participant): JsonResponse
     {
-        $pivot = DB::table('training_participant')
-            ->where('training_id', $training->id)
-            ->where('training_participant_id', $participant->id)
-            ->first();
-
-        if (! $pivot) {
-            return response()->json(['message' => 'Participante no asignado a esta capacitacion.'], 404);
+        if ($participant->training_id !== $training->id) {
+            return response()->json(['message' => 'Participante no pertenece a esta capacitacion.'], 404);
         }
 
-        DB::transaction(function () use ($pivot): void {
+        DB::transaction(function () use ($participant): void {
             DB::table('participant_answers')
-                ->where('training_participant_id', $pivot->id)
+                ->where('training_participant_id', $participant->id)
                 ->delete();
 
-            DB::table('training_participant')
-                ->where('id', $pivot->id)
-                ->update([
-                    'attended' => null,
-                    'score' => null,
-                    'observations' => null,
-                    'attendance_date' => null,
-                    'completed_at' => null,
-                    'updated_at' => now(),
-                ]);
+            $participant->update([
+                'attended' => null,
+                'score' => null,
+                'passed' => null,
+                'observations' => null,
+                'attendance_date' => null,
+                'completed_at' => null,
+                'updated_at' => now(),
+            ]);
         });
 
         return response()->json([
