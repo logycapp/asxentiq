@@ -2,6 +2,9 @@
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12" [class.col-xl-8]="showDateFilter">
       <div class="page-header-copy d-flex flex-column gap-1">
+        <div class="page-header-breadcrumbs">
+          <ng-content select="[header-breadcrumbs]"></ng-content>
+        </div>
         <span class="page-header-kicker">Modulo</span>
         <h2 class="font-headline-lg text-on-surface mb-0">{{ title }}</h2>
         <p class="text-on-surface-variant font-body-md mb-0 dashboard-subtitle">
