@@ -50,7 +50,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <button
                   *ngIf="showSecondaryButton"
                   type="button"
-                  class="btn btn-outline-light fw-semibold"
+                  class="btn btn-outline-secondary fw-semibold"
                   (click)="secondaryRequested.emit()"
                 >
                   {{ secondaryLabel }}
@@ -71,7 +71,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <button
                   *ngIf="showFooterClose"
                   type="button"
-                  class="btn btn-outline-light fw-semibold"
+                  class="btn btn-outline-secondary fw-semibold"
                   (click)="closeRequested.emit()"
                 >
                   {{ closeLabel }}

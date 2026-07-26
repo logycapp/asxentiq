@@ -8,13 +8,25 @@ use App\Http\Controllers\Controller;
 use App\Models\TrainingParticipant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ParticipantController extends Controller
 {
     public function index(): JsonResponse
     {
-        $participants = TrainingParticipant::query()->orderBy('full_name')->get();
+        $user = Auth::user();
+        $user?->loadMissing('roleRelation');
+        $shouldRestrictByCompany = $user?->empresa_id && $user?->roleRelation?->slug !== 'admin';
+
+        $participants = TrainingParticipant::query()
+            ->with('empresa:id,name,active')
+            ->when(
+                $shouldRestrictByCompany,
+                fn ($query) => $query->where('empresa_id', $user->empresa_id)
+            )
+            ->orderBy('full_name')
+            ->get();
 
         return response()->json($participants);
     }
@@ -47,6 +59,7 @@ class ParticipantController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
+            'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
             'document_number' => ['required', 'string', 'max:20', 'unique:training_participants,document_number'],
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
@@ -57,18 +70,19 @@ class ParticipantController extends Controller
 
         return response()->json([
             'message' => 'Participante registrado correctamente.',
-            'participant' => $participant,
+            'participant' => $participant->load('empresa:id,name'),
         ], 201);
     }
 
     public function show(TrainingParticipant $trainingParticipant): JsonResponse
     {
-        return response()->json($trainingParticipant);
+        return response()->json($trainingParticipant->load('empresa:id,name'));
     }
 
     public function update(Request $request, TrainingParticipant $trainingParticipant): JsonResponse
     {
         $data = $request->validate([
+            'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
             'document_number' => ['required', 'string', 'max:20', 'unique:training_participants,document_number,' . $trainingParticipant->id],
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
@@ -79,7 +93,7 @@ class ParticipantController extends Controller
 
         return response()->json([
             'message' => 'Participante actualizado correctamente.',
-            'participant' => $trainingParticipant->fresh(),
+            'participant' => $trainingParticipant->fresh()->load('empresa:id,name'),
         ]);
     }
 

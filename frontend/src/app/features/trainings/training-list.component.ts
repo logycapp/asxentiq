@@ -8,6 +8,7 @@ import { filter, finalize, Subscription } from 'rxjs';
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
+import { Select3Component } from '../../shared/select3.component';
 import {
   ParticipantReview,
   Question,
@@ -31,7 +32,8 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
     RouterOutlet,
     PageHeaderComponent,
     ModalShellComponent,
-    SwalAlertComponent
+    SwalAlertComponent,
+    Select3Component
   ],
   templateUrl: './training-list.component.html',
   styleUrls: ['./training-list.component.css']
@@ -82,7 +84,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   questionsError = '';
   editingQuestion = false;
   editingQuestionId: number | null = null;
-  editForm: Partial<Question> = { question_text: '', type: 'open', order: 0 };
+  editForm: Partial<Question> = { question_text: '', type: 'multiple_choice', order: 0 };
   editingOptions: Partial<QuestionOption>[] = [];
   editingQuestionMaterials: NonNullable<Question['materials']> = [];
   questionMaterialFile: File | null = null;
@@ -117,6 +119,41 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   editInstructor = '';
   editMandatory = true;
   saving = false;
+
+  get categoryOptions(): Array<{ value: number; label: string }> {
+    return this.categories.map((category) => ({ value: category.id, label: category.name }));
+  }
+
+  readonly statusOptions = [
+    { value: 'scheduled', label: 'Programada' },
+    { value: 'completed', label: 'Realizada' },
+    { value: 'cancelled', label: 'Cancelada' },
+  ];
+
+  readonly typeOptions = [
+    { value: 'medical_exam', label: 'Examen Medico' },
+    { value: 'sst_training', label: 'Capacitacion SST' },
+    { value: 'drill', label: 'Simulacro' },
+    { value: 'induction', label: 'Induccion' },
+  ];
+
+  readonly modalityOptions = [
+    { value: 'presential', label: 'Presencial' },
+    { value: 'virtual', label: 'Virtual' },
+    { value: 'mixed', label: 'Mixto' },
+  ];
+
+  readonly booleanOptions = [
+    { value: true, label: 'Si' },
+    { value: false, label: 'No' },
+  ];
+
+  readonly materialTypeOptions = [
+    { value: 'pdf', label: 'PDF' },
+    { value: 'video', label: 'Video' },
+    { value: 'spreadsheet', label: 'Hoja de calculo' },
+    { value: 'other', label: 'Otro' },
+  ];
 
   ngOnInit(): void {
     this.updateRouteFlags();
@@ -449,7 +486,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   showAddQuestionForm(): void {
     this.editingQuestion = true;
     this.editingQuestionId = null;
-    this.editForm = { question_text: '', type: 'open', order: this.questions.length + 1 };
+    this.editForm = { question_text: '', type: 'multiple_choice', order: this.questions.length + 1 };
     this.editingOptions = [];
     this.editingQuestionMaterials = [];
     this.clearQuestionMaterial();

@@ -10,18 +10,75 @@
 <div class="card glass-card border-0 rounded-4 p-4 mb-4">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
-      <button class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button" (click)="openCreateModal()">
+      <button class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button" (click)="openCreateModal()" data-bs-toggle="tooltip" data-bs-placement="top" title="Nuevo participante" aria-label="Nuevo participante">
         <span class="material-symbols-outlined text-[18px]">add</span>
         Nuevo participante
       </button>
     </div>
     <div class="col-12 col-xl-auto">
-      <div style="width: min(260px, 100%);">
+      <div style="width: min(320px, 100%);">
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
             <span class="material-symbols-outlined text-[18px]">search</span>
           </span>
-          <input class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search" id="participantSearch" type="search" placeholder="Buscar por cedula, nombre, email..." (input)="onSearch($event)" />
+          <input
+            class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search"
+            id="participantSearch"
+            type="search"
+            placeholder="Buscar por cedula, nombre, email..."
+            name="participantSearch"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchQueryChange($event)"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-3 mt-3 border-top border-white/10">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div>
+        <div class="text-on-surface fw-semibold">Panel de filtros</div>
+        <div class="text-on-surface-variant font-label-sm">Filtra por empresa y por estado de la empresa.</div>
+      </div>
+      <button
+        *ngIf="hasActiveFilters"
+        class="btn btn-sm btn-outline-light fw-semibold"
+        type="button"
+        (click)="clearFilters()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Limpiar filtros"
+        aria-label="Limpiar filtros"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+
+    <div class="row g-3 align-items-end">
+      <div *ngIf="isAdminUser" class="col-12 col-lg-5">
+        <label class="form-label small text-on-surface-variant">Empresa</label>
+        <app-select3
+          [options]="empresaFilterOptions"
+          [(ngModel)]="empresaFilterId"
+          name="empresaFilterId"
+          placeholder="Todas las empresas"
+          (ngModelChange)="onEmpresaFilterChange($event)"
+        ></app-select3>
+      </div>
+      <div class="col-12" [class.col-lg-7]="isAdminUser" [class.col-lg-8]="!isAdminUser">
+        <label class="form-label small text-on-surface-variant">Estado de empresa</label>
+        <app-select3
+          [options]="empresaStateOptions"
+          [(ngModel)]="empresaStateFilter"
+          name="empresaStateFilter"
+          placeholder="Todos"
+          (ngModelChange)="onEmpresaStateFilterChange($event)"
+        ></app-select3>
+      </div>
+      <div class="col-12 col-lg-3 text-lg-end">
+        <div class="text-on-surface-variant font-label-sm">
+          {{ filteredCount }} de {{ totalParticipants }} participantes
         </div>
       </div>
     </div>
@@ -39,16 +96,17 @@
         <tr class="border-bottom border-white/10">
           <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">#</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('document_number')">Cedula <span class="material-symbols-outlined sort-icon">{{ getSortIcon('document_number') }}</span></button>
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('document_number')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cedula" aria-label="Ordenar por cedula">Cedula <span class="material-symbols-outlined sort-icon">{{ getSortIcon('document_number') }}</span></button>
           </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('full_name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('full_name') }}</span></button>
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('full_name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('full_name') }}</span></button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Empresa</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('email')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por email" aria-label="Ordenar por email">Email <span class="material-symbols-outlined sort-icon">{{ getSortIcon('email') }}</span></button>
           </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('email')">Email <span class="material-symbols-outlined sort-icon">{{ getSortIcon('email') }}</span></button>
-          </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('phone')">Telefono <span class="material-symbols-outlined sort-icon">{{ getSortIcon('phone') }}</span></button>
+            <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('phone')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por telefono" aria-label="Ordenar por telefono">Telefono <span class="material-symbols-outlined sort-icon">{{ getSortIcon('phone') }}</span></button>
           </th>
           <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end participant-table-th">Acciones</th>
         </tr>
@@ -62,14 +120,15 @@
           <td class="py-3">
             <span class="text-on-surface fw-semibold">{{ participant.full_name }}</span>
           </td>
+          <td class="py-3 text-on-surface-variant">{{ participant.empresa?.name || 'No determinada' }}</td>
           <td class="py-3 text-on-surface-variant">{{ participant.email || '-' }}</td>
           <td class="py-3 text-on-surface-variant">{{ participant.phone || '-' }}</td>
           <td class="pe-4 py-3 text-end">
             <div class="dashboard-action-group">
-              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" (click)="openEditModal(participant)">
+              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" (click)="openEditModal(participant)" data-bs-toggle="tooltip" data-bs-placement="top">
                 <span class="material-symbols-outlined">edit</span><span>Editar</span>
               </button>
-              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(participant)" title="Eliminar" aria-label="Eliminar">
+              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(participant)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
                 <span class="material-symbols-outlined">delete</span><span>Eliminar</span>
               </button>
             </div>
@@ -91,12 +150,12 @@
   <nav aria-label="Paginacion de participantes">
     <ul class="pagination pagination-sm mb-0">
       <li class="page-item" [class.disabled]="page === 1">
-        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera" data-bs-toggle="tooltip" data-bs-placement="top" title="Primera pagina">
           <span class="material-symbols-outlined text-[16px]">first_page</span>
         </button>
       </li>
       <li class="page-item" [class.disabled]="page === 1">
-        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior" data-bs-toggle="tooltip" data-bs-placement="top" title="Pagina anterior">
           <span class="material-symbols-outlined text-[16px]">chevron_left</span>
         </button>
       </li>
@@ -104,12 +163,12 @@
         <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="page === idx + 1" (click)="onPageChange(idx + 1)">{{ idx + 1 }}</button>
       </li>
       <li class="page-item" [class.disabled]="page === totalPages">
-        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente" data-bs-toggle="tooltip" data-bs-placement="top" title="Pagina siguiente">
           <span class="material-symbols-outlined text-[16px]">chevron_right</span>
         </button>
       </li>
       <li class="page-item" [class.disabled]="page === totalPages">
-        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima" data-bs-toggle="tooltip" data-bs-placement="top" title="Ultima pagina">
           <span class="material-symbols-outlined text-[16px]">last_page</span>
         </button>
       </li>
@@ -130,11 +189,11 @@
     <div class="col-12 col-xl-auto">
       <div class="d-flex gap-2 flex-wrap">
         <input #participantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
-        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="participantsFileInput.click()" [disabled]="importing">
+        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="participantsFileInput.click()" [disabled]="importing" data-bs-toggle="tooltip" data-bs-placement="top" title="Cargar Excel" aria-label="Cargar Excel">
           <span class="material-symbols-outlined text-[16px]">upload_file</span>
           {{ importing ? 'Cargando...' : 'Cargar Excel' }}
         </button>
-        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="downloadReport()" [disabled]="exporting">
+        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="downloadReport()" [disabled]="exporting" data-bs-toggle="tooltip" data-bs-placement="top" title="Descargar Excel" aria-label="Descargar Excel">
           <span class="material-symbols-outlined text-[16px]">download</span>
           {{ exporting ? 'Generando...' : 'Descargar Excel' }}
         </button>
@@ -193,6 +252,27 @@
           <input id="createPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createPhone" name="createPhone" />
         </div>
       </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant">Empresa</label>
+        <ng-container *ngIf="!isEmpresaScopedUser; else createEmpresaReadonly">
+          <app-select3
+            #createEmpresaModel="ngModel"
+            [options]="empresaOptions"
+            [(ngModel)]="createEmpresaId"
+            name="createEmpresaId"
+            placeholder="Selecciona una empresa"
+            required
+          ></app-select3>
+          <div class="invalid-feedback d-block" *ngIf="(createEmpresaModel.touched || createForm.submitted) && createEmpresaModel.invalid">
+            Selecciona una empresa.
+          </div>
+        </ng-container>
+        <ng-template #createEmpresaReadonly>
+          <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+            {{ scopedEmpresaLabel }}
+          </div>
+        </ng-template>
+      </div>
     </form>
   </div>
 </app-modal-shell>
@@ -246,6 +326,27 @@
           <label class="form-label small text-on-surface-variant" for="modalPhone">Telefono</label>
           <input id="modalPhone" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editPhone" name="editPhone" />
         </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-on-surface-variant">Empresa</label>
+        <ng-container *ngIf="!isEmpresaScopedUser; else editEmpresaReadonly">
+          <app-select3
+            #editEmpresaModel="ngModel"
+            [options]="empresaOptions"
+            [(ngModel)]="editEmpresaId"
+            name="editEmpresaId"
+            placeholder="Selecciona una empresa"
+            required
+          ></app-select3>
+          <div class="invalid-feedback d-block" *ngIf="(editEmpresaModel.touched || editForm.submitted) && editEmpresaModel.invalid">
+            Selecciona una empresa.
+          </div>
+        </ng-container>
+        <ng-template #editEmpresaReadonly>
+          <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+            {{ scopedEmpresaLabel }}
+          </div>
+        </ng-template>
       </div>
     </form>
   </div>

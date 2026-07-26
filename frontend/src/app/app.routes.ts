@@ -21,7 +21,6 @@ import { TrainingFormComponent } from './features/trainings/training-form.compon
 import { TrainingListComponent } from './features/trainings/training-list.component';
 import { TrainingQuestionsComponent } from './features/trainings/training-questions.component';
 import { TrainingResultsComponent } from './features/trainings/training-results.component';
-import { TrainingCategoryFormComponent } from './features/trainings/training-category-form.component';
 import { TrainingCategoryListComponent } from './features/trainings/training-category-list.component';
 import { PublicDashboardComponent } from './features/public-trainings/public-dashboard.component';
 import { PublicExamComponent } from './features/public-trainings/public-exam.component';
@@ -93,13 +92,13 @@ export const appRoutes: Routes = [
       },
       {
         path: 'trainings_programs/create',
-        component: TrainingCategoryFormComponent,
-        data: { pageTitle: 'Programas de capacitaciones' }
+        redirectTo: 'trainings_programs',
+        pathMatch: 'full'
       },
       {
         path: 'trainings_programs/:id/edit',
-        component: TrainingCategoryFormComponent,
-        data: { pageTitle: 'Programas de capacitaciones' }
+        redirectTo: 'trainings_programs',
+        pathMatch: 'full'
       },
       {
         path: 'trainings_programs/:programId/trainings',

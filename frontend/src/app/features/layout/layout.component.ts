@@ -138,6 +138,15 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.authService.getCurrentUser()?.empresa_relation?.logo_url ?? '';
   }
 
+  get companyName(): string {
+    return this.authService.getCurrentUser()?.empresa_relation?.name ?? 'Empresa no determinada';
+  }
+
+  get roleName(): string {
+    const user = this.authService.getCurrentUser();
+    return user?.role_relation?.name ?? user?.role ?? 'Rol no determinado';
+  }
+
   get menuLayout(): 'top' | 'left' {
     return this.authService.getCurrentUser()?.menu_layout === 'left' ? 'left' : 'top';
   }

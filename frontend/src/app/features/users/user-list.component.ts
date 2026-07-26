@@ -7,16 +7,18 @@ import { finalize } from 'rxjs';
 
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { AuthService } from '../../core/services/auth.service';
 import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleService } from '../../core/services/role.service';
 import { User, UserPayload, UserMenuPermissionItem, UserService } from '../../core/services/user.service';
+import { Select3Component } from '../../shared/select3.component';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent, Select3Component],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css']
 })
@@ -25,7 +27,9 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly roleService = inject(RoleService);
   private readonly empresaService = inject(EmpresaService);
   private readonly loadingService = inject(LoadingService);
+  private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly currentUser = this.authService.getCurrentUser();
   private tooltipInstances = new Map<HTMLElement, { dispose: () => void }>();
   private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
@@ -65,6 +69,25 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   createErrorMessage = '';
   @ViewChild('createForm') private createForm?: NgForm;
   @ViewChild('editForm') private editForm?: NgForm;
+
+  get roleOptions(): Array<{ value: string; label: string }> {
+    return this.roles.map((role) => ({ value: role.slug, label: role.name }));
+  }
+
+  get empresaOptions(): Array<{ value: number; label: string }> {
+    return this.empresas.map((empresa) => ({ value: empresa.id, label: empresa.name }));
+  }
+
+  get isEmpresaScopedUser(): boolean {
+    return this.currentUser?.role_relation?.slug === 'empresa';
+  }
+
+  get scopedEmpresaLabel(): string {
+    const empresaId = this.currentUser?.empresa_id ?? this.createEmpresaId ?? this.editEmpresaId ?? null;
+    return this.empresas.find((empresa) => empresa.id === empresaId)?.name
+      ?? this.currentUser?.empresa_relation?.name
+      ?? 'Empresa asignada';
+  }
 
   ngOnInit(): void {
     const routeEmpresaId = Number(this.route.snapshot.paramMap.get('empresaId'));
@@ -114,7 +137,12 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (empresas) => {
         this.empresas = empresas;
 
-        if (this.creating && !this.createEmpresaId) {
+        if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+          this.createEmpresaId = this.currentUser.empresa_id;
+          if (this.editingUser) {
+            this.editEmpresaId = this.currentUser.empresa_id;
+          }
+        } else if (this.creating && !this.createEmpresaId) {
           this.createEmpresaId = this.empresaId ?? this.empresas[0]?.id ?? null;
         }
       }
@@ -126,7 +154,9 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editName = user.name;
     this.editEmail = user.email;
     this.editRole = user.role || 'user';
-    this.editEmpresaId = user.empresa_id ?? null;
+    this.editEmpresaId = this.isEmpresaScopedUser
+      ? (this.currentUser?.empresa_id ?? user.empresa_id ?? null)
+      : (user.empresa_id ?? null);
     this.editActive = user.active;
     this.editPassword = '';
     this.editPasswordConfirmation = '';
@@ -148,12 +178,16 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!this.editingUser || !this.editName || !this.editEmail) return;
 
-    if (this.editPassword && this.editPassword.length < 8) {
+    const passwordValue = this.editPassword.trim();
+    const confirmationValue = this.editPasswordConfirmation.trim();
+    const passwordChangeRequested = passwordValue.length > 0 || confirmationValue.length > 0;
+
+    if (passwordChangeRequested && passwordValue.length < 8) {
       this.errorMessage = 'La contrasena debe tener al menos 8 caracteres.';
       return;
     }
 
-    if (this.editPassword !== this.editPasswordConfirmation) {
+    if (passwordChangeRequested && passwordValue !== confirmationValue) {
       this.errorMessage = 'Las contrasenas no coinciden.';
       return;
     }
@@ -171,9 +205,9 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       empresa_id: this.editEmpresaId,
     };
 
-    if (this.editPassword) {
-      payload.password = this.editPassword;
-      payload.password_confirmation = this.editPasswordConfirmation;
+    if (passwordChangeRequested) {
+      payload.password = passwordValue;
+      payload.password_confirmation = confirmationValue;
     }
 
     this.saving = true;
@@ -384,7 +418,9 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.createName = '';
     this.createEmail = '';
     this.createRole = this.roles[0]?.slug ?? 'user';
-    this.createEmpresaId = this.empresaId ?? this.empresas[0]?.id ?? null;
+    this.createEmpresaId = this.isEmpresaScopedUser
+      ? (this.currentUser?.empresa_id ?? null)
+      : (this.empresaId ?? this.empresas[0]?.id ?? null);
     this.createActive = true;
     this.createPassword = '';
     this.createPasswordConfirmation = '';

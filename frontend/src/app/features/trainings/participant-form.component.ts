@@ -3,13 +3,16 @@ import { Component, EventEmitter, Input, OnInit, Output, ViewChild, inject } fro
 import { FormsModule, NgForm } from '@angular/forms';
 
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { AuthService } from '../../core/services/auth.service';
+import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingParticipant, TrainingService } from '../../core/services/training.service';
+import { Select3Component } from '../../shared/select3.component';
 
 @Component({
   selector: 'app-participant-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalShellComponent],
+  imports: [CommonModule, FormsModule, ModalShellComponent, Select3Component],
   template: `
     <app-modal-shell
       kicker="Modulo SST"
@@ -51,6 +54,27 @@ import { TrainingParticipant, TrainingService } from '../../core/services/traini
               <input class="form-control" [(ngModel)]="form.phone" name="phone" placeholder="Telefono" />
             </div>
           </div>
+          <div class="mt-3">
+            <label class="form-label">Empresa *</label>
+            <ng-container *ngIf="!isEmpresaScopedUser; else empresaReadonly">
+              <app-select3
+                #empresaModel="ngModel"
+                [options]="empresaOptions"
+                [(ngModel)]="form.empresa_id"
+                name="empresa_id"
+                placeholder="Selecciona una empresa"
+                required
+              ></app-select3>
+              <div class="invalid-feedback d-block" *ngIf="(empresaModel.touched || participantForm.submitted) && empresaModel.invalid">
+                La empresa es obligatoria.
+              </div>
+            </ng-container>
+            <ng-template #empresaReadonly>
+              <div class="form-control bg-transparent border border-white/10 text-on-surface d-flex align-items-center">
+                {{ scopedEmpresaLabel }}
+              </div>
+            </ng-template>
+          </div>
         </form>
       </div>
 
@@ -76,8 +100,11 @@ import { TrainingParticipant, TrainingService } from '../../core/services/traini
 })
 export class ParticipantFormComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
+  private readonly empresaService = inject(EmpresaService);
+  private readonly authService = inject(AuthService);
   private readonly loadingService = inject(LoadingService);
   private readonly activeModal: { close: (s: string) => void; dismiss: (s: string) => void } = { close: () => {}, dismiss: () => {} };
+  private readonly currentUser = this.authService.getCurrentUser();
 
   @Input() participantInput?: TrainingParticipant;
   @Output() saved = new EventEmitter<void>();
@@ -85,25 +112,62 @@ export class ParticipantFormComponent implements OnInit {
   editingId: number | null = null;
   saving = false;
   errorMessage = '';
+  empresas: Empresa[] = [];
   @ViewChild('participantForm') private participantForm?: NgForm;
+
+  get isEmpresaScopedUser(): boolean {
+    return this.currentUser?.role_relation?.slug === 'empresa';
+  }
+
+  get scopedEmpresaLabel(): string {
+    const empresaId = this.form.empresa_id ?? this.currentUser?.empresa_id ?? null;
+    return this.empresas.find((empresa) => empresa.id === empresaId)?.name
+      ?? this.currentUser?.empresa_relation?.name
+      ?? 'Empresa asignada';
+  }
 
   form: Partial<TrainingParticipant> = {
     document_number: '',
     full_name: '',
     email: '',
-    phone: ''
+    phone: '',
+    empresa_id: null
   };
 
   ngOnInit(): void {
+    this.loadEmpresas();
+
+    if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+      this.form.empresa_id = this.currentUser.empresa_id;
+    }
+
     if (this.participantInput) {
       this.editingId = this.participantInput.id;
       this.form = {
         document_number: this.participantInput.document_number,
         full_name: this.participantInput.full_name,
         email: this.participantInput.email,
-        phone: this.participantInput.phone
+        phone: this.participantInput.phone,
+        empresa_id: this.isEmpresaScopedUser
+          ? (this.currentUser?.empresa_id ?? this.participantInput.empresa_id ?? null)
+          : (this.participantInput.empresa_id ?? null)
       };
     }
+  }
+
+  get empresaOptions(): Array<{ value: number; label: string }> {
+    return this.empresas.map((empresa) => ({ value: empresa.id, label: empresa.name }));
+  }
+
+  loadEmpresas(): void {
+    this.empresaService.list().subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+        if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+          this.form.empresa_id = this.currentUser.empresa_id;
+        }
+      }
+    });
   }
 
   save(participantForm?: NgForm): void {
@@ -116,6 +180,11 @@ export class ParticipantFormComponent implements OnInit {
 
     if (!this.form.document_number || !this.form.full_name) {
       this.errorMessage = 'Cedula y nombre son obligatorios.';
+      return;
+    }
+
+    if (!this.form.empresa_id) {
+      this.errorMessage = 'La empresa es obligatoria.';
       return;
     }
 

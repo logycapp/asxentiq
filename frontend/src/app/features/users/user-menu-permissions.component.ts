@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
@@ -13,10 +14,12 @@ import { UserMenuPermissionItem, UserMenuPermissionsResponse, UserService } from
   imports: [CommonModule, RouterLink, SwalAlertComponent],
   templateUrl: './user-menu-permissions.component.html'
 })
-export class UserMenuPermissionsComponent implements OnInit {
+export class UserMenuPermissionsComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
+  private tooltipInstances = new Map<HTMLElement, Tooltip>();
+  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   user: UserMenuPermissionsResponse['user'] | null = null;
   menuItems: UserMenuPermissionItem[] = [];
@@ -29,6 +32,20 @@ export class UserMenuPermissionsComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadPermissions(id);
+  }
+
+  ngAfterViewInit(): void {
+    this.refreshTooltips();
+  }
+
+  ngOnDestroy(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+      this.tooltipRefreshTimer = null;
+    }
+
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
   }
 
   get inheritedItems(): UserMenuPermissionItem[] {
@@ -53,6 +70,7 @@ export class UserMenuPermissionsComponent implements OnInit {
           this.selectedIds = new Set(
             response.menu_items.filter((item) => item.assigned_to_user).map((item) => item.id)
           );
+          this.scheduleTooltipRefresh();
         },
         error: () => {
           this.errorMessage = 'No fue posible cargar los permisos del usuario.';
@@ -138,5 +156,36 @@ export class UserMenuPermissionsComponent implements OnInit {
 
   trackById(_: number, item: UserMenuPermissionItem): number {
     return item.id;
+  }
+
+  private refreshTooltips(): void {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
+    const activeElements = new Set(elements);
+
+    this.tooltipInstances.forEach((tooltip, element) => {
+      if (!activeElements.has(element)) {
+        tooltip.dispose();
+        this.tooltipInstances.delete(element);
+      }
+    });
+
+    elements.forEach((element) => {
+      if (this.tooltipInstances.has(element)) {
+        return;
+      }
+
+      this.tooltipInstances.set(element, new Tooltip(element));
+    });
+  }
+
+  private scheduleTooltipRefresh(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+    }
+
+    this.tooltipRefreshTimer = window.setTimeout(() => {
+      this.tooltipRefreshTimer = null;
+      this.refreshTooltips();
+    });
   }
 }

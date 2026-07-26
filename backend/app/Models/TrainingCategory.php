@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TrainingCategory extends Model
 {
     protected $fillable = [
+        'empresa_id',
         'name',
         'description',
         'sort_order',
@@ -20,5 +22,10 @@ class TrainingCategory extends Model
     public function trainings(): HasMany
     {
         return $this->hasMany(Training::class, 'training_category_id');
+    }
+
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(Empresa::class);
     }
 }

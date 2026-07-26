@@ -141,13 +141,25 @@
       </div>
       <div class="mb-3">
         <label class="form-label small text-on-surface-variant" for="createEmpresa">Empresa</label>
-        <select #createEmpresaModel="ngModel" id="createEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createEmpresaId" name="createEmpresaId" [disabled]="empresaId !== null" required>
-          <option [ngValue]="null">Selecciona una empresa</option>
-          <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
-        </select>
-        <div class="invalid-feedback d-block" *ngIf="(createEmpresaModel.touched || createForm.submitted) && createEmpresaModel.invalid">
-          Selecciona una empresa valida.
-        </div>
+        <ng-container *ngIf="!isEmpresaScopedUser; else createEmpresaReadonly">
+          <app-select3
+            #createEmpresaModel="ngModel"
+            [options]="empresaOptions"
+            [(ngModel)]="createEmpresaId"
+            name="createEmpresaId"
+            placeholder="Selecciona una empresa"
+            [disabled]="empresaId !== null || empresaOptions.length === 0"
+            required
+          ></app-select3>
+          <div class="invalid-feedback d-block" *ngIf="(createEmpresaModel.touched || createForm.submitted) && createEmpresaModel.invalid">
+            Selecciona una empresa valida.
+          </div>
+        </ng-container>
+        <ng-template #createEmpresaReadonly>
+          <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+            {{ scopedEmpresaLabel }}
+          </div>
+        </ng-template>
       </div>
       <div class="row g-3 mb-3">
         <div class="col-6">
@@ -167,9 +179,15 @@
       </div>
       <div class="mb-3">
         <label class="form-label small text-on-surface-variant" for="createRole">Rol</label>
-        <select #createRoleModel="ngModel" id="createRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="createRole" name="createRole" required>
-          <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
-        </select>
+        <app-select3
+          #createRoleModel="ngModel"
+          [options]="roleOptions"
+          [(ngModel)]="createRole"
+          name="createRole"
+          placeholder="Selecciona un rol"
+          [disabled]="roleOptions.length === 0"
+          required
+        ></app-select3>
         <div class="invalid-feedback d-block" *ngIf="(createRoleModel.touched || createForm.submitted) && createRoleModel.invalid">
           Selecciona un rol valido.
         </div>
@@ -325,37 +343,55 @@
       <div class="row g-3 mb-3">
         <div class="col-6">
           <label class="form-label small text-on-surface-variant" for="modalPassword">Contrasena <span class="text-on-surface-variant opacity-50">(opcional)</span></label>
-          <input #editPasswordModel="ngModel" id="modalPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPassword" name="editPassword" minlength="8" />
+          <input #editPasswordModel="ngModel" id="modalPassword" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPassword" name="editPassword" minlength="8" autocomplete="new-password" />
           <div class="invalid-feedback d-block" *ngIf="(editPasswordModel.touched || editForm.submitted) && editPasswordModel.invalid && editPassword">
             La contrasena debe tener al menos 8 caracteres.
           </div>
         </div>
         <div class="col-6">
           <label class="form-label small text-on-surface-variant" for="modalPasswordConfirm">Confirmar</label>
-          <input #editPasswordConfirmModel="ngModel" id="modalPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPasswordConfirmation" name="editPasswordConfirmation" [required]="!!editPassword" />
-          <div class="invalid-feedback d-block" *ngIf="(editPasswordConfirmModel.touched || editForm.submitted) && editPasswordConfirmModel.invalid">
+          <input #editPasswordConfirmModel="ngModel" id="modalPasswordConfirm" class="form-control bg-transparent border-white/10 text-on-surface" type="password" [(ngModel)]="editPasswordConfirmation" name="editPasswordConfirmation" autocomplete="new-password" />
+          <div class="invalid-feedback d-block" *ngIf="(editPasswordConfirmModel.touched || editForm.submitted) && editPassword && !editPasswordConfirmation">
             Confirma la contrasena.
           </div>
         </div>
       </div>
       <div class="mb-3">
         <label class="form-label small text-on-surface-variant" for="modalRole">Rol</label>
-        <select #editRoleModel="ngModel" id="modalRole" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editRole" name="editRole" required>
-          <option *ngFor="let role of roles" [value]="role.slug">{{ role.name }}</option>
-        </select>
+        <app-select3
+          #editRoleModel="ngModel"
+          [options]="roleOptions"
+          [(ngModel)]="editRole"
+          name="editRole"
+          placeholder="Selecciona un rol"
+          [disabled]="roleOptions.length === 0"
+          required
+        ></app-select3>
         <div class="invalid-feedback d-block" *ngIf="(editRoleModel.touched || editForm.submitted) && editRoleModel.invalid">
           Selecciona un rol valido.
         </div>
       </div>
       <div class="mb-3">
         <label class="form-label small text-on-surface-variant" for="modalEmpresa">Empresa</label>
-        <select #editEmpresaModel="ngModel" id="modalEmpresa" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editEmpresaId" name="editEmpresaId" required>
-          <option [ngValue]="null">Selecciona una empresa</option>
-          <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
-        </select>
-        <div class="invalid-feedback d-block" *ngIf="(editEmpresaModel.touched || editForm.submitted) && editEmpresaModel.invalid">
-          Selecciona una empresa valida.
-        </div>
+        <ng-container *ngIf="!isEmpresaScopedUser; else editEmpresaReadonly">
+          <app-select3
+            #editEmpresaModel="ngModel"
+            [options]="empresaOptions"
+            [(ngModel)]="editEmpresaId"
+            name="editEmpresaId"
+            placeholder="Selecciona una empresa"
+            [disabled]="empresaOptions.length === 0"
+            required
+          ></app-select3>
+          <div class="invalid-feedback d-block" *ngIf="(editEmpresaModel.touched || editForm.submitted) && editEmpresaModel.invalid">
+            Selecciona una empresa valida.
+          </div>
+        </ng-container>
+        <ng-template #editEmpresaReadonly>
+          <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+            {{ scopedEmpresaLabel }}
+          </div>
+        </ng-template>
       </div>
       <div class="d-flex align-items-center gap-3">
         <input class="form-check-input m-0" type="checkbox" id="modalActive" [(ngModel)]="editActive" name="editActive" />

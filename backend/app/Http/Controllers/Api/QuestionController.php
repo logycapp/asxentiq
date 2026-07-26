@@ -16,7 +16,11 @@ class QuestionController extends Controller
 {
     public function index(Training $training): JsonResponse
     {
-        $questions = $training->questions()->with('options', 'materials')->orderBy('order')->get();
+        $questions = $training->questions()
+            ->where('type', '!=', 'open')
+            ->with('options', 'materials')
+            ->orderBy('order')
+            ->get();
 
         return response()->json($questions);
     }
@@ -25,7 +29,7 @@ class QuestionController extends Controller
     {
         $data = $request->validate([
             'question_text' => ['required', 'string'],
-            'type' => ['required', 'string', 'in:open,multiple_choice,yes_no'],
+            'type' => ['required', 'string', 'in:multiple_choice,yes_no'],
             'order' => ['nullable', 'integer', 'min:0'],
             'options' => ['nullable', 'array'],
             'options.*.option_text' => ['nullable', 'string', 'max:255'],
@@ -62,7 +66,7 @@ class QuestionController extends Controller
     {
         $data = $request->validate([
             'question_text' => ['required', 'string'],
-            'type' => ['required', 'string', 'in:open,multiple_choice,yes_no'],
+            'type' => ['required', 'string', 'in:multiple_choice,yes_no'],
             'order' => ['nullable', 'integer', 'min:0'],
             'options' => ['nullable', 'array'],
             'options.*.option_text' => ['nullable', 'string', 'max:255'],

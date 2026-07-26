@@ -258,6 +258,7 @@ class TrainingController extends Controller
         }
 
         $questions = $training->questions()
+            ->where('type', '!=', 'open')
             ->with(['options' => function ($query): void {
                 $query->orderBy('order');
             }])
@@ -329,7 +330,10 @@ class TrainingController extends Controller
             return response()->json(['message' => 'Participante no asignado a esta capacitacion.'], 404);
         }
 
-        $questions = $training->questions()->get()->keyBy('id');
+        $questions = $training->questions()
+            ->where('type', '!=', 'open')
+            ->get()
+            ->keyBy('id');
         $manualQuestionIds = [];
         $existingAnswers = DB::table('participant_answers')
             ->where('training_participant_id', $pivot->id)
@@ -369,9 +373,10 @@ class TrainingController extends Controller
 
             $answerScores = DB::table('participant_answers')
                 ->where('training_participant_id', $pivot->id)
+                ->whereIn('question_id', $questions->keys())
                 ->pluck('score');
 
-            $totalQuestions = $training->questions()->count();
+            $totalQuestions = $questions->count();
             $finalScore = $answerScores->count() === $totalQuestions && ! $answerScores->contains(fn ($value): bool => $value === null)
                 ? round((float) $answerScores->avg(), 2)
                 : null;

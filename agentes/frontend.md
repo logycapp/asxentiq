@@ -110,6 +110,27 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - No improvisar estilos nuevos ni variar el lenguaje visual del template.
 - La unica excepcion es `landing`, que mantiene estilos propios por ser la pagina web publica.
 
+## Componente SearchableSelect
+
+- Ubicado en `frontend/src/app/shared/searchable-select.component.ts`.
+- Es un componente Angular standalone que reemplaza un `<select>` nativo por un trigger con panel desplegable y búsqueda.
+- Implementa `ControlValueAccessor`, por lo que funciona directamente con `[(ngModel)]`.
+- Uso:
+  ```html
+  <app-searchable-select
+    [options]="opciones"
+    [(ngModel)]="valorSeleccionado"
+    name="campo"
+    placeholder="Texto por defecto"
+  ></app-searchable-select>
+  ```
+- Las opciones se pasan como `SearchableOption[]` con formato `{ value: number | string | null, label: string }`.
+- Si el valor es `null` se muestra el `placeholder`.
+- Soporta modo claro/oscuro (`:host-context(.light)`).
+- Cierra el panel al hacer clic fuera del componente.
+- El estado de validación `is-invalid` se puede activar con el método `setInvalid()`.
+- Basado en el patrón visual de `frontend/template/forms.html` (clases `searchable-select`, `searchable-select-trigger`, `searchable-select-panel`, `searchable-select-search`, `searchable-select-option`).
+
 ## Reglas para modales
 
 - Usar `app-modal-shell` como contenedor base para cualquier modal nuevo o migrado.

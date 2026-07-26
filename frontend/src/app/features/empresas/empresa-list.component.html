@@ -10,7 +10,15 @@
 <div class="card glass-card border-0 rounded-4 p-4 mb-4">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
-      <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" (click)="openCreateModal()">
+      <button
+        type="button"
+        class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold"
+        (click)="openCreateModal()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Nueva empresa"
+        aria-label="Nueva empresa"
+      >
         <span class="material-symbols-outlined text-[18px]">add</span>
         Nueva empresa
       </button>
@@ -40,7 +48,9 @@
           <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">#</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Logo</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
-            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span></button>
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">
+              Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span>
+            </button>
           </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">NIT</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Telefono</th>
@@ -72,14 +82,15 @@
           <td class="py-3 text-on-surface-variant">{{ empresa.phone || 'No registrado' }}</td>
           <td class="py-3 text-on-surface-variant">{{ empresa.email || 'No registrado' }}</td>
           <td class="py-3">
-            <span [class]="statusBadgeClass(empresa)">{{ statusLabel(empresa) }}</span>
+            <span *ngIf="empresa.active" class="badge rounded-pill empresa-status-badge empresa-status-active">Activo</span>
+            <span *ngIf="!empresa.active" class="badge rounded-pill empresa-status-badge empresa-status-inactive">Inactivo</span>
           </td>
           <td class="pe-4 py-3 text-end">
             <div class="dashboard-action-group">
-              <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/users', empresa.id]">
+              <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/users', empresa.id]" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver usuarios de la empresa" aria-label="Ver usuarios de la empresa">
                 <span class="material-symbols-outlined">group</span>
               </a>
-              <button type="button" class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" (click)="openEditModal(empresa)">
+              <button type="button" class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" (click)="openEditModal(empresa)" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar empresa" aria-label="Editar empresa">
                 <span class="material-symbols-outlined">edit</span>
               </button>
               <button
@@ -89,6 +100,8 @@
                 type="button"
                 (click)="toggleStatus(empresa)"
                 [attr.title]="empresa.active ? 'Desactivar empresa' : 'Activar empresa'"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
               >
                 <span class="material-symbols-outlined">{{ empresa.active ? 'toggle_off' : 'toggle_on' }}</span>
               </button>

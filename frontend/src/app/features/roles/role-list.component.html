@@ -10,7 +10,15 @@
 <div class="card glass-card border-0 rounded-4 p-4 mb-4">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
-      <a routerLink="/roles/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button">
+      <a
+        routerLink="/roles/create"
+        class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold"
+        type="button"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Nuevo rol"
+        aria-label="Nuevo rol"
+      >
         <span class="material-symbols-outlined text-[18px]">add</span>
         Nuevo rol
       </a>
@@ -39,10 +47,14 @@
         <tr class="border-bottom border-white/10">
           <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">#</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
-            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('name')">Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span></button>
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">
+              Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span>
+            </button>
           </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
-            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('slug')">Slug <span class="material-symbols-outlined sort-icon">{{ getSortIcon('slug') }}</span></button>
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('slug')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por slug" aria-label="Ordenar por slug">
+              Slug <span class="material-symbols-outlined sort-icon">{{ getSortIcon('slug') }}</span>
+            </button>
           </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">Descripcion</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">Sistema</th>
@@ -63,13 +75,13 @@
           </td>
           <td class="pe-4 py-3 text-end">
             <div class="dashboard-action-group">
-              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" (click)="openEditModal(role)">
+              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(role)">
                 <span class="material-symbols-outlined">edit</span><span>Editar</span>
               </button>
-              <a class="btn btn-sm btn-outline-info fw-semibold" [routerLink]="['/roles', role.id, 'menu-permissions']" title="Permisos del menu" aria-label="Permisos del menu">
+              <a class="btn btn-sm btn-outline-info fw-semibold" [routerLink]="['/roles', role.id, 'menu-permissions']" title="Permisos del menu" aria-label="Permisos del menu" data-bs-toggle="tooltip" data-bs-placement="top">
                 <span class="material-symbols-outlined">settings</span><span>Menu</span>
               </a>
-              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(role)" title="Eliminar" aria-label="Eliminar">
+              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(role)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
                 <span class="material-symbols-outlined">delete</span><span>Eliminar</span>
               </button>
             </div>

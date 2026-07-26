@@ -64,7 +64,11 @@ class PublicTrainingController extends Controller
                 $q->where('training_participant_id', $participantId)->whereNull('completed_at');
             })
             ->with('category')
-            ->withCount('questions')
+            ->withCount([
+                'questions as questions_count' => function ($query): void {
+                    $query->where('type', '!=', 'open');
+                },
+            ])
             ->orderBy('scheduled_date')
             ->get();
 
@@ -110,6 +114,7 @@ class PublicTrainingController extends Controller
         }
 
         $training->load(['category', 'questions' => function ($q): void {
+            $q->where('type', '!=', 'open');
             $q->with(['options' => function ($opt): void {
                 $opt->select(['id', 'question_id', 'option_text', 'order']);
             }, 'materials'])->orderBy('order');
@@ -138,7 +143,11 @@ class PublicTrainingController extends Controller
             'answers.*.selected_option_id' => ['nullable', 'integer', 'exists:question_options,id'],
         ]);
 
-        $questions = $training->questions()->with('options')->get()->keyBy('id');
+        $questions = $training->questions()
+            ->where('type', '!=', 'open')
+            ->with('options')
+            ->get()
+            ->keyBy('id');
         $totalQuestions = $questions->count();
         $correctAnswers = 0;
         $autogradeQuestions = 0;
@@ -199,6 +208,7 @@ class PublicTrainingController extends Controller
 
             $answerScores = DB::table('participant_answers')
                 ->where('training_participant_id', $trainingParticipantPivot->id)
+                ->whereIn('question_id', $questions->keys())
                 ->pluck('score');
 
             $score = $answerScores->count() === $questions->count() && ! $answerScores->contains(fn ($value): bool => $value === null)
@@ -240,7 +250,9 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'No has completado esta capacitacion.'], 422);
         }
 
-        $training->load(['category', 'questions']);
+        $training->load(['category', 'questions' => function ($q): void {
+            $q->where('type', '!=', 'open')->orderBy('order');
+        }]);
 
         $passed = $pivot->pivot->passed !== null
             ? (bool) $pivot->pivot->passed

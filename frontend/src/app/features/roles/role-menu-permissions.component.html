@@ -54,6 +54,10 @@
                   [id]="'menu-item-' + item.id"
                   [checked]="isChecked(item)"
                   (change)="onToggleChange(item, $event)"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Marcar para autorizar este menu en el rol"
+                  aria-label="Marcar para autorizar este menu en el rol"
                 />
                 <label class="form-check-label" [for]="'menu-item-' + item.id">
                   {{ isChecked(item) ? 'Autorizado' : 'Sin permiso' }}

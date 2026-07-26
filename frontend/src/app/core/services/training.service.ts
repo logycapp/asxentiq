@@ -88,10 +88,12 @@ export interface TrainingMaterial {
 
 export interface TrainingParticipant {
   id: number;
+  empresa_id?: number | null;
   document_number: string;
   full_name: string;
   email?: string;
   phone?: string;
+  empresa?: { id: number; name: string; active?: boolean } | null;
   created_at?: string;
   updated_at?: string;
   pivot: {
@@ -197,15 +199,18 @@ export interface TrainingListSummary {
 
 export interface TrainingCategory {
   id: number;
+  empresa_id?: number | null;
   name: string;
   description?: string | null;
   sort_order: number;
   trainings_count?: number;
+  empresa?: { id: number; name: string } | null;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface TrainingCategoryPayload {
+  empresa_id: number;
   name: string;
   description?: string | null;
   sort_order?: number;

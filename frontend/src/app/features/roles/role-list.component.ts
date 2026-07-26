@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
@@ -17,9 +18,11 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
   templateUrl: './role-list.component.html',
   styleUrls: ['./role-list.component.css']
 })
-export class RoleListComponent implements OnInit {
+export class RoleListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly roleService = inject(RoleService);
   private readonly loadingService = inject(LoadingService);
+  private tooltipInstances = new Map<HTMLElement, Tooltip>();
+  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   roles: Role[] = [];
   filteredRoles: Role[] = [];
@@ -43,6 +46,20 @@ export class RoleListComponent implements OnInit {
     this.loadRoles();
   }
 
+  ngAfterViewInit(): void {
+    this.refreshTooltips();
+  }
+
+  ngOnDestroy(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+      this.tooltipRefreshTimer = null;
+    }
+
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
+  }
+
   loadRoles(): void {
     this.loading = true;
     this.errorMessage = '';
@@ -54,6 +71,7 @@ export class RoleListComponent implements OnInit {
         next: (roles) => {
           this.roles = roles;
           this.applyFilter();
+          this.scheduleTooltipRefresh();
         },
         error: () => (this.errorMessage = 'No fue posible cargar los roles.')
       });
@@ -112,6 +130,7 @@ export class RoleListComponent implements OnInit {
     const target = event.target as HTMLInputElement;
     this.searchQuery = target.value.toLowerCase().trim();
     this.applyFilter();
+    this.scheduleTooltipRefresh();
   }
 
   sortBy(key: string): void {
@@ -122,11 +141,43 @@ export class RoleListComponent implements OnInit {
       this.sortDirection = 'asc';
     }
     this.applyFilter();
+    this.scheduleTooltipRefresh();
   }
 
   getSortIcon(key: string): string {
     if (this.sortKey !== key) return 'unfold_more';
     return this.sortDirection === 'asc' ? 'north' : 'south';
+  }
+
+  private refreshTooltips(): void {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
+    const activeElements = new Set(elements);
+
+    this.tooltipInstances.forEach((tooltip, element) => {
+      if (!activeElements.has(element)) {
+        tooltip.dispose();
+        this.tooltipInstances.delete(element);
+      }
+    });
+
+    elements.forEach((element) => {
+      if (this.tooltipInstances.has(element)) {
+        return;
+      }
+
+      this.tooltipInstances.set(element, new Tooltip(element));
+    });
+  }
+
+  private scheduleTooltipRefresh(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+    }
+
+    this.tooltipRefreshTimer = window.setTimeout(() => {
+      this.tooltipRefreshTimer = null;
+      this.refreshTooltips();
+    });
   }
 
   private applyFilter(): void {

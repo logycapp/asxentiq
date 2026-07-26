@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TrainingParticipant extends Model
 {
     protected $fillable = [
+        'empresa_id',
         'document_number',
         'full_name',
         'email',
@@ -19,5 +21,10 @@ class TrainingParticipant extends Model
         return $this->belongsToMany(Training::class, 'training_participant')
             ->withPivot(['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'])
             ->withTimestamps();
+    }
+
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(Empresa::class);
     }
 }

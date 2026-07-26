@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { Empresa, EmpresaService } from '../../core/services/empresa.service';
+import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { Role, RoleService } from '../../core/services/role.service';
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
@@ -22,9 +23,11 @@ export class UserFormComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly roleService = inject(RoleService);
   private readonly empresaService = inject(EmpresaService);
+  private readonly authService = inject(AuthService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly currentUser = this.authService.getCurrentUser();
 
   readonly userId = signal<number | null>(null);
   readonly isEditMode = computed(() => this.userId() !== null);
@@ -36,6 +39,17 @@ export class UserFormComponent implements OnInit {
   roles: Role[] = [];
   empresas: Empresa[] = [];
   empresaIdFromRoute: number | null = null;
+
+  get isEmpresaScopedUser(): boolean {
+    return this.currentUser?.role_relation?.slug === 'empresa';
+  }
+
+  get scopedEmpresaLabel(): string {
+    const empresaId = this.form.controls.empresa_id.value ?? this.currentUser?.empresa_id ?? null;
+    return this.empresas.find((empresa) => empresa.id === empresaId)?.name
+      ?? this.currentUser?.empresa_relation?.name
+      ?? 'Empresa asignada';
+  }
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
@@ -56,6 +70,10 @@ export class UserFormComponent implements OnInit {
 
     if (this.empresaIdFromRoute) {
       this.form.controls.empresa_id.setValue(this.empresaIdFromRoute);
+    }
+
+    if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+      this.form.controls.empresa_id.setValue(this.currentUser.empresa_id);
     }
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -79,6 +97,10 @@ export class UserFormComponent implements OnInit {
             role: user.role ?? 'user',
             empresa_id: user.empresa_id ?? null
           });
+
+          if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+            this.form.controls.empresa_id.setValue(this.currentUser.empresa_id);
+          }
         },
         error: () => (this.errorMessage = 'No fue posible cargar el usuario.')
       });
@@ -104,7 +126,9 @@ export class UserFormComponent implements OnInit {
       next: (empresas) => {
         this.empresas = empresas;
 
-        if (!this.form.controls.empresa_id.value) {
+        if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+          this.form.controls.empresa_id.setValue(this.currentUser.empresa_id);
+        } else if (!this.form.controls.empresa_id.value) {
           this.form.controls.empresa_id.setValue(this.empresaIdFromRoute ?? this.empresas[0]?.id ?? null);
         }
       },
@@ -147,7 +171,7 @@ export class UserFormComponent implements OnInit {
       email: raw.email ?? '',
       active: Boolean(raw.active),
       role: raw.role ?? 'user',
-      empresa_id: raw.empresa_id ?? 0
+      empresa_id: raw.empresa_id ?? this.currentUser?.empresa_id ?? 0
     };
 
     if (raw.password) {

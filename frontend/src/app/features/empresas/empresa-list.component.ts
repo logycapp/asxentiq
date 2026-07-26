@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
 import { LoadingService } from '../../core/services/loading.service';
@@ -15,14 +16,60 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent],
   templateUrl: './empresa-list.component.html',
-  styleUrls: []
+  styleUrls: [],
+  styles: [`
+    :host {
+      display: block;
+    }
+
+    :host .empresa-status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.75rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    :host .empresa-status-active {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.32);
+      color: #15803d;
+    }
+
+    :host .empresa-status-inactive {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.32);
+      color: #b91c1c;
+    }
+
+    :host-context(.light) .empresa-status-active {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.28);
+      color: #166534;
+    }
+
+    :host-context(.light) .empresa-status-inactive {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.28);
+      color: #b91c1c;
+    }
+  `]
 })
-export class EmpresaListComponent implements OnInit, OnDestroy {
+export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly empresaService = inject(EmpresaService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private tooltipInstances = new Map<HTMLElement, Tooltip>();
+  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   empresas: Empresa[] = [];
   filteredEmpresas: Empresa[] = [];
@@ -55,7 +102,18 @@ export class EmpresaListComponent implements OnInit, OnDestroy {
     this.syncModalWithRoute();
   }
 
+  ngAfterViewInit(): void {
+    this.refreshTooltips();
+  }
+
   ngOnDestroy(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+      this.tooltipRefreshTimer = null;
+    }
+
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
     this.clearPreviewLogo();
   }
 
@@ -70,6 +128,7 @@ export class EmpresaListComponent implements OnInit, OnDestroy {
           this.empresas = empresas;
           this.applyFilter();
           this.openPendingModalIfNeeded();
+          this.scheduleTooltipRefresh();
         },
         error: () => (this.errorMessage = 'No fue posible cargar las empresas.')
       });
@@ -197,6 +256,7 @@ export class EmpresaListComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLInputElement;
     this.searchQuery = target.value.toLowerCase().trim();
     this.applyFilter();
+    this.scheduleTooltipRefresh();
   }
 
   sortBy(key: string): void {
@@ -208,11 +268,43 @@ export class EmpresaListComponent implements OnInit, OnDestroy {
     }
 
     this.applyFilter();
+    this.scheduleTooltipRefresh();
   }
 
   getSortIcon(key: string): string {
     if (this.sortKey !== key) return 'unfold_more';
     return this.sortDirection === 'asc' ? 'north' : 'south';
+  }
+
+  private refreshTooltips(): void {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
+    const activeElements = new Set(elements);
+
+    this.tooltipInstances.forEach((tooltip, element) => {
+      if (!activeElements.has(element)) {
+        tooltip.dispose();
+        this.tooltipInstances.delete(element);
+      }
+    });
+
+    elements.forEach((element) => {
+      if (this.tooltipInstances.has(element)) {
+        return;
+      }
+
+      this.tooltipInstances.set(element, new Tooltip(element));
+    });
+  }
+
+  private scheduleTooltipRefresh(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+    }
+
+    this.tooltipRefreshTimer = window.setTimeout(() => {
+      this.tooltipRefreshTimer = null;
+      this.refreshTooltips();
+    });
   }
 
   toggleStatus(empresa: Empresa): void {
@@ -239,7 +331,7 @@ export class EmpresaListComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(empresa: Empresa): string {
-    return empresa.active ? 'Activa' : 'Inactiva';
+    return empresa.active ? 'Activo' : 'Inactivo';
   }
 
   statusBadgeClass(empresa: Empresa): string {

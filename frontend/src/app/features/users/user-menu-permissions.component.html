@@ -97,13 +97,17 @@
                     type="checkbox"
                     [id]="'user-menu-item-' + item.id"
                     [checked]="isChecked(item)"
-                  (change)="onToggleChange(item, $event)"
-                />
-                <label class="form-check-label" [for]="'user-menu-item-' + item.id">
-                  {{ isChecked(item) ? 'Especial' : 'Sin permiso especial' }}
-                </label>
-              </div>
-            </td>
+                    (change)="onToggleChange(item, $event)"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Marcar como permiso especial para este usuario"
+                    aria-label="Marcar como permiso especial para este usuario"
+                  />
+                  <label class="form-check-label" [for]="'user-menu-item-' + item.id">
+                    {{ isChecked(item) ? 'Especial' : 'Sin permiso especial' }}
+                  </label>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>

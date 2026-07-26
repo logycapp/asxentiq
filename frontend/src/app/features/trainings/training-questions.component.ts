@@ -18,9 +18,17 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
       [title]="'Preguntas: ' + trainingTitle"
       subtitle="Agrega, edita y administra las preguntas de la capacitacion."
       [showHeaderClose]="true"
-      [showFooterClose]="false"
       [showFooter]="true"
+      [showFooterClose]="false"
+      [showPrimaryButton]="editingQuestion"
+      [showSecondaryButton]="true"
+      [primaryLabel]="editingQuestionId ? 'Actualizar' : 'Crear'"
+      secondaryLabel="Cancelar"
+      [footerVariant]="editingQuestionId ? 'warning' : 'primary'"
       [headerVariant]="editingQuestionId ? 'warning' : 'info'"
+      [primaryDisabled]="false"
+      (secondaryRequested)="editingQuestion ? cancelEdit() : closeModal()"
+      (primaryRequested)="saveQuestion()"
       (closeRequested)="closeModal()"
     >
       <div modal-header-actions>
@@ -43,7 +51,7 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
               <h6 class="mb-1 text-on-surface">{{ editingQuestionId ? 'Editar' : 'Nueva' }} pregunta</h6>
               <p class="text-on-surface-variant font-label-sm mb-0">Manten el contenido corto y claro para facilitar la evaluacion.</p>
             </div>
-            <button type="button" class="btn btn-outline-light fw-semibold btn-sm" (click)="cancelEdit()">Cancelar</button>
+            <button type="button" class="btn btn-outline-secondary fw-semibold btn-sm" (click)="cancelEdit()">Cancelar</button>
           </div>
 
           <div class="mb-2">
@@ -140,56 +148,68 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
           <div class="text-on-surface-variant font-body-md">No hay preguntas. Agregue la primera pregunta.</div>
         </div>
 
-        <div *ngIf="questions.length > 0" class="d-flex flex-column gap-2">
-          <div *ngFor="let q of questions; let i = index" class="border border-white/10 rounded-3 p-3">
-            <div class="d-flex justify-content-between gap-3">
-              <div>
-                <span class="text-on-surface fw-semibold">{{ i + 1 }}.</span>
-                <span class="text-on-surface">{{ q.question_text }}</span>
-                <span class="badge rounded-pill bg-info/20 text-info border border-info/20 px-2 py-1 ms-2">{{ typeLabel(q.type) }}</span>
-                <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 ms-1">Orden: {{ q.order }}</span>
-              </div>
-              <div class="d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" (click)="editQuestion(q)">
-                  <span class="material-symbols-outlined text-[16px]">edit</span>Editar
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1" (click)="deleteQuestion(q)">
-                  <span class="material-symbols-outlined text-[16px]">delete</span>Eliminar
-                </button>
-              </div>
-            </div>
-            <div *ngIf="q.options && q.options.length > 0" class="mt-2 ms-4">
-              <div *ngFor="let opt of q.options" class="font-label-sm">
-                <span [class]="opt.is_correct ? 'text-chart-green fw-semibold' : 'text-on-surface-variant'">
-                  <span class="material-symbols-outlined text-[14px] align-middle">{{ opt.is_correct ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                  <span class="ms-1">{{ opt.option_text }}</span>
-                </span>
-              </div>
-            </div>
-            <div *ngIf="q.materials && q.materials.length > 0" class="mt-3 ms-4">
-              <div class="font-label-sm text-on-surface-variant mb-2">Material adjunto</div>
-              <div *ngFor="let material of q.materials" class="d-flex justify-content-between align-items-center gap-2 font-label-sm mb-2">
-                <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none text-on-surface d-inline-flex align-items-center gap-1">
-                  <span class="material-symbols-outlined text-[14px]">attach_file</span>
-                  {{ material.filename }}
-                </a>
-                <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
+        <div *ngIf="displayQuestions.length > 0" class="accordion accordion-flush d-flex flex-column gap-2" id="questionsAccordion">
+          <div *ngFor="let q of displayQuestions; let i = index" class="accordion-item border border-white/10 rounded-3 overflow-hidden bg-transparent">
+            <h2 class="accordion-header" [attr.id]="'questionHeading_' + q.id">
+              <button
+                type="button"
+                class="accordion-button bg-transparent text-on-surface fw-semibold shadow-none"
+                [class.collapsed]="!isQuestionExpanded(q)"
+                (click)="toggleQuestion(q)"
+                [attr.aria-expanded]="isQuestionExpanded(q)"
+                [attr.aria-controls]="'questionCollapse_' + q.id"
+              >
+                <div class="d-flex w-100 align-items-center justify-content-between gap-3 pe-2">
+                  <div class="text-start">
+                    <span class="text-on-surface-variant font-label-sm me-2">{{ i + 1 }}.</span>
+                    <span>{{ q.question_text }}</span>
+                  </div>
+                  <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
+                    <span *ngIf="editingQuestionId === q.id" class="badge rounded-pill bg-warning/20 text-warning border border-warning/20 px-2 py-1">Editando</span>
+                    <span class="badge rounded-pill bg-info/20 text-info border border-info/20 px-2 py-1">{{ typeLabel(q.type) }}</span>
+                    <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1">Orden: {{ q.order }}</span>
+                  </div>
+                </div>
+              </button>
+            </h2>
+            <div
+              *ngIf="isQuestionExpanded(q)"
+              [id]="'questionCollapse_' + q.id"
+              class="accordion-collapse show"
+              [attr.aria-labelledby]="'questionHeading_' + q.id"
+            >
+              <div class="accordion-body border-top border-white/10">
+                <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+                  <button type="button" class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" (click)="editQuestion(q)">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>Editar
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1" (click)="deleteQuestion(q)">
+                    <span class="material-symbols-outlined text-[16px]">delete</span>Eliminar
+                  </button>
+                </div>
+                <div *ngIf="q.options && q.options.length > 0" class="ms-1">
+                  <div class="font-label-sm text-on-surface-variant mb-2">Opciones</div>
+                  <div *ngFor="let opt of q.options" class="font-label-sm mb-1">
+                    <span [class]="opt.is_correct ? 'text-chart-green fw-semibold' : 'text-on-surface-variant'">
+                      <span class="material-symbols-outlined text-[14px] align-middle">{{ opt.is_correct ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                      <span class="ms-1">{{ opt.option_text }}</span>
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="q.materials && q.materials.length > 0" class="mt-3 ms-1">
+                  <div class="font-label-sm text-on-surface-variant mb-2">Material adjunto</div>
+                  <div *ngFor="let material of q.materials" class="d-flex justify-content-between align-items-center gap-2 font-label-sm mb-2">
+                    <a [href]="'/api/storage/' + material.filepath" target="_blank" class="text-decoration-none text-on-surface d-inline-flex align-items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px]">attach_file</span>
+                      {{ material.filename }}
+                    </a>
+                    <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div modal-footer-actions *ngIf="editingQuestion">
-        <button type="button" class="btn btn-outline-light fw-semibold" (click)="cancelEdit()">Cancelar</button>
-        <button
-          type="button"
-          class="btn fw-semibold d-inline-flex align-items-center gap-1"
-          [ngClass]="editingQuestionId ? 'btn-warning' : 'btn-primary'"
-          (click)="saveQuestion()"
-        >
-          {{ editingQuestionId ? 'Actualizar' : 'Crear' }}
-        </button>
       </div>
     </app-modal-shell>
   `,
@@ -220,6 +240,15 @@ export class TrainingQuestionsComponent implements OnInit {
   editingQuestionMaterials: NonNullable<Question['materials']> = [];
   questionMaterialFile: File | null = null;
   questionMaterialType = 'pdf';
+  expandedQuestionId: number | null = null;
+
+  get displayQuestions(): Question[] {
+    if (this.editingQuestionId === null) {
+      return this.questions;
+    }
+
+    return this.questions.filter((question) => question.id === this.editingQuestionId);
+  }
 
   ngOnInit(): void {
     this.trainingId = this.trainingIdInput ?? +(this.route.snapshot.paramMap.get('id') ?? 0);
@@ -259,6 +288,7 @@ export class TrainingQuestionsComponent implements OnInit {
     this.editingOptions = (q.options || []).map((o) => ({ ...o }));
     this.editingQuestionMaterials = q.materials ?? [];
     this.clearQuestionMaterial();
+    this.expandedQuestionId = q.id;
   }
 
   cancelEdit(): void {
@@ -267,6 +297,14 @@ export class TrainingQuestionsComponent implements OnInit {
     this.editingOptions = [];
     this.editingQuestionMaterials = [];
     this.clearQuestionMaterial();
+  }
+
+  isQuestionExpanded(question: Question): boolean {
+    return this.expandedQuestionId === question.id;
+  }
+
+  toggleQuestion(question: Question): void {
+    this.expandedQuestionId = this.expandedQuestionId === question.id ? null : question.id;
   }
 
   onTypeChange(): void {

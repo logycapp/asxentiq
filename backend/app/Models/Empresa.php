@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Empresa extends Model
 {
@@ -34,6 +35,11 @@ class Empresa extends Model
         }
 
         return $this->publicStorageUrl($this->logo_path);
+    }
+
+    public function trainingCategories(): HasMany
+    {
+        return $this->hasMany(TrainingCategory::class);
     }
 
     private function publicStorageUrl(string $path): string

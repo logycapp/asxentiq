@@ -7,11 +7,12 @@ import { finalize } from 'rxjs';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingCategory, TrainingService, Training } from '../../core/services/training.service';
+import { Select3Component } from '../../shared/select3.component';
 
 @Component({
   selector: 'app-training-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalShellComponent],
+  imports: [CommonModule, FormsModule, ModalShellComponent, Select3Component],
   template: `
     <app-modal-shell
       kicker="Modulo capacitaciones"
@@ -58,10 +59,15 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Programa *</label>
-              <select #categoryModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.training_category_id" name="training_category_id" required [disabled]="categories.length === 0">
-                <option [ngValue]="null">Selecciona un programa</option>
-                <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
-              </select>
+              <app-select3
+                #categoryModel="ngModel"
+                [options]="categoryOptions"
+                [(ngModel)]="model.training_category_id"
+                name="training_category_id"
+                placeholder="Selecciona un programa"
+                [disabled]="categories.length === 0"
+                required
+              ></app-select3>
               <div class="invalid-feedback d-block" *ngIf="(categoryModel.touched || trainingForm.submitted) && categoryModel.invalid">
                 Selecciona un programa.
               </div>
@@ -69,11 +75,14 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Estado *</label>
-              <select #statusModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.status" name="status" required>
-                <option value="scheduled">Programada</option>
-                <option value="completed">Realizada</option>
-                <option value="cancelled">Cancelada</option>
-              </select>
+              <app-select3
+                #statusModel="ngModel"
+                [options]="statusOptions"
+                [(ngModel)]="model.status"
+                name="status"
+                placeholder="Selecciona un estado"
+                required
+              ></app-select3>
               <div class="invalid-feedback d-block" *ngIf="(statusModel.touched || trainingForm.submitted) && statusModel.invalid">
                 Selecciona un estado.
               </div>
@@ -86,12 +95,14 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-4">
               <label class="form-label small text-on-surface-variant">Tipo *</label>
-              <select #typeModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.type" name="type" required>
-                <option value="medical_exam">Examen Medico</option>
-                <option value="sst_training">Capacitacion SST</option>
-                <option value="drill">Simulacro</option>
-                <option value="induction">Induccion</option>
-              </select>
+              <app-select3
+                #typeModel="ngModel"
+                [options]="typeOptions"
+                [(ngModel)]="model.type"
+                name="type"
+                placeholder="Selecciona un tipo"
+                required
+              ></app-select3>
               <div class="invalid-feedback d-block" *ngIf="(typeModel.touched || trainingForm.submitted) && typeModel.invalid">
                 Selecciona un tipo.
               </div>
@@ -99,11 +110,14 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-4">
               <label class="form-label small text-on-surface-variant">Modalidad *</label>
-              <select #modalityModel="ngModel" class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.modality" name="modality" required>
-                <option value="presential">Presencial</option>
-                <option value="virtual">Virtual</option>
-                <option value="mixed">Mixto</option>
-              </select>
+              <app-select3
+                #modalityModel="ngModel"
+                [options]="modalityOptions"
+                [(ngModel)]="model.modality"
+                name="modality"
+                placeholder="Selecciona una modalidad"
+                required
+              ></app-select3>
               <div class="invalid-feedback d-block" *ngIf="(modalityModel.touched || trainingForm.submitted) && modalityModel.invalid">
                 Selecciona una modalidad.
               </div>
@@ -111,10 +125,12 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
 
             <div class="col-md-4">
               <label class="form-label small text-on-surface-variant">Obligatoria</label>
-              <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.mandatory" name="mandatory">
-                <option [ngValue]="true">Si</option>
-                <option [ngValue]="false">No</option>
-              </select>
+              <app-select3
+                [options]="booleanOptions"
+                [(ngModel)]="model.mandatory"
+                name="mandatory"
+                placeholder="Selecciona una opcion"
+              ></app-select3>
             </div>
 
             <div class="col-md-3">
@@ -169,12 +185,12 @@ import { TrainingCategory, TrainingService, Training } from '../../core/services
                   </div>
                   <div class="col-lg-3">
                     <label class="form-label small text-on-surface-variant">Tipo</label>
-                    <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="trainingMaterialType" name="trainingMaterialType">
-                      <option value="pdf">PDF</option>
-                      <option value="video">Video</option>
-                      <option value="spreadsheet">Hoja de calculo</option>
-                      <option value="other">Otro</option>
-                    </select>
+                    <app-select3
+                      [options]="materialTypeOptions"
+                      [(ngModel)]="trainingMaterialType"
+                      name="trainingMaterialType"
+                      placeholder="Selecciona un tipo"
+                    ></app-select3>
                   </div>
                   <div class="col-lg-2">
                     <button type="button" class="btn btn-outline-light fw-semibold w-100" (click)="clearTrainingMaterial()">
@@ -241,6 +257,41 @@ export class TrainingFormComponent implements OnInit {
     status: 'scheduled',
     passing_score: 70,
   };
+
+  get categoryOptions(): Array<{ value: number; label: string }> {
+    return this.categories.map((category) => ({ value: category.id, label: category.name }));
+  }
+
+  readonly statusOptions = [
+    { value: 'scheduled', label: 'Programada' },
+    { value: 'completed', label: 'Realizada' },
+    { value: 'cancelled', label: 'Cancelada' },
+  ];
+
+  readonly typeOptions = [
+    { value: 'medical_exam', label: 'Examen Medico' },
+    { value: 'sst_training', label: 'Capacitacion SST' },
+    { value: 'drill', label: 'Simulacro' },
+    { value: 'induction', label: 'Induccion' },
+  ];
+
+  readonly modalityOptions = [
+    { value: 'presential', label: 'Presencial' },
+    { value: 'virtual', label: 'Virtual' },
+    { value: 'mixed', label: 'Mixto' },
+  ];
+
+  readonly booleanOptions = [
+    { value: true, label: 'Si' },
+    { value: false, label: 'No' },
+  ];
+
+  readonly materialTypeOptions = [
+    { value: 'pdf', label: 'PDF' },
+    { value: 'video', label: 'Video' },
+    { value: 'spreadsheet', label: 'Hoja de calculo' },
+    { value: 'other', label: 'Otro' },
+  ];
 
   ngOnInit(): void {
     this.loadCategories();

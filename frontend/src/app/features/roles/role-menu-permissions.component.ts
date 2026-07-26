@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
@@ -13,10 +14,12 @@ import { Role, RoleMenuItem, RoleService } from '../../core/services/role.servic
   imports: [CommonModule, RouterLink, SwalAlertComponent],
   templateUrl: './role-menu-permissions.component.html'
 })
-export class RoleMenuPermissionsComponent implements OnInit {
+export class RoleMenuPermissionsComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly roleService = inject(RoleService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
+  private tooltipInstances = new Map<HTMLElement, Tooltip>();
+  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   role: Role | null = null;
   menuItems: RoleMenuItem[] = [];
@@ -29,6 +32,20 @@ export class RoleMenuPermissionsComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadPermissions(id);
+  }
+
+  ngAfterViewInit(): void {
+    this.refreshTooltips();
+  }
+
+  ngOnDestroy(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+      this.tooltipRefreshTimer = null;
+    }
+
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
   }
 
   loadPermissions(roleId: number): void {
@@ -45,6 +62,7 @@ export class RoleMenuPermissionsComponent implements OnInit {
           this.selectedIds = new Set(
             response.menu_items.filter((item) => item.assigned_to_role).map((item) => item.id)
           );
+          this.scheduleTooltipRefresh();
         },
         error: () => {
           this.errorMessage = 'No fue posible cargar los permisos del menu.';
@@ -102,5 +120,36 @@ export class RoleMenuPermissionsComponent implements OnInit {
 
   trackById(_: number, item: RoleMenuItem): number {
     return item.id;
+  }
+
+  private refreshTooltips(): void {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
+    const activeElements = new Set(elements);
+
+    this.tooltipInstances.forEach((tooltip, element) => {
+      if (!activeElements.has(element)) {
+        tooltip.dispose();
+        this.tooltipInstances.delete(element);
+      }
+    });
+
+    elements.forEach((element) => {
+      if (this.tooltipInstances.has(element)) {
+        return;
+      }
+
+      this.tooltipInstances.set(element, new Tooltip(element));
+    });
+  }
+
+  private scheduleTooltipRefresh(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+    }
+
+    this.tooltipRefreshTimer = window.setTimeout(() => {
+      this.tooltipRefreshTimer = null;
+      this.refreshTooltips();
+    });
   }
 }

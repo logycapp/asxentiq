@@ -1,17 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Tooltip } from 'bootstrap';
 import { finalize } from 'rxjs';
 
+import { SwalAlertComponent } from '../../core/components/swal-alert.component';
+import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { AuthService } from '../../core/services/auth.service';
+import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { TrainingCategory, TrainingService } from '../../core/services/training.service';
+import { Select3Component } from '../../shared/select3.component';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-training-category-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent, Select3Component],
   template: `
     <app-page-header
       title="Programas de capacitaciones"
@@ -19,23 +25,16 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       [showDateFilter]="false"
     />
 
-    <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
-      <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
-      {{ message }}
-    </div>
-
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mb-3">
-      <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = ''"></button>
-      {{ errorMessage }}
-    </div>
+    <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+    <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
     <div class="card glass-card border-0 rounded-4 p-4 mb-4">
       <div class="row g-3 align-items-center justify-content-between">
         <div class="col-12 col-xl-auto">
-          <a routerLink="/trainings_programs/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+          <button class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button" (click)="openCreateModal()" data-bs-toggle="tooltip" data-bs-placement="top" title="Nuevo programa" aria-label="Nuevo programa">
             <span class="material-symbols-outlined text-[18px]">add</span>
             Nuevo programa
-          </a>
+          </button>
         </div>
         <div class="col-12 col-xl-auto">
           <div style="width: min(320px, 100%);">
@@ -46,7 +45,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
               <input
                 class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search"
                 type="search"
-                placeholder="Buscar por nombre o descripcion..."
+                placeholder="Buscar por nombre, descripcion o empresa..."
                 [(ngModel)]="searchTerm"
                 (keyup)="applyFilters()"
               />
@@ -62,10 +61,10 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 
     <div *ngIf="!loading && filteredCategories.length === 0" class="text-center py-5">
       <div class="text-on-surface-variant font-body-md mb-3">No hay programas registrados.</div>
-      <a routerLink="/trainings_programs/create" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+      <button class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold" type="button" (click)="openCreateModal()" data-bs-toggle="tooltip" data-bs-placement="top" title="Nuevo programa" aria-label="Nuevo programa">
         <span class="material-symbols-outlined text-[18px]">add</span>
         Nuevo programa
-      </a>
+      </button>
     </div>
 
     <div *ngIf="!loading && filteredCategories.length > 0" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
@@ -75,13 +74,14 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
             <tr class="border-bottom border-white/10">
               <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">#</th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('name')">
+                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">
                   Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span>
                 </button>
               </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Empresa</th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Descripcion</th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
-                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('trainings_count')">
+                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('trainings_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de capacitaciones" aria-label="Ordenar por cantidad de capacitaciones">
                   Capacitaciones <span class="material-symbols-outlined sort-icon">{{ getSortIcon('trainings_count') }}</span>
                 </button>
               </th>
@@ -94,19 +94,22 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
               <td class="py-3">
                 <span class="text-on-surface fw-semibold">{{ category.name }}</span>
               </td>
+              <td class="py-3">
+                <span class="text-on-surface-variant">{{ category.empresa?.name || 'No determinada' }}</span>
+              </td>
               <td class="py-3 text-on-surface-variant">{{ category.description || 'No definido' }}</td>
               <td class="py-3">
                 <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ category.trainings_count ?? 0 }}</span>
               </td>
               <td class="pe-4 py-3 text-end">
                 <div class="dashboard-action-group">
-                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', category.id, 'trainings']" title="Abrir capacitaciones" aria-label="Abrir capacitaciones">
+                  <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', category.id, 'trainings']" title="Abrir capacitaciones" aria-label="Abrir capacitaciones" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">open_in_new</span>
                   </a>
-                  <a class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', category.id, 'edit']" title="Editar" aria-label="Editar">
+                  <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" (click)="openEditModal(category)" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">edit</span>
-                  </a>
-                  <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(category)" title="Eliminar" aria-label="Eliminar">
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(category)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">delete</span>
                   </button>
                 </div>
@@ -116,6 +119,118 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
         </table>
       </div>
     </div>
+
+    <!-- Create Modal -->
+    <app-modal-shell
+      *ngIf="creating"
+      kicker="Programas de capacitaciones"
+      title="Nuevo programa"
+      subtitle="Define un nuevo programa que agrupara capacitaciones."
+      headerVariant="info"
+      footerVariant="info"
+      size="md"
+      [showHeaderClose]="true"
+      [showFooterClose]="false"
+      [showPrimaryButton]="true"
+      [showSecondaryButton]="true"
+      primaryLabel="Crear programa"
+      secondaryLabel="Cancelar"
+      [primaryDisabled]="savingCreate"
+      [primaryLoading]="savingCreate"
+      (secondaryRequested)="closeCreateModal()"
+      (primaryRequested)="saveCreateModal()"
+      (closeRequested)="closeCreateModal()"
+    >
+      <div modal-body>
+        <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
+        <form #createForm="ngForm" novalidate>
+          <div class="mb-3">
+            <label class="form-label small text-on-surface-variant" for="createName">Nombre *</label>
+            <input #createNameModel="ngModel" id="createName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="createName" name="createName" required />
+            <div class="invalid-feedback d-block" *ngIf="(createNameModel.touched || createForm.submitted) && createNameModel.invalid">
+              El nombre es obligatorio.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-on-surface-variant">Empresa</label>
+            <ng-container *ngIf="!isEmpresaScopedUser; else createEmpresaReadonly">
+              <app-select3
+                [options]="empresaOptions"
+                [(ngModel)]="createEmpresaId"
+                name="createEmpresaId"
+                placeholder="Selecciona una empresa"
+                required
+              ></app-select3>
+            </ng-container>
+            <ng-template #createEmpresaReadonly>
+              <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+                {{ scopedEmpresaLabel }}
+              </div>
+            </ng-template>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-on-surface-variant" for="createDescription">Descripcion</label>
+            <textarea id="createDescription" rows="3" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="createDescription" name="createDescription"></textarea>
+          </div>
+        </form>
+      </div>
+    </app-modal-shell>
+
+    <!-- Edit Modal -->
+    <app-modal-shell
+      *ngIf="editingCategory"
+      kicker="Programas de capacitaciones"
+      title="Editar programa"
+      [subtitle]="'Actualiza los datos de ' + editingCategory.name + '.'"
+      headerVariant="warning"
+      footerVariant="warning"
+      size="md"
+      [showHeaderClose]="true"
+      [showFooterClose]="false"
+      [showPrimaryButton]="true"
+      [showSecondaryButton]="true"
+      primaryLabel="Guardar cambios"
+      secondaryLabel="Cancelar"
+      [primaryDisabled]="savingEdit"
+      [primaryLoading]="savingEdit"
+      (secondaryRequested)="closeEditModal()"
+      (primaryRequested)="saveEditModal()"
+      (closeRequested)="closeEditModal()"
+    >
+      <div modal-body>
+        <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
+        <form #editForm="ngForm" novalidate>
+          <div class="mb-3">
+            <label class="form-label small text-on-surface-variant" for="editName">Nombre *</label>
+            <input #editNameModel="ngModel" id="editName" class="form-control bg-transparent border-white/10 text-on-surface" type="text" [(ngModel)]="editName" name="editName" required />
+            <div class="invalid-feedback d-block" *ngIf="(editNameModel.touched || editForm.submitted) && editNameModel.invalid">
+              El nombre es obligatorio.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-on-surface-variant">Empresa</label>
+            <ng-container *ngIf="!isEmpresaScopedUser; else editEmpresaReadonly">
+              <app-select3
+                [options]="empresaOptions"
+                [(ngModel)]="editEmpresaId"
+                name="editEmpresaId"
+                placeholder="Selecciona una empresa"
+                required
+              ></app-select3>
+            </ng-container>
+            <ng-template #editEmpresaReadonly>
+              <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+                {{ scopedEmpresaLabel }}
+              </div>
+            </ng-template>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-on-surface-variant" for="editDescription">Descripcion</label>
+            <textarea id="editDescription" rows="3" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editDescription" name="editDescription"></textarea>
+          </div>
+        </form>
+      </div>
+    </app-modal-shell>
   `,
   styles: [`
     :host {
@@ -166,9 +281,14 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
     }
   `]
 })
-export class TrainingCategoryListComponent implements OnInit {
+export class TrainingCategoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly trainingService = inject(TrainingService);
+  private readonly empresaService = inject(EmpresaService);
   private readonly loadingService = inject(LoadingService);
+  private readonly authService = inject(AuthService);
+  private readonly currentUser = this.authService.getCurrentUser();
+  private tooltipInstances = new Map<HTMLElement, Tooltip>();
+  private tooltipRefreshTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   categories: TrainingCategory[] = [];
   filteredCategories: TrainingCategory[] = [];
@@ -179,8 +299,82 @@ export class TrainingCategoryListComponent implements OnInit {
   sortKey = 'id';
   sortDir: 'asc' | 'desc' = 'desc';
 
+  // Create modal state
+  creating = false;
+  createName = '';
+  createEmpresaId: number | null = null;
+  createDescription = '';
+  savingCreate = false;
+  @ViewChild('createForm') private createForm?: NgForm;
+
+  // Edit modal state
+  editingCategory: TrainingCategory | null = null;
+  editName = '';
+  editEmpresaId: number | null = null;
+  editDescription = '';
+  savingEdit = false;
+  @ViewChild('editForm') private editForm?: NgForm;
+
+  // Empresas list for select
+  empresas: Empresa[] = [];
+
+  get isEmpresaScopedUser(): boolean {
+    return Boolean(this.currentUser?.empresa_id && this.currentUser?.role_relation?.slug !== 'admin');
+  }
+
+  get scopedEmpresaLabel(): string {
+    const empresaId = this.currentUser?.empresa_id ?? this.createEmpresaId ?? this.editEmpresaId ?? null;
+    return this.empresas.find((empresa) => empresa.id === empresaId)?.name
+      ?? this.currentUser?.empresa_relation?.name
+      ?? 'Empresa asignada';
+  }
+
+  get empresaOptions() {
+    return this.empresas.map((e) => ({
+      value: e.id,
+      label: e.name,
+    }));
+  }
+
   ngOnInit(): void {
     this.loadCategories();
+    this.loadEmpresas();
+
+    if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+      this.createEmpresaId = this.currentUser.empresa_id;
+      this.editEmpresaId = this.currentUser.empresa_id;
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.refreshTooltips();
+  }
+
+  ngOnDestroy(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+      this.tooltipRefreshTimer = null;
+    }
+
+    this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
+    this.tooltipInstances.clear();
+  }
+
+  loadEmpresas(): void {
+    this.empresaService.list().subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+        if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+          this.createEmpresaId = this.currentUser.empresa_id;
+          if (!this.editingCategory) {
+            this.editEmpresaId = this.currentUser.empresa_id;
+          }
+        }
+      },
+      error: () => {
+        // Silently fail, empresas will just be empty
+      }
+    });
   }
 
   loadCategories(): void {
@@ -190,9 +384,10 @@ export class TrainingCategoryListComponent implements OnInit {
     this.loadingService.track(this.trainingService.getCategories())
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (categories) => {
+      next: (categories) => {
           this.categories = categories;
           this.applyFilters();
+          this.scheduleTooltipRefresh();
         },
         error: () => {
           this.errorMessage = 'No fue posible cargar los programas.';
@@ -202,12 +397,18 @@ export class TrainingCategoryListComponent implements OnInit {
 
   applyFilters(): void {
     let result = [...this.categories];
+
+    if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+      result = result.filter((category) => category.empresa_id === this.currentUser?.empresa_id);
+    }
+
     const term = this.searchTerm.trim().toLowerCase();
 
     if (term) {
       result = result.filter((category) =>
         category.name.toLowerCase().includes(term) ||
-        (category.description || '').toLowerCase().includes(term)
+        (category.description || '').toLowerCase().includes(term) ||
+        (category.empresa?.name || '').toLowerCase().includes(term)
       );
     }
 
@@ -219,6 +420,7 @@ export class TrainingCategoryListComponent implements OnInit {
     });
 
     this.filteredCategories = result;
+    this.scheduleTooltipRefresh();
   }
 
   sortBy(key: string): void {
@@ -230,6 +432,7 @@ export class TrainingCategoryListComponent implements OnInit {
     }
 
     this.applyFilters();
+    this.scheduleTooltipRefresh();
   }
 
   getSortIcon(key: string): string {
@@ -238,6 +441,128 @@ export class TrainingCategoryListComponent implements OnInit {
     }
 
     return this.sortDir === 'asc' ? 'north' : 'south';
+  }
+
+  // Create modal
+  openCreateModal(): void {
+    this.creating = true;
+    this.createName = '';
+    this.createEmpresaId = this.isEmpresaScopedUser ? (this.currentUser?.empresa_id ?? null) : null;
+    this.createDescription = '';
+    this.errorMessage = '';
+    this.savingCreate = false;
+  }
+
+  closeCreateModal(): void {
+    this.creating = false;
+  }
+
+  saveCreateModal(createForm?: NgForm): void {
+    const formInstance = createForm ?? this.createForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
+    if (!this.createName.trim()) {
+      this.errorMessage = 'El nombre es obligatorio.';
+      return;
+    }
+
+    const empresaId = this.isEmpresaScopedUser
+      ? (this.currentUser?.empresa_id ?? this.createEmpresaId)
+      : this.createEmpresaId;
+
+    if (!empresaId) {
+      this.errorMessage = 'Selecciona una empresa.';
+      return;
+    }
+
+    const payload = {
+      empresa_id: empresaId,
+      name: this.createName.trim(),
+      description: this.createDescription.trim() || null
+    };
+
+    this.savingCreate = true;
+    this.errorMessage = '';
+
+    this.loadingService
+      .track(this.trainingService.createCategory(payload))
+      .pipe(finalize(() => (this.savingCreate = false)))
+      .subscribe({
+        next: (response) => {
+          this.message = response.message || 'Programa creado correctamente.';
+          this.closeCreateModal();
+          this.loadCategories();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message || 'Error al crear el programa.';
+        }
+      });
+  }
+
+  // Edit modal
+  openEditModal(category: TrainingCategory): void {
+    this.editingCategory = category;
+    this.editName = category.name;
+    this.editEmpresaId = this.isEmpresaScopedUser
+      ? (this.currentUser?.empresa_id ?? category.empresa_id ?? null)
+      : (category.empresa_id ?? null);
+    this.editDescription = category.description ?? '';
+    this.errorMessage = '';
+    this.savingEdit = false;
+  }
+
+  closeEditModal(): void {
+    this.editingCategory = null;
+  }
+
+  saveEditModal(editForm?: NgForm): void {
+    const formInstance = editForm ?? this.editForm;
+
+    if (formInstance?.invalid) {
+      formInstance.form.markAllAsTouched();
+      return;
+    }
+
+    if (!this.editingCategory || !this.editName.trim()) {
+      this.errorMessage = 'El nombre es obligatorio.';
+      return;
+    }
+
+    const empresaId = this.isEmpresaScopedUser
+      ? (this.currentUser?.empresa_id ?? this.editEmpresaId)
+      : this.editEmpresaId;
+
+    if (!empresaId) {
+      this.errorMessage = 'Selecciona una empresa.';
+      return;
+    }
+
+    const payload = {
+      empresa_id: empresaId,
+      name: this.editName.trim(),
+      description: this.editDescription.trim() || null
+    };
+
+    this.savingEdit = true;
+    this.errorMessage = '';
+
+    this.loadingService
+      .track(this.trainingService.updateCategory(this.editingCategory.id, payload))
+      .pipe(finalize(() => (this.savingEdit = false)))
+      .subscribe({
+        next: (response) => {
+          this.message = response.message || 'Programa actualizado correctamente.';
+          this.closeEditModal();
+          this.loadCategories();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message || 'Error al actualizar el programa.';
+        }
+      });
   }
 
   remove(category: TrainingCategory): void {
@@ -253,6 +578,37 @@ export class TrainingCategoryListComponent implements OnInit {
       error: (error) => {
         this.errorMessage = error?.error?.message || 'No fue posible eliminar el programa.';
       }
+    });
+  }
+
+  private refreshTooltips(): void {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
+    const activeElements = new Set(elements);
+
+    this.tooltipInstances.forEach((tooltip, element) => {
+      if (!activeElements.has(element)) {
+        tooltip.dispose();
+        this.tooltipInstances.delete(element);
+      }
+    });
+
+    elements.forEach((element) => {
+      if (this.tooltipInstances.has(element)) {
+        return;
+      }
+
+      this.tooltipInstances.set(element, new Tooltip(element));
+    });
+  }
+
+  private scheduleTooltipRefresh(): void {
+    if (this.tooltipRefreshTimer !== null) {
+      window.clearTimeout(this.tooltipRefreshTimer);
+    }
+
+    this.tooltipRefreshTimer = window.setTimeout(() => {
+      this.tooltipRefreshTimer = null;
+      this.refreshTooltips();
     });
   }
 

@@ -5,13 +5,16 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { LoadingService } from '../../core/services/loading.service';
+import { AuthService } from '../../core/services/auth.service';
+import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { TrainingCategoryPayload, TrainingService } from '../../core/services/training.service';
+import { Select3Component } from '../../shared/select3.component';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-training-category-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent, Select3Component],
   template: `
     <app-page-header
       [title]="isEditMode() ? 'Editar programa' : 'Nuevo programa'"
@@ -36,12 +39,32 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 
       <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="row g-3">
-          <div class="col-md-8">
+          <div class="col-md-6">
             <label class="form-label small text-on-surface-variant">Nombre *</label>
             <input class="form-control bg-transparent border-white/10 text-on-surface" formControlName="name" />
             <div class="invalid-feedback d-block" *ngIf="form.controls.name.touched && form.controls.name.invalid">
               El nombre es obligatorio.
             </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small text-on-surface-variant">Empresa *</label>
+            <ng-container *ngIf="!isEmpresaScopedUser; else empresaReadonly">
+              <app-select3
+                [options]="empresaOptions"
+                formControlName="empresa_id"
+                placeholder="Selecciona una empresa"
+                required
+              ></app-select3>
+              <div class="invalid-feedback d-block" *ngIf="form.controls.empresa_id.touched && form.controls.empresa_id.invalid">
+                Selecciona una empresa.
+              </div>
+            </ng-container>
+            <ng-template #empresaReadonly>
+              <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+                {{ scopedEmpresaLabel }}
+              </div>
+            </ng-template>
           </div>
 
           <div class="col-12">
@@ -64,9 +87,12 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
 export class TrainingCategoryFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly trainingService = inject(TrainingService);
+  private readonly empresaService = inject(EmpresaService);
+  private readonly authService = inject(AuthService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly currentUser = this.authService.getCurrentUser();
 
   readonly categoryId = signal<number | null>(null);
   readonly isEditMode = computed(() => this.categoryId() !== null);
@@ -75,19 +101,56 @@ export class TrainingCategoryFormComponent implements OnInit {
   saving = false;
   message = '';
   errorMessage = '';
+  empresas: Empresa[] = [];
+
+  get isEmpresaScopedUser(): boolean {
+    return Boolean(this.currentUser?.empresa_id && this.currentUser?.role_relation?.slug !== 'admin');
+  }
+
+  get scopedEmpresaLabel(): string {
+    const empresaId = this.form.controls.empresa_id.value ?? this.currentUser?.empresa_id ?? null;
+    return this.empresas.find((empresa) => empresa.id === empresaId)?.name
+      ?? this.currentUser?.empresa_relation?.name
+      ?? 'Empresa asignada';
+  }
+
+  get empresaOptions(): Array<{ value: number; label: string }> {
+    return this.empresas.map((empresa) => ({ value: empresa.id, label: empresa.name }));
+  }
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
-    description: ['']
+    description: [''],
+    empresa_id: [null as number | null, [Validators.required]]
   });
 
   ngOnInit(): void {
+    this.loadEmpresas();
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
+
+    if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+      this.form.controls.empresa_id.setValue(this.currentUser.empresa_id);
+    }
 
     if (id) {
       this.categoryId.set(id);
       this.loadCategory(id);
     }
+  }
+
+  loadEmpresas(): void {
+    this.loadingService.track(this.empresaService.list()).subscribe({
+      next: (empresas) => {
+        this.empresas = empresas;
+        if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+          this.form.controls.empresa_id.setValue(this.currentUser.empresa_id);
+        }
+      },
+      error: () => {
+        this.errorMessage = 'No fue posible cargar la lista de empresas.';
+      }
+    });
   }
 
   loadCategory(id: number): void {
@@ -99,8 +162,13 @@ export class TrainingCategoryFormComponent implements OnInit {
         next: (category) => {
           this.form.patchValue({
             name: category.name,
-            description: category.description ?? ''
+            description: category.description ?? '',
+            empresa_id: category.empresa_id ?? null
           });
+
+          if (this.isEmpresaScopedUser && this.currentUser?.empresa_id) {
+            this.form.controls.empresa_id.setValue(this.currentUser.empresa_id);
+          }
         },
         error: () => {
           this.errorMessage = 'No fue posible cargar el programa.';
@@ -138,8 +206,12 @@ export class TrainingCategoryFormComponent implements OnInit {
 
   private buildPayload(): TrainingCategoryPayload {
     const raw = this.form.getRawValue();
+    const empresaId = this.isEmpresaScopedUser
+      ? (this.currentUser?.empresa_id ?? raw.empresa_id ?? 0)
+      : (raw.empresa_id ?? 0);
 
     return {
+      empresa_id: empresaId as number,
       name: raw.name ?? '',
       description: raw.description || null
     };

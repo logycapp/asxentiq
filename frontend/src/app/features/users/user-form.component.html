@@ -36,13 +36,20 @@
 
       <div class="col-lg-6">
         <label class="form-label" for="empresa_id">Empresa</label>
-        <select id="empresa_id" class="form-select" formControlName="empresa_id" [disabled]="!!empresaIdFromRoute && !isEditMode()">
-          <option [ngValue]="null">Selecciona una empresa</option>
-          <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
-        </select>
-        <div class="invalid-feedback d-block" *ngIf="form.controls.empresa_id.touched && form.controls.empresa_id.invalid">
-          Selecciona una empresa valida.
-        </div>
+        <ng-container *ngIf="!isEmpresaScopedUser; else empresaReadonly">
+          <select id="empresa_id" class="form-select" formControlName="empresa_id" [disabled]="!!empresaIdFromRoute && !isEditMode()">
+            <option [ngValue]="null">Selecciona una empresa</option>
+            <option *ngFor="let empresa of empresas" [ngValue]="empresa.id">{{ empresa.name }}</option>
+          </select>
+          <div class="invalid-feedback d-block" *ngIf="form.controls.empresa_id.touched && form.controls.empresa_id.invalid">
+            Selecciona una empresa valida.
+          </div>
+        </ng-container>
+        <ng-template #empresaReadonly>
+          <div class="form-control bg-transparent border-white/10 text-on-surface d-flex align-items-center">
+            {{ scopedEmpresaLabel }}
+          </div>
+        </ng-template>
       </div>
 
       <div class="col-lg-6">
