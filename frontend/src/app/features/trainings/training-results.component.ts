@@ -38,21 +38,80 @@ import {
           <div class="text-on-surface-variant font-body-md">No hay participantes asignados a esta capacitacion.</div>
         </div>
 
-        <div *ngIf="(training?.participants?.length ?? 0) > 0" class="table-responsive results-table-wrap">
+        <div *ngIf="(training?.participants?.length ?? 0) > 0" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mt-4">
+          <div class="p-3 p-md-4 border-bottom border-white/10">
+            <div class="row g-3 align-items-center justify-content-between">
+              <div class="col-12 col-xl-auto">
+                <div class="d-flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-outline-light fw-semibold btn-sm d-inline-flex align-items-center gap-1"
+                    (click)="clearParticipantFilters()"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">filter_alt_off</span>
+                    Limpiar filtros
+                  </button>
+                </div>
+              </div>
+              <div class="col-12 col-xl-auto">
+                <div style="width: min(100%, 360px);">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-transparent border-white/10 text-on-surface-variant">
+                      <span class="material-symbols-outlined text-[18px]">search</span>
+                    </span>
+                    <input
+                      class="form-control bg-transparent border-white/10 text-on-surface dashboard-table-search"
+                      type="search"
+                      placeholder="Buscar participante..."
+                      [(ngModel)]="participantSearchTerm"
+                      name="participantSearchTerm"
+                      (ngModelChange)="applyParticipantFilters()"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive results-table-wrap">
           <table class="table table-hover align-middle mb-0 dashboard-table results-table">
-            <thead>
+            <thead class="results-table-head">
               <tr class="border-bottom border-white/10">
-                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Participante</th>
-                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Cedula</th>
-                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Presento</th>
-                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Puntaje</th>
-                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Resultado</th>
-                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Completado</th>
+                <th class="ps-3 py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
+                  <button type="button" class="sort-trigger results-sort-trigger" (click)="sortParticipantsBy('name')">
+                    Participante <span class="material-symbols-outlined sort-icon">{{ getParticipantSortIcon('name') }}</span>
+                  </button>
+                </th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
+                  <button type="button" class="sort-trigger results-sort-trigger" (click)="sortParticipantsBy('document_number')">
+                    Cedula <span class="material-symbols-outlined sort-icon">{{ getParticipantSortIcon('document_number') }}</span>
+                  </button>
+                </th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
+                  <button type="button" class="sort-trigger results-sort-trigger" (click)="sortParticipantsBy('presented')">
+                    Presento <span class="material-symbols-outlined sort-icon">{{ getParticipantSortIcon('presented') }}</span>
+                  </button>
+                </th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
+                  <button type="button" class="sort-trigger results-sort-trigger" (click)="sortParticipantsBy('score')">
+                    Puntaje <span class="material-symbols-outlined sort-icon">{{ getParticipantSortIcon('score') }}</span>
+                  </button>
+                </th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
+                  <button type="button" class="sort-trigger results-sort-trigger" (click)="sortParticipantsBy('result')">
+                    Resultado <span class="material-symbols-outlined sort-icon">{{ getParticipantSortIcon('result') }}</span>
+                  </button>
+                </th>
+                <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th">
+                  <button type="button" class="sort-trigger results-sort-trigger" (click)="sortParticipantsBy('completed_at')">
+                    Completado <span class="material-symbols-outlined sort-icon">{{ getParticipantSortIcon('completed_at') }}</span>
+                  </button>
+                </th>
                 <th class="py-3 font-label-sm text-on-surface-variant text-uppercase text-end">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of training?.participants ?? []" class="border-bottom border-white/5">
+              <tr *ngFor="let p of filteredParticipants" class="border-bottom border-white/5">
                 <td class="py-3 fw-semibold text-on-surface">{{ $any(p).full_name || $any(p).name }}</td>
                 <td class="py-3 text-on-surface-variant">{{ p.document_number }}</td>
                 <td class="py-3">
@@ -62,10 +121,10 @@ import {
                 </td>
                 <td class="py-3 text-on-surface-variant">{{ $any(p.pivot).score !== null ? $any(p.pivot).score + '%' : '-' }}</td>
                 <td class="py-3">
-                  <span *ngIf="$any(p.pivot).score !== null" class="badge rounded-pill px-3 py-2" [ngClass]="participantPassed(p) ? 'bg-chart-green/10 text-chart-green border border-chart-green/20' : 'bg-error-container/20 text-error border border-error/20'">
+                  <span *ngIf="$any(p.pivot).score !== null" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(p) ? 'participant-result-approved' : 'participant-result-rejected'">
                     {{ participantPassed(p) ? 'Aprobado' : 'No Aprobado' }}
                   </span>
-                  <span *ngIf="$any(p.pivot).score === null" class="badge rounded-pill bg-chart-yellow/10 text-chart-yellow border border-chart-yellow/20 px-3 py-2">Pendiente de revision</span>
+                  <span *ngIf="$any(p.pivot).score === null" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">Pendiente de revision</span>
                 </td>
                 <td class="py-3 text-on-surface-variant">{{ $any(p.pivot).completed_at ? ($any(p.pivot).completed_at | date:'short') : '-' }}</td>
                 <td class="py-3 text-end">
@@ -105,6 +164,16 @@ import {
               </tr>
             </tbody>
           </table>
+          </div>
+          <div class="px-3 px-md-4 py-3 border-top border-white/10 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+            <p class="text-on-surface-variant font-label-sm mb-0">
+              Mostrando {{ filteredParticipants.length }} de {{ training?.participants?.length ?? 0 }} participantes
+            </p>
+          </div>
+        </div>
+
+        <div *ngIf="(training?.participants?.length ?? 0) > 0 && filteredParticipants.length === 0" class="text-center py-4">
+          <div class="text-on-surface-variant font-body-md">No se encontraron participantes.</div>
         </div>
 
         <div *ngIf="reviewingParticipant" class="border border-white/10 rounded-3 p-3 mt-4">
@@ -367,6 +436,57 @@ import {
       overflow-x: auto;
     }
 
+    :host .results-table-head th {
+      font-size: 0.72rem;
+      line-height: 1.1;
+      letter-spacing: 0.08em;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    :host .results-sort-trigger {
+      width: 100%;
+      min-height: 1.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.4rem;
+      padding: 0;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    :host .results-sort-trigger .sort-icon {
+      font-size: 18px !important;
+      flex: 0 0 auto;
+    }
+
+    :host .participant-result-badge {
+      min-width: 8.5rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-align: center;
+      border-width: 1px;
+    }
+
+    :host .participant-result-approved {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.35);
+      color: #166534;
+    }
+
+    :host .participant-result-rejected {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #b91c1c;
+    }
+
+    :host .participant-result-pending {
+      background: rgba(245, 158, 11, 0.14);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #b45309;
+    }
+
     @media (max-width: 767.98px) {
       :host .results-table {
         min-width: 920px;
@@ -384,6 +504,37 @@ import {
     :host-context(.light) .review-sort-trigger:hover,
     :host-context(.light) .review-sort-trigger:focus-visible {
       color: #0457bf;
+    }
+
+    :host-context(.light) .results-table-head th {
+      color: #334155;
+    }
+
+    :host-context(.light) .results-sort-trigger {
+      color: #1e293b;
+    }
+
+    :host-context(.light) .results-sort-trigger:hover,
+    :host-context(.light) .results-sort-trigger:focus-visible {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .participant-result-approved {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.28);
+      color: #166534;
+    }
+
+    :host-context(.light) .participant-result-rejected {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.28);
+      color: #b91c1c;
+    }
+
+    :host-context(.light) .participant-result-pending {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.28);
+      color: #b45309;
     }
   `]
 })
@@ -408,6 +559,9 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
   reviewError = '';
   reviewObservations = '';
   reviewScores: Record<number, string> = {};
+  participantSearchTerm = '';
+  participantSortKey: 'name' | 'document_number' | 'presented' | 'score' | 'result' | 'completed_at' = 'name';
+  participantSortDir: 'asc' | 'desc' = 'asc';
   reviewSearchTerm = '';
   reviewTypeFilter: 'all' | 'open' | 'multiple_choice' | 'yes_no' = 'all';
   reviewScoreFilter: 'all' | 'pending' | 'graded' = 'all';
@@ -494,6 +648,82 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
 
   applyReviewFilters(): void {
     // The table is derived from the current filter state.
+  }
+
+  applyParticipantFilters(): void {
+    // The table is derived from the current filter state.
+  }
+
+  get filteredParticipants(): TrainingParticipant[] {
+    const participants = this.training?.participants ?? [];
+    let result = [...participants];
+    const term = this.participantSearchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter((participant) => {
+        const fullName = (participant.full_name || (participant as any).name || '').toString().toLowerCase();
+        const documentNumber = (participant.document_number || '').toString().toLowerCase();
+        const presented = this.presentedLabel(participant).toLowerCase();
+        const score = String((participant as any).pivot?.score ?? '').toLowerCase();
+        const resultLabel = this.participantPassed(participant) ? 'aprobado' : 'no aprobado';
+        const completedAt = String((participant as any).pivot?.completed_at ?? '').toLowerCase();
+
+        return [fullName, documentNumber, presented, score, resultLabel, completedAt].some((value) => value.includes(term));
+      });
+    }
+
+    result.sort((left, right) => {
+      let comparison = 0;
+
+      switch (this.participantSortKey) {
+        case 'name':
+          comparison = (left.full_name || (left as any).name || '').localeCompare((right.full_name || (right as any).name || ''), 'es', { numeric: true, sensitivity: 'base' });
+          break;
+        case 'document_number':
+          comparison = String(left.document_number ?? '').localeCompare(String(right.document_number ?? ''), 'es', { numeric: true, sensitivity: 'base' });
+          break;
+        case 'presented':
+          comparison = this.presentedLabel(left).localeCompare(this.presentedLabel(right), 'es', { numeric: true, sensitivity: 'base' });
+          break;
+        case 'score':
+          comparison = this.participantScoreValue(left) - this.participantScoreValue(right);
+          break;
+        case 'result':
+          comparison = this.participantResultValue(left).localeCompare(this.participantResultValue(right), 'es', { numeric: true, sensitivity: 'base' });
+          break;
+        case 'completed_at':
+          comparison = String((left as any).pivot?.completed_at ?? '').localeCompare(String((right as any).pivot?.completed_at ?? ''), 'es', { numeric: true, sensitivity: 'base' });
+          break;
+      }
+
+      return this.participantSortDir === 'asc' ? comparison : -comparison;
+    });
+
+    return result;
+  }
+
+  clearParticipantFilters(): void {
+    this.participantSearchTerm = '';
+    this.participantSortKey = 'name';
+    this.participantSortDir = 'asc';
+  }
+
+  sortParticipantsBy(key: 'name' | 'document_number' | 'presented' | 'score' | 'result' | 'completed_at'): void {
+    if (this.participantSortKey === key) {
+      this.participantSortDir = this.participantSortDir === 'asc' ? 'desc' : 'asc';
+      return;
+    }
+
+    this.participantSortKey = key;
+    this.participantSortDir = 'asc';
+  }
+
+  getParticipantSortIcon(key: 'name' | 'document_number' | 'presented' | 'score' | 'result' | 'completed_at'): string {
+    if (this.participantSortKey !== key) {
+      return 'unfold_more';
+    }
+
+    return this.participantSortDir === 'asc' ? 'north' : 'south';
   }
 
   saveReview(): void {
@@ -676,6 +906,19 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
     return question.answer?.answer_text
       ?? question.answer?.selected_option_text
       ?? '';
+  }
+
+  private participantScoreValue(participant: TrainingParticipant): number {
+    const score = (participant as any).pivot?.score;
+    return score === null || score === undefined ? -1 : Number(score);
+  }
+
+  private participantResultValue(participant: TrainingParticipant): string {
+    if ((participant as any).pivot?.score === null || (participant as any).pivot?.score === undefined) {
+      return 'Pendiente';
+    }
+
+    return this.participantPassed(participant) ? 'Aprobado' : 'No Aprobado';
   }
 
   private reviewScoreValue(question: ParticipantReview['questions'][number]): number {
