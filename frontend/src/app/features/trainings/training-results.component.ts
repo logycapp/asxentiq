@@ -111,13 +111,13 @@ import {
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of filteredParticipants" class="border-bottom border-white/5">
+              <tr *ngFor="let p of paginatedParticipants" class="border-bottom border-white/5">
                 <td class="py-3 fw-semibold text-on-surface">{{ $any(p).full_name || $any(p).name }}</td>
                 <td class="py-3 text-on-surface-variant">{{ p.document_number }}</td>
                 <td class="py-3">
-                  <span *ngIf="presentedLabel(p) === 'Sí'" class="badge rounded-pill bg-chart-green/10 text-chart-green border border-chart-green/20 px-3 py-2">Si</span>
-                  <span *ngIf="presentedLabel(p) === 'No'" class="badge rounded-pill bg-error-container/20 text-error border border-error/20 px-3 py-2">No</span>
-                  <span *ngIf="presentedLabel(p) === 'Pendiente'" class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-2">Pendiente</span>
+                  <span *ngIf="presentedLabel(p) === 'Sí'" class="badge rounded-pill px-3 py-2 participant-presented-badge participant-presented-yes">Si</span>
+                  <span *ngIf="presentedLabel(p) === 'No'" class="badge rounded-pill px-3 py-2 participant-presented-badge participant-presented-no">No</span>
+                  <span *ngIf="presentedLabel(p) === 'Pendiente'" class="badge rounded-pill px-3 py-2 participant-presented-badge participant-presented-pending">Pendiente</span>
                 </td>
                 <td class="py-3 text-on-surface-variant">{{ p.score !== null && p.score !== undefined ? p.score + '%' : '-' }}</td>
                 <td class="py-3">
@@ -167,8 +167,35 @@ import {
           </div>
           <div class="px-3 px-md-4 py-3 border-top border-white/10 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
             <p class="text-on-surface-variant font-label-sm mb-0">
-              Mostrando {{ filteredParticipants.length }} de {{ training?.participants?.length ?? 0 }} participantes
+              Mostrando {{ participantStartRecord }}-{{ participantEndRecord }} de {{ filteredParticipants.length }} participantes
             </p>
+            <nav aria-label="Paginacion de participantes">
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="participantPage === 1">
+                  <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onParticipantPageChange(1)" aria-label="Primera">
+                    <span class="material-symbols-outlined text-[16px]">first_page</span>
+                  </button>
+                </li>
+                <li class="page-item" [class.disabled]="participantPage === 1">
+                  <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onParticipantPageChange(participantPage - 1)" aria-label="Anterior">
+                    <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                  </button>
+                </li>
+                <li class="page-item" *ngFor="let p of participantPageNumbers">
+                  <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="participantPage === p" (click)="onParticipantPageChange(p)">{{ p }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="participantPage === participantTotalPages">
+                  <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onParticipantPageChange(participantPage + 1)" aria-label="Siguiente">
+                    <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                  </button>
+                </li>
+                <li class="page-item" [class.disabled]="participantPage === participantTotalPages">
+                  <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onParticipantPageChange(participantTotalPages)" aria-label="Ultima">
+                    <span class="material-symbols-outlined text-[16px]">last_page</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
 
@@ -272,7 +299,7 @@ import {
                   </div>
                   <div class="col-12 col-lg-1 text-lg-end">
                     <div class="text-on-surface-variant font-label-sm">
-                      {{ filteredReviewQuestions.length }} de {{ reviewData.questions.length }}
+                      {{ reviewStartRecord }}-{{ reviewEndRecord }} de {{ filteredReviewQuestions.length }}
                     </div>
                   </div>
                 </div>
@@ -306,7 +333,7 @@ import {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let q of filteredReviewQuestions; let i = index" class="border-bottom border-white/5">
+                      <tr *ngFor="let q of paginatedReviewQuestions; let i = index" class="border-bottom border-white/5">
                         <td class="ps-3 py-3 font-mono text-on-surface">{{ q.order }}</td>
                         <td class="py-3">
                           <div class="fw-semibold text-on-surface">{{ q.question_text }}</div>
@@ -373,6 +400,38 @@ import {
                       </tr>
                     </tbody>
                   </table>
+                </div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mt-3">
+                  <p class="text-on-surface-variant font-label-sm mb-0">
+                    Mostrando {{ reviewStartRecord }}-{{ reviewEndRecord }} de {{ filteredReviewQuestions.length }} preguntas
+                  </p>
+                  <nav aria-label="Paginacion de respuestas">
+                    <ul class="pagination pagination-sm mb-0">
+                      <li class="page-item" [class.disabled]="reviewPage === 1">
+                        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onReviewPageChange(1)" aria-label="Primera">
+                          <span class="material-symbols-outlined text-[16px]">first_page</span>
+                        </button>
+                      </li>
+                      <li class="page-item" [class.disabled]="reviewPage === 1">
+                        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onReviewPageChange(reviewPage - 1)" aria-label="Anterior">
+                          <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                        </button>
+                      </li>
+                      <li class="page-item" *ngFor="let p of reviewPageNumbers">
+                        <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="reviewPage === p" (click)="onReviewPageChange(p)">{{ p }}</button>
+                      </li>
+                      <li class="page-item" [class.disabled]="reviewPage === reviewTotalPages">
+                        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onReviewPageChange(reviewPage + 1)" aria-label="Siguiente">
+                          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                        </button>
+                      </li>
+                      <li class="page-item" [class.disabled]="reviewPage === reviewTotalPages">
+                        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onReviewPageChange(reviewTotalPages)" aria-label="Ultima">
+                          <span class="material-symbols-outlined text-[16px]">last_page</span>
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
                 </div>
               </div>
 
@@ -469,22 +528,48 @@ import {
       border-width: 1px;
     }
 
+    :host .participant-presented-badge {
+      min-width: 7.5rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-align: center;
+      border-width: 1px;
+    }
+
+    :host .participant-presented-yes {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.42);
+      color: #86efac;
+    }
+
+    :host .participant-presented-no {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.42);
+      color: #fca5a5;
+    }
+
+    :host .participant-presented-pending {
+      background: rgba(148, 163, 184, 0.18);
+      border-color: rgba(148, 163, 184, 0.38);
+      color: #cbd5e1;
+    }
+
     :host .participant-result-approved {
-      background: rgba(34, 197, 94, 0.14);
-      border-color: rgba(34, 197, 94, 0.35);
-      color: #166534;
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.42);
+      color: #86efac;
     }
 
     :host .participant-result-rejected {
-      background: rgba(239, 68, 68, 0.14);
-      border-color: rgba(239, 68, 68, 0.35);
-      color: #b91c1c;
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.42);
+      color: #fca5a5;
     }
 
     :host .participant-result-pending {
-      background: rgba(245, 158, 11, 0.14);
-      border-color: rgba(245, 158, 11, 0.35);
-      color: #b45309;
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.42);
+      color: #fcd34d;
     }
 
     @media (max-width: 767.98px) {
@@ -517,6 +602,24 @@ import {
     :host-context(.light) .results-sort-trigger:hover,
     :host-context(.light) .results-sort-trigger:focus-visible {
       color: #0457bf;
+    }
+
+    :host-context(.light) .participant-presented-yes {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.28);
+      color: #166534;
+    }
+
+    :host-context(.light) .participant-presented-no {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.28);
+      color: #b91c1c;
+    }
+
+    :host-context(.light) .participant-presented-pending {
+      background: rgba(148, 163, 184, 0.12);
+      border-color: rgba(148, 163, 184, 0.28);
+      color: #475569;
     }
 
     :host-context(.light) .participant-result-approved {
@@ -562,11 +665,15 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
   participantSearchTerm = '';
   participantSortKey: 'name' | 'document_number' | 'presented' | 'score' | 'result' | 'completed_at' = 'name';
   participantSortDir: 'asc' | 'desc' = 'asc';
+  participantPage = 1;
+  participantPageSize = 10;
   reviewSearchTerm = '';
   reviewTypeFilter: 'all' | 'open' | 'multiple_choice' | 'yes_no' = 'all';
   reviewScoreFilter: 'all' | 'pending' | 'graded' = 'all';
   reviewSortKey: 'order' | 'question_text' | 'type' | 'answer' | 'score' = 'order';
   reviewSortDir: 'asc' | 'desc' = 'asc';
+  reviewPage = 1;
+  reviewPageSize = 10;
 
   get isModal(): boolean {
     return !!this.activeModal;
@@ -647,11 +754,13 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   applyReviewFilters(): void {
-    // The table is derived from the current filter state.
+    this.reviewPage = 1;
+    this.scheduleTooltipRefresh();
   }
 
   applyParticipantFilters(): void {
-    // The table is derived from the current filter state.
+    this.participantPage = 1;
+    this.scheduleTooltipRefresh();
   }
 
   get filteredParticipants(): TrainingParticipant[] {
@@ -706,16 +815,22 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
     this.participantSearchTerm = '';
     this.participantSortKey = 'name';
     this.participantSortDir = 'asc';
+    this.participantPage = 1;
+    this.scheduleTooltipRefresh();
   }
 
   sortParticipantsBy(key: 'name' | 'document_number' | 'presented' | 'score' | 'result' | 'completed_at'): void {
     if (this.participantSortKey === key) {
       this.participantSortDir = this.participantSortDir === 'asc' ? 'desc' : 'asc';
+      this.participantPage = 1;
+      this.scheduleTooltipRefresh();
       return;
     }
 
     this.participantSortKey = key;
     this.participantSortDir = 'asc';
+    this.participantPage = 1;
+    this.scheduleTooltipRefresh();
   }
 
   getParticipantSortIcon(key: 'name' | 'document_number' | 'presented' | 'score' | 'result' | 'completed_at'): string {
@@ -724,6 +839,42 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     return this.participantSortDir === 'asc' ? 'north' : 'south';
+  }
+
+  get participantTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredParticipants.length / this.participantPageSize));
+  }
+
+  get paginatedParticipants(): TrainingParticipant[] {
+    const start = (this.participantPage - 1) * this.participantPageSize;
+    return this.filteredParticipants.slice(start, start + this.participantPageSize);
+  }
+
+  get participantStartRecord(): number {
+    return this.filteredParticipants.length === 0 ? 0 : (this.participantPage - 1) * this.participantPageSize + 1;
+  }
+
+  get participantEndRecord(): number {
+    return Math.min(this.participantPage * this.participantPageSize, this.filteredParticipants.length);
+  }
+
+  get participantPageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.participantPage - 2);
+    const end = Math.min(this.participantTotalPages, this.participantPage + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  onParticipantPageChange(page: number): void {
+    if (page >= 1 && page <= this.participantTotalPages) {
+      this.participantPage = page;
+      this.scheduleTooltipRefresh();
+    }
   }
 
   saveReview(): void {
@@ -840,16 +991,22 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
     this.reviewScoreFilter = 'all';
     this.reviewSortKey = 'order';
     this.reviewSortDir = 'asc';
+    this.reviewPage = 1;
+    this.scheduleTooltipRefresh();
   }
 
   sortReviewBy(key: 'order' | 'question_text' | 'type' | 'answer' | 'score'): void {
     if (this.reviewSortKey === key) {
       this.reviewSortDir = this.reviewSortDir === 'asc' ? 'desc' : 'asc';
+      this.reviewPage = 1;
+      this.scheduleTooltipRefresh();
       return;
     }
 
     this.reviewSortKey = key;
     this.reviewSortDir = 'asc';
+    this.reviewPage = 1;
+    this.scheduleTooltipRefresh();
   }
 
   getReviewSortIcon(key: 'order' | 'question_text' | 'type' | 'answer' | 'score'): string {
@@ -858,6 +1015,42 @@ export class TrainingResultsComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     return this.reviewSortDir === 'asc' ? 'north' : 'south';
+  }
+
+  get reviewTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredReviewQuestions.length / this.reviewPageSize));
+  }
+
+  get paginatedReviewQuestions(): ParticipantReview['questions'] {
+    const start = (this.reviewPage - 1) * this.reviewPageSize;
+    return this.filteredReviewQuestions.slice(start, start + this.reviewPageSize);
+  }
+
+  get reviewStartRecord(): number {
+    return this.filteredReviewQuestions.length === 0 ? 0 : (this.reviewPage - 1) * this.reviewPageSize + 1;
+  }
+
+  get reviewEndRecord(): number {
+    return Math.min(this.reviewPage * this.reviewPageSize, this.filteredReviewQuestions.length);
+  }
+
+  get reviewPageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.reviewPage - 2);
+    const end = Math.min(this.reviewTotalPages, this.reviewPage + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  onReviewPageChange(page: number): void {
+    if (page >= 1 && page <= this.reviewTotalPages) {
+      this.reviewPage = page;
+      this.scheduleTooltipRefresh();
+    }
   }
 
   questionTypeLabel(type: string): string {

@@ -2,7 +2,28 @@
   title="Participantes"
   subtitle="Gestiona las personas que se asignan a capacitaciones y mantiene su seguimiento en un solo lugar."
   [showDateFilter]="false"
-/>
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">school</span>
+          Capacitaciones
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">group</span>
+        Participantes
+      </li>
+    </ol>
+  </nav>
+</app-page-header>
 
 <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
 <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>

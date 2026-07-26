@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exports\TrainingParticipantsExport;
+use App\Exports\TrainingParticipantsDetailedExport;
 use App\Http\Controllers\Controller;
 use App\Imports\TrainingParticipantsImport;
 use App\Models\Training;
@@ -237,6 +238,18 @@ class TrainingController extends Controller
         $filename = 'plantilla-participantes-' . Str::slug($training->title) . '.xlsx';
 
         return Excel::download(new TrainingParticipantsExport($training), $filename);
+    }
+
+    public function downloadTrainingParticipantsReport(Training $training)
+    {
+        $training->loadMissing('category');
+        if (! $training->category?->empresa_id) {
+            return response()->json(['message' => 'El programa de esta capacitacion no tiene empresa asociada.'], 422);
+        }
+
+        $filename = 'reporte-participantes-' . Str::slug($training->title) . '.xlsx';
+
+        return Excel::download(new TrainingParticipantsDetailedExport($training), $filename);
     }
 
     public function importParticipantsReport(Request $request, Training $training): JsonResponse

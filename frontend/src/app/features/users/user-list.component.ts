@@ -43,6 +43,8 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   sortKey = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   empresaId: number | null = null;
+  page = 1;
+  pageSize = 10;
 
   // Modal state (edit)
   editingUser: User | null = null;
@@ -87,6 +89,14 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.empresas.find((empresa) => empresa.id === empresaId)?.name
       ?? this.currentUser?.empresa_relation?.name
       ?? 'Empresa asignada';
+  }
+
+  get selectedEmpresaName(): string {
+    if (!this.empresaId) {
+      return '';
+    }
+
+    return this.empresas.find((empresa) => empresa.id === this.empresaId)?.name || `Empresa ${this.empresaId}`;
   }
 
   ngOnInit(): void {
@@ -230,7 +240,9 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
   onSearch(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchQuery = target.value.toLowerCase().trim();
+    this.page = 1;
     this.applyFilter();
+    this.scheduleTooltipRefresh();
   }
 
   sortBy(key: string): void {
@@ -240,12 +252,50 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sortKey = key;
       this.sortDirection = 'asc';
     }
+    this.page = 1;
     this.applyFilter();
+    this.scheduleTooltipRefresh();
   }
 
   getSortIcon(key: string): string {
     if (this.sortKey !== key) return 'unfold_more';
     return this.sortDirection === 'asc' ? 'north' : 'south';
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
+  }
+
+  get paginatedUsers(): User[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredUsers.slice(start, start + this.pageSize);
+  }
+
+  get startRecord(): number {
+    return this.filteredUsers.length === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(this.page * this.pageSize, this.filteredUsers.length);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end = Math.min(this.totalPages, this.page + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.page = page;
+      this.scheduleTooltipRefresh();
+    }
   }
 
   private applyFilter(): void {
@@ -260,22 +310,36 @@ export class UserListComponent implements OnInit, AfterViewInit, OnDestroy {
       );
     }
 
-    if (this.sortKey === 'name') {
+    if (this.sortKey) {
       result.sort((a, b) => {
-        const cmp = a.name.localeCompare(b.name);
-        return this.sortDirection === 'asc' ? cmp : -cmp;
-      });
-    }
-
-    if (this.sortKey === 'empresa') {
-      result.sort((a, b) => {
-        const cmp = (a.empresa_relation?.name ?? '').localeCompare(b.empresa_relation?.name ?? '');
+        const left = String(this.getSortValue(a, this.sortKey));
+        const right = String(this.getSortValue(b, this.sortKey));
+        const cmp = left.localeCompare(right, 'es', { numeric: true, sensitivity: 'base' });
         return this.sortDirection === 'asc' ? cmp : -cmp;
       });
     }
 
     this.filteredUsers = result;
+    this.page = 1;
     this.scheduleTooltipRefresh();
+  }
+
+  private getSortValue(user: User, key: string): string | number {
+    switch (key) {
+      case 'name':
+        return user.name;
+      case 'email':
+        return user.email;
+      case 'role':
+        return user.role || '';
+      case 'empresa':
+        return user.empresa_relation?.name || '';
+      case 'active':
+        return user.active ? 1 : 0;
+      case 'id':
+      default:
+        return user.id;
+    }
   }
 
   activate(user: User): void {

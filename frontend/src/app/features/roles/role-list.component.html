@@ -2,7 +2,28 @@
   title="Administracion de roles"
   subtitle="Crea, edita y elimina los roles que luego se usan en usuarios y en el menu dinamico."
   [showDateFilter]="false"
-/>
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a routerLink="/admin" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">admin_panel_settings</span>
+          Administracion
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">shield</span>
+        Roles
+      </li>
+    </ol>
+  </nav>
+</app-page-header>
 
 <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
 <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
@@ -45,7 +66,11 @@
     <table class="table table-hover align-middle mb-0 dashboard-table">
       <thead class="role-table-head">
         <tr class="border-bottom border-white/10">
-          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">#</th>
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('id')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por ID" aria-label="Ordenar por ID">
+              # <span class="material-symbols-outlined sort-icon">{{ getSortIcon('id') }}</span>
+            </button>
+          </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
             <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">
               Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span>
@@ -56,13 +81,21 @@
               Slug <span class="material-symbols-outlined sort-icon">{{ getSortIcon('slug') }}</span>
             </button>
           </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">Descripcion</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase role-table-th">Sistema</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('description')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por descripcion" aria-label="Ordenar por descripcion">
+              Descripcion <span class="material-symbols-outlined sort-icon">{{ getSortIcon('description') }}</span>
+            </button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th role-table-th">
+            <button class="sort-trigger role-sort-trigger" type="button" (click)="sortBy('is_system')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por sistema" aria-label="Ordenar por sistema">
+              Sistema <span class="material-symbols-outlined sort-icon">{{ getSortIcon('is_system') }}</span>
+            </button>
+          </th>
           <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end role-table-th">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let role of filteredRoles; let i = index">
+        <tr *ngFor="let role of paginatedRoles; let i = index">
           <td class="ps-4 py-3 font-mono text-on-surface">{{ role.id }}</td>
           <td class="py-3">
             <span class="text-on-surface fw-semibold">{{ role.name }}</span>
@@ -97,7 +130,34 @@
 </div>
 
 <div *ngIf="!loading" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ filteredRoles.length }} de {{ roles.length }} roles</p>
+  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ startRecord }}-{{ endRecord }} de {{ filteredRoles.length }} roles</p>
+  <nav aria-label="Paginacion de roles">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera">
+          <span class="material-symbols-outlined text-[16px]">first_page</span>
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior">
+          <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+        </button>
+      </li>
+      <li class="page-item" *ngFor="let p of pageNumbers">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="page === p" (click)="onPageChange(p)">{{ p }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente">
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima">
+          <span class="material-symbols-outlined text-[16px]">last_page</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
 </div>
 
 <app-modal-shell

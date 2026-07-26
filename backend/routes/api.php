@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         // Training participants
         Route::get('/trainings/{training}/participants', [TrainingController::class, 'participants']);
         Route::get('/trainings/{training}/participants/export', [TrainingController::class, 'downloadParticipantsReport']);
+        Route::get('/trainings/{training}/participants/report', [TrainingController::class, 'downloadTrainingParticipantsReport']);
         Route::post('/trainings/{training}/participants/import', [TrainingController::class, 'importParticipantsReport']);
         Route::post('/trainings/{training}/participants', [TrainingController::class, 'storeParticipant']);
         Route::put('/trainings/{training}/participants/{participant}', [TrainingController::class, 'updateParticipant']);

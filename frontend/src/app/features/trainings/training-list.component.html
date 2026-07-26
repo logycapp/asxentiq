@@ -3,7 +3,34 @@
   title="Capacitaciones SST"
   subtitle="Gestiona, monitorea y certifica el crecimiento profesional de tus colaboradores con una vista clara para seguimiento rapido."
   [showDateFilter]="false"
-/>
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">school</span>
+          Capacitaciones
+        </a>
+      </li>
+      <li class="breadcrumb-item" *ngIf="activeProgramId">
+        <a [routerLink]="['/trainings_programs', activeProgramId, 'trainings']" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">grid_view</span>
+          {{ activeProgramName || 'Programa' }}
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">menu_book</span>
+        Capacitaciones
+      </li>
+    </ol>
+  </nav>
+</app-page-header>
 
 <app-swal-alert *ngIf="message && !isCategoriesRoute && !isAssignRoute" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
 <app-swal-alert *ngIf="errorMessage && !isCategoriesRoute && !isAssignRoute" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
@@ -62,26 +89,52 @@
       <span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ trainings.length }}</span>
     </div>
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 dashboard-table">
-        <thead class="training-table-head">
-          <tr class="border-bottom border-white/10">
-            <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">#</th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-              <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')">Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span></button>
-            </th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Tipo</th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Modalidad</th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-              <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')">Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span></button>
-            </th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-              <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')">Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span></button>
-            </th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Preguntas</th>
-            <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Usuarios</th>
-            <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
-          </tr>
-        </thead>
+        <table class="table table-hover align-middle mb-0 dashboard-table">
+          <thead class="training-table-head">
+            <tr class="border-bottom border-white/10">
+              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('id')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por ID" aria-label="Ordenar por ID">
+                  # <span class="material-symbols-outlined sort-icon">{{ getSortIcon('id') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por titulo" aria-label="Ordenar por titulo">
+                  Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('type')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por tipo" aria-label="Ordenar por tipo">
+                  Tipo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('type') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('modality')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por modalidad" aria-label="Ordenar por modalidad">
+                  Modalidad <span class="material-symbols-outlined sort-icon">{{ getSortIcon('modality') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por fecha" aria-label="Ordenar por fecha">
+                  Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por estado" aria-label="Ordenar por estado">
+                  Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('questions_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de preguntas" aria-label="Ordenar por cantidad de preguntas">
+                  Preguntas <span class="material-symbols-outlined sort-icon">{{ getSortIcon('questions_count') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('users_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de usuarios" aria-label="Ordenar por cantidad de usuarios">
+                  Usuarios <span class="material-symbols-outlined sort-icon">{{ getSortIcon('users_count') }}</span>
+                </button>
+              </th>
+              <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
+            </tr>
+          </thead>
         <tbody>
           <tr *ngFor="let t of trainings; let i = index">
             <td class="ps-4 py-3 font-mono text-on-surface">{{ t.id }}</td>
@@ -142,20 +195,46 @@
         <table class="table table-hover align-middle mb-0 dashboard-table">
           <thead class="training-table-head">
             <tr class="border-bottom border-white/10">
-              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">#</th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')">Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span></button>
-              </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Tipo</th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Modalidad</th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')">Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span></button>
+              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('id')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por ID" aria-label="Ordenar por ID">
+                  # <span class="material-symbols-outlined sort-icon">{{ getSortIcon('id') }}</span>
+                </button>
               </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')">Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span></button>
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('title')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por titulo" aria-label="Ordenar por titulo">
+                  Titulo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('title') }}</span>
+                </button>
               </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Preguntas</th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase training-table-th">Usuarios</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('type')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por tipo" aria-label="Ordenar por tipo">
+                  Tipo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('type') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('modality')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por modalidad" aria-label="Ordenar por modalidad">
+                  Modalidad <span class="material-symbols-outlined sort-icon">{{ getSortIcon('modality') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('scheduled_date')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por fecha" aria-label="Ordenar por fecha">
+                  Fecha <span class="material-symbols-outlined sort-icon">{{ getSortIcon('scheduled_date') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('status')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por estado" aria-label="Ordenar por estado">
+                  Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('status') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('questions_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de preguntas" aria-label="Ordenar por cantidad de preguntas">
+                  Preguntas <span class="material-symbols-outlined sort-icon">{{ getSortIcon('questions_count') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('users_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de usuarios" aria-label="Ordenar por cantidad de usuarios">
+                  Usuarios <span class="material-symbols-outlined sort-icon">{{ getSortIcon('users_count') }}</span>
+                </button>
+              </th>
               <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
             </tr>
           </thead>

@@ -2,7 +2,22 @@
   title="Empresas"
   subtitle="Administra las empresas registradas en el sistema."
   [showDateFilter]="false"
-/>
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">business</span>
+        Empresas
+      </li>
+    </ol>
+  </nav>
+</app-page-header>
 
 <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
 <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
@@ -45,22 +60,42 @@
     <table class="table table-hover align-middle mb-0 dashboard-table">
       <thead class="empresa-table-head">
         <tr class="border-bottom border-white/10">
-          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">#</th>
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('id')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por ID" aria-label="Ordenar por ID">
+              # <span class="material-symbols-outlined sort-icon">{{ getSortIcon('id') }}</span>
+            </button>
+          </th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Logo</th>
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
             <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">
               Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span>
             </button>
           </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">NIT</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Telefono</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Correo</th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase empresa-table-th">Estado</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('tax_id')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por NIT" aria-label="Ordenar por NIT">
+              NIT <span class="material-symbols-outlined sort-icon">{{ getSortIcon('tax_id') }}</span>
+            </button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('phone')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por telefono" aria-label="Ordenar por telefono">
+              Telefono <span class="material-symbols-outlined sort-icon">{{ getSortIcon('phone') }}</span>
+            </button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('email')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por correo" aria-label="Ordenar por correo">
+              Correo <span class="material-symbols-outlined sort-icon">{{ getSortIcon('email') }}</span>
+            </button>
+          </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th empresa-table-th">
+            <button class="sort-trigger empresa-sort-trigger" type="button" (click)="sortBy('active')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por estado" aria-label="Ordenar por estado">
+              Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('active') }}</span>
+            </button>
+          </th>
           <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end empresa-table-th">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let empresa of filteredEmpresas; trackBy: trackById">
+        <tr *ngFor="let empresa of paginatedEmpresas; trackBy: trackById">
           <td class="ps-4 py-3 font-mono text-on-surface">{{ empresa.id }}</td>
           <td class="py-3">
             <div class="d-flex align-items-center gap-2">
@@ -118,7 +153,34 @@
 </div>
 
 <div *ngIf="!loading" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ filteredEmpresas.length }} de {{ empresas.length }} empresas</p>
+  <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ startRecord }}-{{ endRecord }} de {{ filteredEmpresas.length }} empresas</p>
+  <nav aria-label="Paginacion de empresas">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera">
+          <span class="material-symbols-outlined text-[16px]">first_page</span>
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior">
+          <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+        </button>
+      </li>
+      <li class="page-item" *ngFor="let p of pageNumbers">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="page === p" (click)="onPageChange(p)">{{ p }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente">
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="page === totalPages">
+        <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima">
+          <span class="material-symbols-outlined text-[16px]">last_page</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
 </div>
 
 <app-modal-shell

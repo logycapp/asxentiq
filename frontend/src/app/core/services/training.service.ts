@@ -442,8 +442,14 @@ export class TrainingService {
     return this.http.get<TrainingParticipant[]>(`${this.apiUrl}/${trainingId}/participants`);
   }
 
-  downloadTrainingParticipantsReport(trainingId: number): Observable<Blob> {
+  downloadTrainingParticipantsTemplate(trainingId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${trainingId}/participants/export`, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadTrainingParticipantsReport(trainingId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${trainingId}/participants/report`, {
       responseType: 'blob'
     });
   }

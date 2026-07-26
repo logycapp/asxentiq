@@ -1,79 +1,82 @@
 <div
-  class="fixed right-0 top-0 h-full w-[320px] glass-card backdrop-blur-xl border-l border-white/10 z-[70] overflow-hidden transition-all duration-500"
+  class="fixed right-0 top-0 h-full w-[320px] glass-card profile-panel-surface backdrop-blur-xl border-l border-white/10 z-[70] overflow-hidden transition-all duration-500"
   id="profile-panel"
   [class.translate-x-full]="!open"
   [class.invisible]="!open"
   [class.opacity-0]="!open"
 >
-  <div class="px-4 pt-3 pb-3 p-lg-4 border-bottom border-white/5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-    <h2 class="font-headline-md text-on-surface tracking-tight">Cuenta</h2>
+  <div class="profile-panel-header px-4 pt-3 pb-3 p-lg-4 border-bottom border-white/5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div class="d-flex flex-column gap-1">
+      <span class="profile-panel-kicker">Cuenta activa</span>
+    </div>
     <button
-      class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95"
+      class="profile-panel-close-btn p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95"
       type="button"
       (click)="close.emit()"
     >
       <span class="material-symbols-outlined">close</span>
     </button>
   </div>
-  <div class="pt-3 px-4 pb-4 flex flex-col items-center text-center">
-    <div class="d-flex align-items-center justify-content-center gap-3 mb-3 profile-brand-avatar-row">
-      <div class="profile-company-logo-frame">
-        <img *ngIf="companyLogoUrl; else companyLogoFallback" [src]="companyLogoUrl" alt="Logo de la empresa" class="profile-company-logo-img" />
-        <ng-template #companyLogoFallback>
-          <span class="material-symbols-outlined profile-company-logo-icon">domain</span>
-        </ng-template>
-      </div>
-      <div class="relative">
-        <div class="w-24 h-24 rounded-full border-2 border-primary/30 p-1 glow-accent-cyan relative">
-          <img
-            *ngIf="userPhotoUrl; else avatarFallback"
-            [src]="userPhotoUrl"
-            [alt]="userName"
-            class="w-full h-full rounded-full object-cover"
-          />
-          <ng-template #avatarFallback>
-            <div class="w-full h-full rounded-full bg-primary/20 flex items-center justify-center">
-              <span class="text-3xl font-bold text-primary">{{ userInitial }}</span>
-            </div>
+  <div class="profile-panel-body px-4 pt-4 pb-4">
+    <div class="profile-identity-card">
+      <div class="profile-identity-top d-flex align-items-center justify-content-center gap-3">
+        <div class="profile-company-logo-frame profile-company-logo-frame--elevated">
+          <img *ngIf="companyLogoUrl; else companyLogoFallback" [src]="companyLogoUrl" alt="Logo de la empresa" class="profile-company-logo-img" />
+          <ng-template #companyLogoFallback>
+            <span class="material-symbols-outlined profile-company-logo-icon">domain</span>
           </ng-template>
-          <div class="absolute bottom-0 right-0 w-6 h-6 bg-chart-green border-4 border-surface-container rounded-full status-pulse"></div>
+        </div>
+        <div class="profile-avatar-frame">
+          <div class="profile-avatar-ring">
+            <img
+              *ngIf="userPhotoUrl; else avatarFallback"
+              [src]="userPhotoUrl"
+              [alt]="userName"
+              class="profile-avatar-img"
+            />
+            <ng-template #avatarFallback>
+              <div class="profile-avatar-fallback">
+                <span class="profile-avatar-initial">{{ userInitial }}</span>
+              </div>
+            </ng-template>
+            <div class="profile-status-dot"></div>
+          </div>
+        </div>
+      </div>
+      <div class="profile-identity-copy text-center mt-3">
+        <h3 class="profile-user-name font-headline-md text-on-surface font-bold tracking-tight mb-1">{{ userName }}</h3>
+        <p class="profile-user-email text-on-surface-variant text-body-sm font-mono mb-0">{{ userEmail }}</p>
+      </div>
+      <div class="profile-meta-list mt-4 d-flex flex-column gap-2">
+        <div class="profile-meta-chip profile-meta-chip--stacked">
+          <span class="profile-meta-chip__icon material-symbols-outlined">domain</span>
+          <div class="profile-meta-chip__stack">
+            <span class="profile-meta-chip__label">Empresa</span>
+            <span class="profile-meta-chip__value profile-meta-chip__value--stacked">{{ companyName }}</span>
+          </div>
         </div>
       </div>
     </div>
-    <h3 class="font-headline-md text-on-surface font-bold tracking-tight">{{ userName }}</h3>
-    <p class="text-on-surface-variant text-body-sm font-mono opacity-70">{{ userEmail }}</p>
-    <div class="mt-3 w-full d-flex flex-column gap-2">
-      <div class="d-flex align-items-center justify-content-center gap-2 bg-white/5 px-3 py-2 rounded-pill border border-white/5">
-        <span class="material-symbols-outlined text-[16px] text-primary">domain</span>
-        <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Empresa</span>
-        <span class="text-sm text-on-surface font-semibold text-truncate">{{ companyName }}</span>
-      </div>
-      <div class="d-flex align-items-center justify-content-center gap-2 bg-white/5 px-3 py-2 rounded-pill border border-white/5">
-        <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
-        <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Rol</span>
-        <span class="text-sm text-on-surface font-semibold text-truncate">{{ roleName }}</span>
-      </div>
-    </div>
   </div>
-  <div class="flex-1 overflow-y-auto px-md space-y-1">
+  <div class="profile-links px-4 pb-4">
     <a *ngIf="showAdminAccess"
-      class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+      class="profile-link-item flex items-center gap-md p-3 rounded-xl text-on-surface-variant hover:text-primary transition-all group"
       routerLink="/admin"
       (click)="close.emit()"
     >
-      <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">admin_panel_settings</span>
+      <span class="profile-link-icon material-symbols-outlined opacity-70 group-hover:opacity-100">admin_panel_settings</span>
       <span class="font-label-md tracking-wide">Administracion</span>
     </a>
     <a
-      class="flex items-center gap-md p-3 rounded-lg hover:bg-white/5 text-on-surface-variant hover:text-primary transition-all group"
+      class="profile-link-item flex items-center gap-md p-3 rounded-xl text-on-surface-variant hover:text-primary transition-all group"
       routerLink="/profile"
       (click)="close.emit()"
     >
-      <span class="material-symbols-outlined opacity-70 group-hover:opacity-100">person</span>
+      <span class="profile-link-icon material-symbols-outlined opacity-70 group-hover:opacity-100">person</span>
       <span class="font-label-md tracking-wide">Ajustes del perfil</span>
     </a>
   </div>
-  <div class="p-lg border-t border-white/5 bg-white/2">
+  <div class="profile-panel-footer p-lg border-t border-white/5 bg-white/2">
     <button
       class="w-full py-3 profile-logout-btn rounded-lg font-label-md transition-all flex items-center justify-center gap-2"
       type="button"

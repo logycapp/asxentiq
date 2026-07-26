@@ -66,6 +66,14 @@ Rutas bajo `/trainings` protegidas por `authGuard` y `menu.access:/trainings`:
 - `/trainings/:id/assign` — Asignar usuarios
 - `/trainings/:id/results` — Resultados por capacitacion
 
+## Tablas en frontend
+
+- Las tablas del modulo pueden usar `DataTables2` cuando necesiten combinar buscador, sorter y paginacion local.
+- Uso actual recomendado:
+  - listado de capacitaciones
+  - participantes de capacitacion
+- La vista debe conservar el estilo del template Bootstrap y el footer con el rango visible de registros.
+
 ## Frontend (publico)
 
 Rutas publicas (sin autenticacion del sistema principal):

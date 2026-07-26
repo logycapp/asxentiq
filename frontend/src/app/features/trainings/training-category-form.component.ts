@@ -20,7 +20,34 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       [title]="isEditMode() ? 'Editar programa' : 'Nuevo programa'"
       subtitle="Define el programa que agrupara las capacitaciones."
       [showDateFilter]="false"
-    />
+    >
+      <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">home</span>
+              Inicio
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">school</span>
+              Capacitaciones
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">grid_view</span>
+              Programas
+            </a>
+          </li>
+          <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+            <span class="material-symbols-outlined text-[15px]">{{ isEditMode() ? 'edit' : 'add' }}</span>
+            {{ isEditMode() ? 'Editar programa' : 'Nuevo programa' }}
+          </li>
+        </ol>
+      </nav>
+    </app-page-header>
 
     <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
       <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>

@@ -71,6 +71,43 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       </div>
     </div>
 
+    <div class="card glass-card border-0 rounded-4 p-4 mb-4">
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-12 col-xl-auto">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="material-symbols-outlined text-on-surface-variant">description</span>
+            <span class="text-on-surface fw-semibold">Carga masiva y plantilla</span>
+            <span class="text-on-surface-variant font-label-sm">
+              Descarga la plantilla para registrar o actualizar participantes y vuelve a cargarla cuando termines.
+            </span>
+          </div>
+        </div>
+        <div class="col-12 col-xl-auto">
+          <div class="d-flex gap-2 flex-wrap">
+            <input #participantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
+              (click)="participantsFileInput.click()"
+              [disabled]="importing"
+            >
+              <span class="material-symbols-outlined text-[16px]">upload_file</span>
+              {{ importing ? 'Cargando...' : 'Cargar Excel' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
+              (click)="downloadTemplate()"
+              [disabled]="exporting"
+            >
+              <span class="material-symbols-outlined text-[16px]">download</span>
+              {{ exporting ? 'Generando...' : 'Descargar plantilla' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
     <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 
@@ -131,7 +168,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let participant of filteredParticipants" class="border-bottom border-white/5">
+            <tr *ngFor="let participant of paginatedParticipants" class="border-bottom border-white/5">
               <td class="ps-4 py-3 font-mono text-on-surface">{{ participant.id }}</td>
               <td class="py-3 font-semibold text-on-surface">{{ participant.document_number }}</td>
               <td class="py-3 text-on-surface">{{ participant.full_name }}</td>
@@ -139,23 +176,22 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
               <td class="py-3 text-on-surface-variant">{{ participant.phone || '-' }}</td>
               <td class="py-3">
                 <span
-                  class="badge rounded-pill px-3 py-2"
-                  [class.bg-success-subtle]="presentedLabel(participant) === 'Si'"
-                  [class.text-success]="presentedLabel(participant) === 'Si'"
-                  [class.bg-danger-subtle]="presentedLabel(participant) === 'No'"
-                  [class.text-danger]="presentedLabel(participant) === 'No'"
-                  [class.bg-secondary-subtle]="presentedLabel(participant) === 'Pendiente'"
-                  [class.text-secondary]="presentedLabel(participant) === 'Pendiente'"
+                  class="badge rounded-pill px-3 py-2 participant-presented-badge"
+                  [ngClass]="{
+                    'participant-presented-yes': presentedLabel(participant) === 'Si',
+                    'participant-presented-no': presentedLabel(participant) === 'No',
+                    'participant-presented-pending': presentedLabel(participant) === 'Pendiente'
+                  }"
                 >
                   {{ presentedLabel(participant) }}
                 </span>
               </td>
               <td class="py-3 text-on-surface-variant">{{ participant.score !== null && participant.score !== undefined ? participant.score + '%' : '-' }}</td>
               <td class="py-3">
-                <span *ngIf="participant.score !== null && participant.score !== undefined" class="badge rounded-pill px-3 py-2" [ngClass]="participantPassed(participant) ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                <span *ngIf="participant.score !== null && participant.score !== undefined" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(participant) ? 'participant-result-approved' : 'participant-result-rejected'">
                   {{ participantPassed(participant) ? 'Aprobado' : 'No Aprobado' }}
                 </span>
-                <span *ngIf="participant.score === null || participant.score === undefined" class="badge rounded-pill px-3 py-2 bg-secondary-subtle text-secondary">
+                <span *ngIf="participant.score === null || participant.score === undefined" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">
                   Pendiente de revision
                 </span>
               </td>
@@ -209,13 +245,65 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       </div>
       <div class="px-3 px-md-4 py-3 border-top border-white/10 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
         <p class="text-on-surface-variant font-label-sm mb-0">
-          Mostrando {{ filteredParticipants.length }} de {{ participants.length }} participantes
+          Mostrando {{ startRecord }}-{{ endRecord }} de {{ filteredParticipants.length }} participantes
         </p>
+        <nav aria-label="Paginacion de participantes">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="page === 1">
+              <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera" data-bs-toggle="tooltip" data-bs-placement="top" title="Primera pagina">
+                <span class="material-symbols-outlined text-[16px]">first_page</span>
+              </button>
+            </li>
+            <li class="page-item" [class.disabled]="page === 1">
+              <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior" data-bs-toggle="tooltip" data-bs-placement="top" title="Pagina anterior">
+                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+              </button>
+            </li>
+            <li class="page-item" *ngFor="let p of pageNumbers">
+              <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="page === p" (click)="onPageChange(p)">{{ p }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="page === totalPages">
+              <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente" data-bs-toggle="tooltip" data-bs-placement="top" title="Pagina siguiente">
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+              </button>
+            </li>
+            <li class="page-item" [class.disabled]="page === totalPages">
+              <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima" data-bs-toggle="tooltip" data-bs-placement="top" title="Ultima pagina">
+                <span class="material-symbols-outlined text-[16px]">last_page</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
 
     <div *ngIf="!loadingParticipants && participants.length > 0 && filteredParticipants.length === 0" class="text-center py-5">
       <div class="text-on-surface-variant font-body-md">No se encontraron participantes.</div>
+    </div>
+
+    <div class="card glass-card border-0 rounded-4 p-4 mb-4">
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-12 col-xl-auto">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="material-symbols-outlined text-on-surface-variant">summarize</span>
+            <span class="text-on-surface fw-semibold">Reporte completo</span>
+            <span class="text-on-surface-variant font-label-sm">
+              Descarga un Excel con asistencia, puntaje, resultado y observaciones de cada participante.
+            </span>
+          </div>
+        </div>
+        <div class="col-12 col-xl-auto">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1"
+            (click)="downloadFullReport()"
+            [disabled]="reportExporting"
+          >
+            <span class="material-symbols-outlined text-[16px]">table_view</span>
+            {{ reportExporting ? 'Generando...' : 'Descargar reporte' }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="reviewingParticipant" class="card glass-card border-0 rounded-4 p-4 mb-4">
@@ -438,43 +526,6 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       </div>
     </div>
 
-    <div class="card glass-card border-0 rounded-4 p-4 mb-4 mt-4">
-      <div class="row g-3 align-items-center justify-content-between">
-        <div class="col-12 col-xl-auto">
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="material-symbols-outlined text-on-surface-variant">description</span>
-            <span class="text-on-surface fw-semibold">Carga masiva</span>
-            <span class="text-on-surface-variant font-label-sm">
-              Descarga la plantilla y vuelve a cargarla para registrar varios participantes a la vez.
-            </span>
-          </div>
-        </div>
-        <div class="col-12 col-xl-auto">
-          <div class="d-flex gap-2 flex-wrap">
-            <input #participantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
-              (click)="participantsFileInput.click()"
-              [disabled]="importing"
-            >
-              <span class="material-symbols-outlined text-[16px]">upload_file</span>
-              {{ importing ? 'Cargando...' : 'Cargar Excel' }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
-              (click)="downloadReport()"
-              [disabled]="exporting"
-            >
-              <span class="material-symbols-outlined text-[16px]">download</span>
-              {{ exporting ? 'Generando...' : 'Descargar plantilla' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <app-modal-shell
       *ngIf="creating"
       kicker="Participantes de capacitación"
@@ -676,6 +727,32 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       flex: 0 0 auto;
     }
 
+    :host .participant-presented-badge {
+      min-width: 7.5rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-align: center;
+      border-width: 1px;
+    }
+
+    :host .participant-presented-yes {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.42);
+      color: #86efac;
+    }
+
+    :host .participant-presented-no {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.42);
+      color: #fca5a5;
+    }
+
+    :host .participant-presented-pending {
+      background: rgba(148, 163, 184, 0.18);
+      border-color: rgba(148, 163, 184, 0.38);
+      color: #cbd5e1;
+    }
+
     :host .participant-result-badge {
       min-width: 8.5rem;
       font-weight: 700;
@@ -685,21 +762,21 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
     }
 
     :host .participant-result-approved {
-      background: rgba(34, 197, 94, 0.14);
-      border-color: rgba(34, 197, 94, 0.35);
-      color: #166534;
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.42);
+      color: #86efac;
     }
 
     :host .participant-result-rejected {
-      background: rgba(239, 68, 68, 0.14);
-      border-color: rgba(239, 68, 68, 0.35);
-      color: #b91c1c;
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.42);
+      color: #fca5a5;
     }
 
     :host .participant-result-pending {
-      background: rgba(245, 158, 11, 0.14);
-      border-color: rgba(245, 158, 11, 0.35);
-      color: #b45309;
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.42);
+      color: #fcd34d;
     }
 
     @media (max-width: 767.98px) {
@@ -719,6 +796,24 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
     :host-context(.light) .review-sort-trigger:hover,
     :host-context(.light) .review-sort-trigger:focus-visible {
       color: #0457bf;
+    }
+
+    :host-context(.light) .participant-presented-yes {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.28);
+      color: #166534;
+    }
+
+    :host-context(.light) .participant-presented-no {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.28);
+      color: #b91c1c;
+    }
+
+    :host-context(.light) .participant-presented-pending {
+      background: rgba(148, 163, 184, 0.12);
+      border-color: rgba(148, 163, 184, 0.28);
+      color: #475569;
     }
 
     :host-context(.light) .participant-result-approved {
@@ -759,9 +854,12 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
   searchTerm = '';
   sortKey = 'id';
   sortDir: 'asc' | 'desc' = 'desc';
+  page = 1;
+  pageSize = 10;
   message = '';
   errorMessage = '';
   exporting = false;
+  reportExporting = false;
   importing = false;
   loadingParticipants = false;
   creating = false;
@@ -814,6 +912,35 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.tooltipInstances.forEach((tooltip) => tooltip.dispose());
     this.tooltipInstances.clear();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredParticipants.length / this.pageSize));
+  }
+
+  get paginatedParticipants(): TrainingParticipant[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredParticipants.slice(start, start + this.pageSize);
+  }
+
+  get startRecord(): number {
+    return this.filteredParticipants.length === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(this.page * this.pageSize, this.filteredParticipants.length);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end = Math.min(this.totalPages, this.page + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 
   loadTraining(): void {
@@ -875,6 +1002,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     this.filteredParticipants = result;
+    this.page = 1;
   }
 
   private refreshTooltips(): void {
@@ -920,6 +1048,13 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     this.applyFilters();
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.page = page;
+      this.scheduleTooltipRefresh();
+    }
   }
 
   getSortIcon(key: string): string {
@@ -1348,7 +1483,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
-  downloadReport(): void {
+  downloadTemplate(): void {
     if (this.exporting || !this.trainingId) {
       return;
     }
@@ -1356,7 +1491,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     this.errorMessage = '';
     this.exporting = true;
 
-    this.loadingService.track(this.trainingService.downloadTrainingParticipantsReport(this.trainingId))
+    this.loadingService.track(this.trainingService.downloadTrainingParticipantsTemplate(this.trainingId))
       .pipe(finalize(() => (this.exporting = false)))
       .subscribe({
         next: (blob) => {
@@ -1369,6 +1504,30 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
           this.message = 'Plantilla Excel descargada correctamente.';
         },
         error: () => (this.errorMessage = 'Error al descargar la plantilla Excel.')
+      });
+  }
+
+  downloadFullReport(): void {
+    if (this.reportExporting || !this.trainingId) {
+      return;
+    }
+
+    this.errorMessage = '';
+    this.reportExporting = true;
+
+    this.loadingService.track(this.trainingService.downloadTrainingParticipantsReport(this.trainingId))
+      .pipe(finalize(() => (this.reportExporting = false)))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `reporte-participantes-${this.trainingId}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.message = 'Reporte Excel descargado correctamente.';
+        },
+        error: () => (this.errorMessage = 'Error al descargar el reporte Excel.')
       });
   }
 

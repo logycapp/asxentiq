@@ -23,7 +23,28 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       title="Programas de capacitaciones"
       subtitle="Organiza primero el programa y luego las capacitaciones que pertenecen a ese programa."
       [showDateFilter]="false"
-    />
+    >
+      <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">home</span>
+              Inicio
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">school</span>
+              Capacitaciones
+            </a>
+          </li>
+          <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+            <span class="material-symbols-outlined text-[15px]">grid_view</span>
+            Programas
+          </li>
+        </ol>
+      </nav>
+    </app-page-header>
 
     <app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
     <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
@@ -72,14 +93,26 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
         <table class="table table-hover align-middle mb-0 dashboard-table">
           <thead class="participant-table-head">
             <tr class="border-bottom border-white/10">
-              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">#</th>
+              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('id')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por ID" aria-label="Ordenar por ID">
+                  # <span class="material-symbols-outlined sort-icon">{{ getSortIcon('id') }}</span>
+                </button>
+              </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
                 <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('name')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por nombre" aria-label="Ordenar por nombre">
                   Nombre <span class="material-symbols-outlined sort-icon">{{ getSortIcon('name') }}</span>
                 </button>
               </th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Empresa</th>
-              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Descripcion</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('empresa')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por empresa" aria-label="Ordenar por empresa">
+                  Empresa <span class="material-symbols-outlined sort-icon">{{ getSortIcon('empresa') }}</span>
+                </button>
+              </th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
+                <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('description')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por descripcion" aria-label="Ordenar por descripcion">
+                  Descripcion <span class="material-symbols-outlined sort-icon">{{ getSortIcon('description') }}</span>
+                </button>
+              </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
                 <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('trainings_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de capacitaciones" aria-label="Ordenar por cantidad de capacitaciones">
                   Capacitaciones <span class="material-symbols-outlined sort-icon">{{ getSortIcon('trainings_count') }}</span>
@@ -89,7 +122,7 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let category of filteredCategories; let i = index">
+            <tr *ngFor="let category of paginatedCategories; let i = index">
               <td class="ps-4 py-3 font-mono text-on-surface">{{ category.id }}</td>
               <td class="py-3">
                 <span class="text-on-surface fw-semibold">{{ category.name }}</span>
@@ -118,6 +151,39 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
           </tbody>
         </table>
       </div>
+    </div>
+
+    <div *ngIf="!loading && filteredCategories.length > 0" class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <p class="text-on-surface-variant font-label-sm mb-0">
+        Mostrando {{ startRecord }}-{{ endRecord }} de {{ filteredCategories.length }} programas
+      </p>
+      <nav aria-label="Paginacion de programas">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="page === 1">
+            <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(1)" aria-label="Primera">
+              <span class="material-symbols-outlined text-[16px]">first_page</span>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="page === 1">
+            <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page - 1)" aria-label="Anterior">
+              <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+            </button>
+          </li>
+          <li class="page-item" *ngFor="let p of pageNumbers">
+            <button class="page-link bg-transparent border-white/10 text-on-surface" [class.active]="page === p" (click)="onPageChange(p)">{{ p }}</button>
+          </li>
+          <li class="page-item" [class.disabled]="page === totalPages">
+            <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(page + 1)" aria-label="Siguiente">
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="page === totalPages">
+            <button class="page-link bg-transparent border-white/10 text-on-surface" (click)="onPageChange(totalPages)" aria-label="Ultima">
+              <span class="material-symbols-outlined text-[16px]">last_page</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
 
     <!-- Create Modal -->
@@ -298,6 +364,8 @@ export class TrainingCategoryListComponent implements OnInit, AfterViewInit, OnD
   searchTerm = '';
   sortKey = 'id';
   sortDir: 'asc' | 'desc' = 'desc';
+  page = 1;
+  pageSize = 10;
 
   // Create modal state
   creating = false;
@@ -334,6 +402,42 @@ export class TrainingCategoryListComponent implements OnInit, AfterViewInit, OnD
       value: e.id,
       label: e.name,
     }));
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredCategories.length / this.pageSize));
+  }
+
+  get paginatedCategories(): TrainingCategory[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredCategories.slice(start, start + this.pageSize);
+  }
+
+  get startRecord(): number {
+    return this.filteredCategories.length === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(this.page * this.pageSize, this.filteredCategories.length);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end = Math.min(this.totalPages, this.page + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.page = page;
+      this.scheduleTooltipRefresh();
+    }
   }
 
   ngOnInit(): void {
@@ -420,6 +524,7 @@ export class TrainingCategoryListComponent implements OnInit, AfterViewInit, OnD
     });
 
     this.filteredCategories = result;
+    this.page = 1;
     this.scheduleTooltipRefresh();
   }
 
@@ -617,7 +722,11 @@ export class TrainingCategoryListComponent implements OnInit, AfterViewInit, OnD
       case 'id':
         return String(category.id).padStart(6, '0');
       case 'name':
-        return category.name;
+        return category.name.toLowerCase();
+      case 'empresa':
+        return (category.empresa?.name || '').toLowerCase();
+      case 'description':
+        return (category.description || '').toLowerCase();
       case 'trainings_count':
         return String(category.trainings_count ?? 0).padStart(6, '0');
       case 'sort_order':

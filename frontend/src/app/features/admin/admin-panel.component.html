@@ -2,7 +2,22 @@
   title="Panel de administracion"
   subtitle="Los accesos a Usuarios y Roles dependen de los permisos del rol actual."
   [showDateFilter]="false"
-/>
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">admin_panel_settings</span>
+        Administracion
+      </li>
+    </ol>
+  </nav>
+</app-page-header>
 
 <app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
 

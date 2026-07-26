@@ -131,6 +131,59 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - El estado de validación `is-invalid` se puede activar con el método `setInvalid()`.
 - Basado en el patrón visual de `frontend/template/forms.html` (clases `searchable-select`, `searchable-select-trigger`, `searchable-select-panel`, `searchable-select-search`, `searchable-select-option`).
 
+## DataTables2
+
+- `DataTables2` es el patron estandar para tablas que combinan:
+  - buscador
+  - sorter
+  - paginacion local
+- Se usa cuando la lista ya esta cargada en memoria y se quiere mantener una experiencia uniforme entre modulos.
+- No reemplaza una tabla con paginacion del backend; solo cubre colecciones locales o derivadas de una respuesta ya cargada.
+- Estructura sugerida:
+  - barra superior con accion principal y buscador
+  - tabla con encabezados ordenables
+  - footer con contador de registros y paginacion
+- Flujo de uso:
+  1. Cargar la lista base.
+  2. Aplicar el filtro de busqueda.
+  3. Ordenar el resultado.
+  4. Calcular la pagina visible.
+  5. Renderizar los controles debajo de la tabla.
+- Reglas visuales:
+  - Mantener el wrapper `card glass-card dashboard-table-card`.
+  - Usar encabezados compactos y alineacion consistente.
+  - Mostrar el texto `Mostrando X-Y de Z`.
+  - Ocultar la paginacion si solo existe una pagina.
+- Nombres recomendados en el componente:
+  - `filteredItems`
+  - `page`
+  - `pageSize`
+  - `totalPages`
+  - `paginatedItems`
+  - `startRecord`
+  - `endRecord`
+- Ejemplo base:
+  ```html
+  <div class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 dashboard-table">
+        ...
+      </table>
+    </div>
+    <div class="px-3 px-md-4 py-3 border-top border-white/10 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <p class="text-on-surface-variant font-label-sm mb-0">
+        Mostrando {{ startRecord }}-{{ endRecord }} de {{ totalFiltered }} registros
+      </p>
+      <nav *ngIf="totalPages > 1" aria-label="Paginacion">
+        <ul class="pagination pagination-sm mb-0">
+          ...
+        </ul>
+      </nav>
+    </div>
+  </div>
+  ```
+- Si un modulo ya tiene una tabla con buscador y sorter, adaptar esa vista a `DataTables2` en lugar de inventar una variante nueva.
+
 ## Reglas para modales
 
 - Usar `app-modal-shell` como contenedor base para cualquier modal nuevo o migrado.

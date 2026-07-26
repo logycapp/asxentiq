@@ -79,6 +79,8 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
   searchQuery = '';
   sortKey = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  page = 1;
+  pageSize = 10;
   empresaModalMode: 'create' | 'edit' | null = null;
   empresaModalLoading = false;
   empresaModalSaving = false;
@@ -276,6 +278,42 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sortDirection === 'asc' ? 'north' : 'south';
   }
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredEmpresas.length / this.pageSize));
+  }
+
+  get paginatedEmpresas(): Empresa[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredEmpresas.slice(start, start + this.pageSize);
+  }
+
+  get startRecord(): number {
+    return this.filteredEmpresas.length === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(this.page * this.pageSize, this.filteredEmpresas.length);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end = Math.min(this.totalPages, this.page + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.page = page;
+      this.scheduleTooltipRefresh();
+    }
+  }
+
   private refreshTooltips(): void {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
     const activeElements = new Set(elements);
@@ -392,24 +430,25 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.filteredEmpresas = result;
+    this.page = 1;
   }
 
   private getSortValue(empresa: Empresa, key: string): string | number | boolean {
     switch (key) {
       case 'name':
-        return empresa.name;
+        return empresa.name.toLowerCase();
       case 'tax_id':
-        return empresa.tax_id ?? '';
+        return (empresa.tax_id ?? '').toLowerCase();
       case 'address':
-        return empresa.address ?? '';
+        return (empresa.address ?? '').toLowerCase();
       case 'phone':
-        return empresa.phone ?? '';
+        return (empresa.phone ?? '').toLowerCase();
       case 'email':
-        return empresa.email ?? '';
+        return (empresa.email ?? '').toLowerCase();
       case 'active':
-        return empresa.active;
+        return empresa.active ? '1' : '0';
       case 'id':
-        return empresa.id;
+        return String(empresa.id).padStart(6, '0');
       default:
         return '';
     }

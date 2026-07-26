@@ -32,6 +32,8 @@ export class RoleListComponent implements OnInit, AfterViewInit, OnDestroy {
   searchQuery = '';
   sortKey = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  page = 1;
+  pageSize = 10;
 
   // Modal state
   editingRole: Role | null = null;
@@ -149,6 +151,42 @@ export class RoleListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sortDirection === 'asc' ? 'north' : 'south';
   }
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredRoles.length / this.pageSize));
+  }
+
+  get paginatedRoles(): Role[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredRoles.slice(start, start + this.pageSize);
+  }
+
+  get startRecord(): number {
+    return this.filteredRoles.length === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(this.page * this.pageSize, this.filteredRoles.length);
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end = Math.min(this.totalPages, this.page + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.page = page;
+      this.scheduleTooltipRefresh();
+    }
+  }
+
   private refreshTooltips(): void {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]'));
     const activeElements = new Set(elements);
@@ -191,21 +229,42 @@ export class RoleListComponent implements OnInit, AfterViewInit, OnDestroy {
       );
     }
 
-    if (this.sortKey === 'name') {
+    if (this.sortKey) {
       result.sort((a, b) => {
-        const cmp = a.name.localeCompare(b.name);
-        return this.sortDirection === 'asc' ? cmp : -cmp;
-      });
-    }
+        const first = this.getSortValue(a, this.sortKey);
+        const second = this.getSortValue(b, this.sortKey);
 
-    if (this.sortKey === 'slug') {
-      result.sort((a, b) => {
-        const cmp = a.slug.localeCompare(b.slug);
-        return this.sortDirection === 'asc' ? cmp : -cmp;
+        if (first < second) {
+          return this.sortDirection === 'asc' ? -1 : 1;
+        }
+
+        if (first > second) {
+          return this.sortDirection === 'asc' ? 1 : -1;
+        }
+
+        return 0;
       });
     }
 
     this.filteredRoles = result;
+    this.page = 1;
+  }
+
+  private getSortValue(role: Role, key: string): string | number {
+    switch (key) {
+      case 'id':
+        return role.id;
+      case 'name':
+        return role.name.toLowerCase();
+      case 'slug':
+        return role.slug.toLowerCase();
+      case 'description':
+        return (role.description || '').toLowerCase();
+      case 'is_system':
+        return role.is_system ? 1 : 0;
+      default:
+        return '';
+    }
   }
 
   remove(role: Role): void {

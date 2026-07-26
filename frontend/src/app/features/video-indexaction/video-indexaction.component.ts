@@ -22,7 +22,28 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
       title="Video Index Action"
       subtitle="Selecciona una capacitacion con material de video y reproducela sin salir del sistema."
       [showDateFilter]="false"
-    />
+    >
+      <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">home</span>
+              Inicio
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a routerLink="/trainings_programs" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">school</span>
+              Capacitaciones
+            </a>
+          </li>
+          <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+            <span class="material-symbols-outlined text-[15px]">smart_display</span>
+            Video Index Action
+          </li>
+        </ol>
+      </nav>
+    </app-page-header>
 
     <div *ngIf="loading" class="text-center py-5">
       <div class="text-on-surface-variant font-body-md">Cargando material de video...</div>
