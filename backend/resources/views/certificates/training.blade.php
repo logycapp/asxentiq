@@ -326,7 +326,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="qr-block">
                     <div class="qr-title">Validación</div>
                     <div class="qr-box">
