@@ -537,4 +537,10 @@
     (close)="closeProfilePanel()"
     (logout)="logout()"
   />
+
+  <app-privacy-consent-modal
+    [open]="consentOpen"
+    (accepted)="acceptPrivacyConsent()"
+    (declined)="declinePrivacyConsent()"
+  ></app-privacy-consent-modal>
 </ng-template>

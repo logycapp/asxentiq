@@ -25,6 +25,7 @@ Route::get('/storage/{path}', [StorageController::class, 'show'])->where('path',
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/privacy-consent', [AuthController::class, 'acceptPrivacyConsent']);
     Route::get('/time', function (): \Illuminate\Http\JsonResponse {
         $serverNow = now(config('app.timezone'));
 
@@ -140,8 +141,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
 // Public training routes (no auth:sanctum - uses participant token in Authorization header)
 Route::post('/public/trainings/login', [\App\Http\Controllers\Api\PublicTrainingController::class, 'login']);
 Route::middleware('auth.participant')->group(function (): void {
+    Route::post('/public/trainings/privacy-consent', [\App\Http\Controllers\Api\PublicTrainingController::class, 'acceptPrivacyConsent']);
     Route::get('/public/trainings/pending', [\App\Http\Controllers\Api\PublicTrainingController::class, 'pending']);
     Route::get('/public/trainings/completed', [\App\Http\Controllers\Api\PublicTrainingController::class, 'completed']);
+    Route::post('/public/trainings/{training}/begin', [\App\Http\Controllers\Api\PublicTrainingController::class, 'begin']);
     Route::get('/public/trainings/{training}/take', [\App\Http\Controllers\Api\PublicTrainingController::class, 'take']);
     Route::post('/public/trainings/{training}/submit', [\App\Http\Controllers\Api\PublicTrainingController::class, 'submit']);
     Route::get('/public/trainings/{training}/result', [\App\Http\Controllers\Api\PublicTrainingController::class, 'result']);

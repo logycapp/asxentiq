@@ -395,6 +395,10 @@
         ></app-select3>
       </div>
       <div class="col-md-3">
+        <label class="form-label small text-on-surface-variant">Intentos permitidos *</label>
+        <input type="number" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editMaxAttempts" min="1" required />
+      </div>
+      <div class="col-md-3">
         <label class="form-label small text-on-surface-variant">Fecha Programada *</label>
         <input type="date" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editScheduledDate" />
       </div>

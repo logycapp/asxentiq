@@ -10,6 +10,7 @@ export interface User {
   active: boolean;
   role?: string;
   empresa_id?: number | null;
+  privacy_consent_accepted_at?: string | null;
   empresa_relation?: {
     id: number;
     name: string;

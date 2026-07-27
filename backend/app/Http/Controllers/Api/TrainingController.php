@@ -111,7 +111,10 @@ class TrainingController extends Controller
             'mandatory' => ['boolean'],
             'status' => ['required', 'string', 'in:scheduled,completed,cancelled'],
             'passing_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'max_attempts' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        $data['max_attempts'] = $data['max_attempts'] ?? 1;
 
         $training = Training::query()->create($data);
 
@@ -149,7 +152,10 @@ class TrainingController extends Controller
             'mandatory' => ['boolean'],
             'status' => ['required', 'string', 'in:scheduled,completed,cancelled'],
             'passing_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'max_attempts' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        $data['max_attempts'] = $data['max_attempts'] ?? 1;
 
         $training->update($data);
 
@@ -625,10 +631,14 @@ class TrainingController extends Controller
 
             $updates = [];
 
-            foreach (['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'] as $column) {
+            foreach (['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at', 'attempt_started_at'] as $column) {
                 if (Schema::hasColumn('training_participants', $column)) {
                     $updates[$column] = null;
                 }
+            }
+
+            if (Schema::hasColumn('training_participants', 'attempts_count')) {
+                $updates['attempts_count'] = 0;
             }
 
             $participant->update($updates);

@@ -20,6 +20,7 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
       [showHeaderClose]="true"
       [showFooter]="true"
       [showFooterClose]="false"
+      size="xl"
       [showPrimaryButton]="editingQuestion"
       [showSecondaryButton]="true"
       [primaryLabel]="editingQuestionId ? 'Actualizar' : 'Crear'"

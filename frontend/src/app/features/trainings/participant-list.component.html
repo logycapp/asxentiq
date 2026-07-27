@@ -129,6 +129,7 @@
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th participant-table-th">
             <button class="sort-trigger participant-sort-trigger" type="button" (click)="sortBy('phone')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por telefono" aria-label="Ordenar por telefono">Telefono <span class="material-symbols-outlined sort-icon">{{ getSortIcon('phone') }}</span></button>
           </th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase participant-table-th">Consentimiento</th>
           <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end participant-table-th">Acciones</th>
         </tr>
       </thead>
@@ -144,6 +145,31 @@
           <td class="py-3 text-on-surface-variant">{{ participant.empresa?.name || 'No determinada' }}</td>
           <td class="py-3 text-on-surface-variant">{{ participant.email || '-' }}</td>
           <td class="py-3 text-on-surface-variant">{{ participant.phone || '-' }}</td>
+          <td class="py-3">
+            <ng-container *ngIf="participant.privacy_consent_accepted_at; else participantConsentPending">
+              <span
+                class="badge rounded-pill participant-consent-badge participant-consent-approved d-inline-flex flex-column align-items-start gap-1"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                [attr.title]="'Autorizado el ' + (participant.privacy_consent_accepted_at | date:'dd/MM/yyyy HH:mm')"
+                [attr.aria-label]="'Autorizado el ' + (participant.privacy_consent_accepted_at | date:'dd/MM/yyyy HH:mm')"
+              >
+                <span class="participant-consent-badge__label">Autorizado</span>
+                <span class="participant-consent-badge__value">{{ participant.privacy_consent_accepted_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </span>
+            </ng-container>
+            <ng-template #participantConsentPending>
+              <span
+                class="badge rounded-pill participant-consent-badge participant-consent-pending"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Pendiente de autorización"
+                aria-label="Pendiente de autorización"
+              >
+                Pendiente
+              </span>
+            </ng-template>
+          </td>
           <td class="pe-4 py-3 text-end">
             <div class="dashboard-action-group">
               <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" (click)="openEditModal(participant)" data-bs-toggle="tooltip" data-bs-placement="top">

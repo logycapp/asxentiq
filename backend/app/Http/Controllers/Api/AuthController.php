@@ -110,6 +110,25 @@ class AuthController extends Controller
         ]);
     }
 
+    public function acceptPrivacyConsent(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            abort(401);
+        }
+
+        if (! $user->privacy_consent_accepted_at) {
+            $user->forceFill([
+                'privacy_consent_accepted_at' => now(),
+            ])->save();
+        }
+
+        return response()->json([
+            'user' => $user->fresh()->load(['roleRelation', 'empresaRelation']),
+        ]);
+    }
+
     public function sendPasswordResetLink(Request $request): JsonResponse
     {
         $data = $request->validate([

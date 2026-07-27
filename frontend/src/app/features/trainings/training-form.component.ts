@@ -20,7 +20,7 @@ import { Select3Component } from '../../shared/select3.component';
       subtitle="Ajusta los datos de la capacitacion sin salir del listado."
       [headerVariant]="isEdit ? 'warning' : 'info'"
       [footerVariant]="isEdit ? 'warning' : 'primary'"
-      size="lg"
+      size="xl"
       [showHeaderClose]="true"
       [showFooterClose]="false"
       [showPrimaryButton]="true"
@@ -127,6 +127,22 @@ import { Select3Component } from '../../shared/select3.component';
                 name="mandatory"
                 placeholder="Selecciona una opcion"
               ></app-select3>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small text-on-surface-variant">Intentos permitidos *</label>
+              <input
+                #maxAttemptsModel="ngModel"
+                type="number"
+                class="form-control bg-transparent border-white/10 text-on-surface"
+                [(ngModel)]="model.max_attempts"
+                name="max_attempts"
+                min="1"
+                required
+              />
+              <div class="invalid-feedback d-block" *ngIf="(maxAttemptsModel.touched || trainingForm.submitted) && maxAttemptsModel.invalid">
+                Indica la cantidad de intentos permitidos.
+              </div>
             </div>
 
             <div class="col-md-3">
@@ -256,6 +272,7 @@ export class TrainingFormComponent implements OnInit {
     mandatory: true,
     status: 'scheduled',
     passing_score: 70,
+    max_attempts: 1,
   };
 
   get categoryOptions(): Array<{ value: number; label: string }> {
@@ -325,6 +342,7 @@ export class TrainingFormComponent implements OnInit {
             mandatory: training.mandatory,
             status: training.status,
             passing_score: training.passing_score,
+            max_attempts: training.max_attempts ?? 1,
             materials: training.materials,
           };
           if (this.fixedTrainingCategoryId) {

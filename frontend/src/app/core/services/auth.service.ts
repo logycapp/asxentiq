@@ -14,6 +14,7 @@ export interface AuthUser {
   menu_layout?: 'top' | 'left' | string | null;
   theme_mode?: 'dark' | 'light';
   sidebar_collapsed?: boolean | number;
+  privacy_consent_accepted_at?: string | null;
   empresa_id?: number | null;
   empresa_relation?: {
     id: number;
@@ -35,6 +36,10 @@ interface LoginResponse {
 
 interface MessageResponse {
   message: string;
+}
+
+interface ConsentResponse {
+  user: AuthUser;
 }
 
 export interface PasswordResetRequest {
@@ -79,6 +84,10 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => this.clearSession())
     );
+  }
+
+  acceptPrivacyConsent(): Observable<ConsentResponse> {
+    return this.http.post<ConsentResponse>(`${this.apiUrl}/privacy-consent`, {});
   }
 
   me(): Observable<{ user: AuthUser }> {

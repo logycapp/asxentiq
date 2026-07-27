@@ -30,6 +30,7 @@ class User extends Authenticatable
         'menu_layout',
         'theme_mode',
         'sidebar_collapsed',
+        'privacy_consent_accepted_at',
     ];
 
     protected $hidden = [
@@ -45,6 +46,7 @@ class User extends Authenticatable
             'active' => 'boolean',
             'role_id' => 'integer',
             'empresa_id' => 'integer',
+            'privacy_consent_accepted_at' => 'datetime',
         ];
     }
 

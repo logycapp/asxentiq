@@ -29,6 +29,11 @@ class PublicTrainingController extends Controller
             'document_number' => ['required', 'string', 'max:20'],
         ]);
 
+        $privacyConsentAcceptedAt = TrainingParticipant::query()
+            ->where('document_number', $data['document_number'])
+            ->whereNotNull('privacy_consent_accepted_at')
+            ->max('privacy_consent_accepted_at');
+
         $participant = TrainingParticipant::query()
             ->where('document_number', $data['document_number'])
             ->when(Schema::hasColumn('training_participants', 'active'), function ($query): void {
@@ -52,6 +57,35 @@ class PublicTrainingController extends Controller
                 'id' => $participant->id,
                 'name' => $participant->full_name,
                 'document_number' => $participant->document_number,
+                'privacy_consent_accepted_at' => $privacyConsentAcceptedAt,
+            ],
+        ]);
+    }
+
+    public function acceptPrivacyConsent(Request $request): JsonResponse
+    {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        TrainingParticipant::query()
+            ->where('document_number', $documentNumber)
+            ->update([
+                'privacy_consent_accepted_at' => now(),
+            ]);
+
+        $participant = TrainingParticipant::query()
+            ->where('document_number', $documentNumber)
+            ->orderByDesc('updated_at')
+            ->first();
+
+        return response()->json([
+            'user' => [
+                'id' => $participant?->id,
+                'name' => $participant?->full_name,
+                'document_number' => $participant?->document_number,
+                'privacy_consent_accepted_at' => $participant?->privacy_consent_accepted_at?->toISOString() ?? now()->toISOString(),
             ],
         ]);
     }
@@ -71,9 +105,19 @@ class PublicTrainingController extends Controller
                     $q->where('active', true);
                 }
 
-                $q->whereRaw(
-                    'not exists (select 1 from participant_answers pa where pa.training_participant_id = training_participants.id)'
-                );
+                $q->where(function ($attemptQuery): void {
+                    $attemptQuery->whereRaw(
+                        'not exists (select 1 from participant_answers pa where pa.training_participant_id = training_participants.id)'
+                    );
+
+                    if (Schema::hasColumn('training_participants', 'attempt_started_at')) {
+                        $attemptQuery->orWhereNotNull('training_participants.attempt_started_at');
+                    }
+
+                    if (Schema::hasColumn('trainings', 'max_attempts') && Schema::hasColumn('training_participants', 'attempts_count')) {
+                        $attemptQuery->orWhereRaw('COALESCE(training_participants.attempts_count, 0) < COALESCE(trainings.max_attempts, 1)');
+                    }
+                });
             })
             ->with('category')
             ->with(['participants' => function ($q) use ($documentNumber): void {
@@ -127,6 +171,61 @@ class PublicTrainingController extends Controller
         return response()->json($trainings);
     }
 
+    public function begin(Training $training, Request $request): JsonResponse
+    {
+        $documentNumber = $this->getParticipantDocument($request);
+        if (! $documentNumber) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        $participant = $training->participants()
+            ->where('document_number', $documentNumber)
+            ->where('active', true)
+            ->first();
+
+        if (! $participant) {
+            return response()->json(['message' => 'No estas asignado a esta capacitacion.'], 403);
+        }
+
+        if (! $this->isAttemptInProgress($participant) && ! $this->hasAttemptsRemaining($training, $participant)) {
+            return response()->json(['message' => 'Ya agotaste los intentos disponibles para esta capacitacion.'], 422);
+        }
+
+        if (! $this->isAttemptInProgress($participant)) {
+            DB::transaction(function () use ($participant): void {
+                DB::table('participant_answers')
+                    ->where('training_participant_id', $participant->id)
+                    ->delete();
+
+                $updates = [];
+
+                foreach (['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'] as $column) {
+                    if (Schema::hasColumn('training_participants', $column)) {
+                        $updates[$column] = null;
+                    }
+                }
+
+                if (Schema::hasColumn('training_participants', 'attempt_started_at')) {
+                    $updates['attempt_started_at'] = now();
+                }
+
+                if (Schema::hasColumn('training_participants', 'attempts_count')) {
+                    $updates['attempts_count'] = ($participant->attempts_count ?? 0) + 1;
+                }
+
+                if ($updates !== []) {
+                    $participant->update($updates);
+                }
+            });
+
+            $participant = $participant->fresh();
+        }
+
+        $training->setAttribute('attempt_in_progress', $this->isAttemptInProgress($participant));
+
+        return response()->json($training);
+    }
+
     public function take(Training $training, Request $request): JsonResponse
     {
         $documentNumber = $this->getParticipantDocument($request);
@@ -143,8 +242,38 @@ class PublicTrainingController extends Controller
             return response()->json(['message' => 'No estas asignado a esta capacitacion.'], 403);
         }
 
-        if ($this->hasCompletedTraining($training, $participant)) {
-            return response()->json(['message' => 'Ya completaste esta capacitacion.'], 422);
+        if (! $this->isAttemptInProgress($participant) && ! $this->hasAttemptsRemaining($training, $participant)) {
+            return response()->json(['message' => 'Ya agotaste los intentos disponibles para esta capacitacion.'], 422);
+        }
+
+        if (! $this->isAttemptInProgress($participant)) {
+            DB::transaction(function () use ($participant): void {
+                DB::table('participant_answers')
+                    ->where('training_participant_id', $participant->id)
+                    ->delete();
+
+                $updates = [];
+
+                foreach (['attended', 'score', 'passed', 'observations', 'attendance_date', 'completed_at'] as $column) {
+                    if (Schema::hasColumn('training_participants', $column)) {
+                        $updates[$column] = null;
+                    }
+                }
+
+                if (Schema::hasColumn('training_participants', 'attempt_started_at')) {
+                    $updates['attempt_started_at'] = now();
+                }
+
+                if (Schema::hasColumn('training_participants', 'attempts_count')) {
+                    $updates['attempts_count'] = ($participant->attempts_count ?? 0) + 1;
+                }
+
+                if ($updates !== []) {
+                    $participant->update($updates);
+                }
+            });
+
+            $participant = $participant->fresh();
         }
 
         $training->load(['category', 'questions' => function ($q): void {
@@ -152,7 +281,9 @@ class PublicTrainingController extends Controller
             $q->with(['options' => function ($opt): void {
                 $opt->select(['id', 'question_id', 'option_text', 'order']);
             }, 'materials'])->orderBy('order');
-        }, 'materials']);
+            }, 'materials']);
+
+        $training->setAttribute('attempt_in_progress', $this->isAttemptInProgress($participant));
 
         return response()->json($training);
     }
@@ -169,8 +300,8 @@ class PublicTrainingController extends Controller
             ->where('active', true)
             ->first();
 
-        if (! $participant || $this->hasCompletedTraining($training, $participant)) {
-            return response()->json(['message' => 'No puedes enviar respuestas para esta capacitacion.'], 422);
+        if (! $participant || ! $this->isAttemptInProgress($participant)) {
+            return response()->json(['message' => 'Debes iniciar el examen primero.'], 422);
         }
 
         $data = $request->validate([
@@ -266,6 +397,10 @@ class PublicTrainingController extends Controller
                 $updates['completed_at'] = now();
             }
 
+            if (Schema::hasColumn('training_participants', 'attempt_started_at')) {
+                $updates['attempt_started_at'] = null;
+            }
+
             if ($updates !== []) {
                 $participant->update($updates);
             }
@@ -348,5 +483,30 @@ class PublicTrainingController extends Controller
         return DB::table('participant_answers')
             ->where('training_participant_id', $participant->id)
             ->exists();
+    }
+
+    private function hasAttemptsRemaining(Training $training, TrainingParticipant $participant): bool
+    {
+        $maxAttempts = 1;
+
+        if (Schema::hasColumn('trainings', 'max_attempts')) {
+            $maxAttempts = max((int) ($training->max_attempts ?? 1), 1);
+        }
+
+        $attemptsUsed = 0;
+        if (Schema::hasColumn('training_participants', 'attempts_count')) {
+            $attemptsUsed = max((int) ($participant->attempts_count ?? 0), 0);
+        }
+
+        return $attemptsUsed < $maxAttempts;
+    }
+
+    private function isAttemptInProgress(TrainingParticipant $participant): bool
+    {
+        if (! Schema::hasColumn('training_participants', 'attempt_started_at')) {
+            return false;
+        }
+
+        return $participant->attempt_started_at !== null && $participant->completed_at === null;
     }
 }

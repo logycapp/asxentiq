@@ -25,6 +25,7 @@ class Training extends Model
         'mandatory',
         'status',
         'passing_score',
+        'max_attempts',
     ];
 
     protected function casts(): array
@@ -34,6 +35,7 @@ class Training extends Model
             'completion_date' => 'date',
             'mandatory' => 'boolean',
             'passing_score' => 'decimal:2',
+            'max_attempts' => 'integer',
         ];
     }
 

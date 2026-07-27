@@ -191,10 +191,25 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
               </td>
               <td class="py-3">
                 <div class="d-flex flex-column gap-2">
-                  <span *ngIf="participant.score !== null && participant.score !== undefined" class="badge rounded-pill px-3 py-2 participant-result-badge" [ngClass]="participantPassed(participant) ? 'participant-result-approved' : 'participant-result-rejected'">
+                  <span
+                    *ngIf="participant.score !== null && participant.score !== undefined"
+                    class="badge rounded-pill px-3 py-2 participant-result-badge"
+                    [ngClass]="participantPassed(participant) ? 'participant-result-approved' : 'participant-result-rejected'"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    [attr.title]="attemptsTooltip(participant)"
+                    [attr.aria-label]="attemptsTooltip(participant)"
+                  >
                     {{ participantPassed(participant) ? 'Aprobado' : 'No Aprobado' }}<br>{{ participant.score }}%
                   </span>
-                  <span *ngIf="participant.score === null || participant.score === undefined" class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending">
+                  <span
+                    *ngIf="participant.score === null || participant.score === undefined"
+                    class="badge rounded-pill px-3 py-2 participant-result-badge participant-result-pending"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    [attr.title]="attemptsTooltip(participant)"
+                    [attr.aria-label]="attemptsTooltip(participant)"
+                  >
                     Pendiente de revision
                   </span>
                 </div>
@@ -1234,6 +1249,11 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     return this.participantPassed(participant) ? 'a-aprobado' : 'b-reprobado';
+  }
+
+  attemptsTooltip(participant: TrainingParticipant): string {
+    const attempts = Math.max(Number(participant.attempts_count ?? 0), 0);
+    return `Intentos: ${attempts}`;
   }
 
   activateParticipant(participant: TrainingParticipant): void {

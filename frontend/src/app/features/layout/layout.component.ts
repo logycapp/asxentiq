@@ -7,6 +7,7 @@ import { filter, finalize, Subscription, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { PrivacyConsentModalComponent } from '../../core/components/privacy-consent-modal.component';
 import { LoadingService } from '../../core/services/loading.service';
 import { MenuItem, MenuService } from '../../core/services/menu.service';
 import { LayoutNavbarComponent } from './layout-navbar.component';
@@ -27,7 +28,8 @@ import { ProfilePanelComponent } from '../admin/layout/profile-panel/profile-pan
     AdminSidebarComponent,
     TopHeaderComponent,
     ProfilePanelComponent,
-    ModalShellComponent
+    ModalShellComponent,
+    PrivacyConsentModalComponent
   ],
   templateUrl: './layout.component.html',
   styleUrls: []
@@ -65,6 +67,8 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   menuError = '';
   searchDialogOpen = false;
   searchTerm = '';
+  consentOpen = false;
+  consentLoading = false;
 
   private clockTimerId: ReturnType<typeof window.setInterval> | null = null;
   private serverClockBaseMs = 0;
@@ -81,6 +85,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applySavedSidebarState();
     this.updateViewportMode();
     this.updateRouteMode();
+    this.syncPrivacyConsentState();
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this.handleResize);
     }
@@ -281,6 +286,41 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  acceptPrivacyConsent(): void {
+    if (this.consentLoading) {
+      return;
+    }
+
+    this.consentLoading = true;
+    this.authService.acceptPrivacyConsent().subscribe({
+      next: (response) => {
+        if (response.user) {
+          this.authService.setCurrentUser(response.user);
+        }
+
+        this.consentOpen = false;
+        this.consentLoading = false;
+      },
+      error: () => {
+        this.consentLoading = false;
+      }
+    });
+  }
+
+  declinePrivacyConsent(): void {
+    if (this.consentLoading) {
+      return;
+    }
+
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => {
+        this.authService.clearSession();
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
   private updatePageHeading(): void {
     let route = this.router.routerState.snapshot.root;
 
@@ -295,6 +335,11 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     const currentUrl = this.router.url.split('?')[0].split('#')[0].replace(/\/$/, '');
     // All authenticated routes use the dashboard shell
     this.isDashboardRoute = true;
+  }
+
+  private syncPrivacyConsentState(): void {
+    const user = this.authService.getCurrentUser();
+    this.consentOpen = !!user && !user.privacy_consent_accepted_at;
   }
 
   private updateViewportMode(): void {

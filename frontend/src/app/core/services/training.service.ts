@@ -17,6 +17,7 @@ export interface Training {
   mandatory: boolean;
   status: string;
   passing_score: number;
+  max_attempts?: number;
   questions_count?: number;
   users_count?: number;
   participants_count?: number;
@@ -28,6 +29,8 @@ export interface Training {
   audioIndexation?: TrainingAudioIndexation | null;
   users?: any[];
   participants?: TrainingParticipant[];
+  attempt_in_progress?: boolean;
+  privacy_consent_accepted_at?: string | null;
 }
 
 export interface TrainingAudioIndexation {
@@ -100,6 +103,8 @@ export interface TrainingParticipant {
   observations?: string | null;
   attendance_date?: string | null;
   completed_at?: string | null;
+  attempt_started_at?: string | null;
+  attempts_count?: number | null;
   empresa?: { id: number; name: string; active?: boolean } | null;
   created_at?: string;
   updated_at?: string;
@@ -131,6 +136,7 @@ export interface PublicUser {
   id: number;
   name: string;
   document_number: string;
+  privacy_consent_accepted_at?: string | null;
 }
 
 export interface PublicLoginResponse {
@@ -525,6 +531,10 @@ export class TrainingService {
     });
   }
 
+  acceptPublicPrivacyConsent(): Observable<{ user: PublicUser }> {
+    return this.http.post<{ user: PublicUser }>(`${environment.apiUrl}/public/trainings/privacy-consent`, {});
+  }
+
   getPending(): Observable<Training[]> {
     return this.http.get<Training[]>(`${environment.apiUrl}/public/trainings/pending`);
   }
@@ -535,6 +545,10 @@ export class TrainingService {
 
   takeExam(trainingId: number): Observable<Training> {
     return this.http.get<Training>(`${environment.apiUrl}/public/trainings/${trainingId}/take`);
+  }
+
+  beginExam(trainingId: number): Observable<Training> {
+    return this.http.post<Training>(`${environment.apiUrl}/public/trainings/${trainingId}/begin`, {});
   }
 
   submitExam(trainingId: number, answers: SubmitAnswer[]): Observable<SubmitResponse> {

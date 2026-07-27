@@ -121,6 +121,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   editScheduledDate = '';
   editDurationHours: number | undefined;
   editPassingScore = 70;
+  editMaxAttempts = 1;
   editLocation = '';
   editInstructor = '';
   editMandatory = true;
@@ -339,6 +340,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editScheduledDate = training.scheduled_date;
     this.editDurationHours = training.duration_hours;
     this.editPassingScore = training.passing_score;
+    this.editMaxAttempts = training.max_attempts ?? 1;
     this.editLocation = training.location || '';
     this.editInstructor = training.instructor || '';
     this.editMandatory = training.mandatory;
@@ -363,6 +365,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.trainingMaterialFile = null;
     this.trainingMaterialType = 'pdf';
     this.editTrainingCategoryId = null;
+    this.editMaxAttempts = 1;
     this.loadingEditDetails = false;
     this.allParticipants = [];
     this.assignedParticipants = [];
@@ -416,6 +419,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
       scheduled_date: this.editScheduledDate,
       duration_hours: this.editDurationHours || undefined,
       passing_score: this.editPassingScore,
+      max_attempts: this.editMaxAttempts,
       location: this.editLocation || undefined,
       instructor: this.editInstructor || undefined,
       mandatory: this.editMandatory,
@@ -466,6 +470,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (training) => {
         this.editingTraining = training;
         this.editTrainingCategoryId = training.training_category_id ?? training.category?.id ?? this.editTrainingCategoryId;
+        this.editMaxAttempts = training.max_attempts ?? 1;
         this.trainingMaterials = training.materials ?? [];
         this.loadingEditDetails = false;
       },
