@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('participant_answers', function (Blueprint $table): void {
-            $table->dropForeign('pa_tp_fk');
+            $this->dropTrainingParticipantForeignKey($table);
             $table->foreign('training_participant_id', 'pa_tp_fk')
                 ->references('id')
                 ->on('training_participants')
@@ -20,11 +20,21 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('participant_answers', function (Blueprint $table): void {
-            $table->dropForeign('pa_tp_fk');
+            $this->dropTrainingParticipantForeignKey($table);
             $table->foreign('training_participant_id', 'pa_tp_fk')
                 ->references('id')
                 ->on('training_participant')
                 ->cascadeOnDelete();
         });
+    }
+
+    private function dropTrainingParticipantForeignKey(Blueprint $table): void
+    {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            $table->dropForeign(['training_participant_id']);
+            return;
+        }
+
+        $table->dropForeign('pa_tp_fk');
     }
 };

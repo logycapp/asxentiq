@@ -237,7 +237,7 @@ install_backend_dependencies() {
 }
 
 install_frontend_dependencies() {
-  if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+  if [[ ! -d "$FRONTEND_DIR/node_modules" || ! -d "$FRONTEND_DIR/node_modules/sweetalert2" ]]; then
     echo "Instalando dependencias de Angular..."
     (cd "$FRONTEND_DIR" && npm install)
   fi
@@ -255,7 +255,6 @@ start_backend() {
   echo "Iniciando Laravel API en ${BACKEND_HOST}:${BACKEND_PORT}"
   (
     cd "$BACKEND_DIR"
-    "$PHP_BIN" artisan migrate --seed --force
     "$PHP_BIN" artisan serve --host="$BACKEND_HOST" --port="$BACKEND_PORT"
   ) &
   BACKEND_PID=$!
