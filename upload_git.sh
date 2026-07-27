@@ -85,4 +85,6 @@ if git diff --cached --quiet; then
 fi
 
 git commit -m "$COMMIT_MESSAGE"
+echo "Sincronizando con origin/${BRANCH} antes de subir..."
+git pull --rebase --autostash origin "$BRANCH"
 git push origin "$BRANCH"
