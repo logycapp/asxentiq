@@ -96,6 +96,24 @@ class TrainingController extends Controller
         ]);
     }
 
+    public function dashboardStats(): JsonResponse
+    {
+        $trainings = Training::query()
+            ->withCount(['questions', 'users', 'participants'])
+            ->get();
+
+        return response()->json([
+            'total' => $trainings->count(),
+            'scheduled' => $trainings->where('status', 'scheduled')->count(),
+            'completed' => $trainings->where('status', 'completed')->count(),
+            'cancelled' => $trainings->where('status', 'cancelled')->count(),
+            'questions_total' => $trainings->sum('questions_count'),
+            'users_total' => $trainings->sum('users_count'),
+            'participants_total' => $trainings->sum('participants_count'),
+            'with_questions' => $trainings->filter(fn (Training $training): bool => (int) ($training->questions_count ?? 0) > 0)->count(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

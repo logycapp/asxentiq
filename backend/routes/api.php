@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar/generate', [ProfileController::class, 'generateAvatar']);
     Route::post('/theme', [\App\Http\Controllers\Api\ThemeController::class, 'update']);
+    Route::get('/dashboard/trainings/stats', [TrainingController::class, 'dashboardStats']);
 
     Route::middleware('menu.access:/roles')->group(function (): void {
         Route::get('/roles', [RoleController::class, 'index']);
@@ -119,6 +120,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
         // Questions nested under trainings (must be before /questions/{question})
         Route::get('/trainings/{training}/questions', [QuestionController::class, 'index']);
+        Route::get('/trainings/{training}/questions/template', [QuestionController::class, 'downloadTemplate']);
+        Route::post('/trainings/{training}/questions/import', [QuestionController::class, 'importTemplate']);
         Route::post('/trainings/{training}/questions', [QuestionController::class, 'store']);
 
         // Questions CRUD

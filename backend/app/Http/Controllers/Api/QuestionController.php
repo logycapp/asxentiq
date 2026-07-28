@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\TrainingQuestionsTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\TrainingQuestionsImport;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\Training;
@@ -11,6 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class QuestionController extends Controller
 {
@@ -146,6 +150,33 @@ class QuestionController extends Controller
 
         return response()->json([
             'message' => 'Opcion eliminada correctamente.',
+        ]);
+    }
+
+    public function downloadTemplate(Training $training)
+    {
+        $filename = 'plantilla-preguntas-' . Str::slug($training->title) . '.xlsx';
+
+        return Excel::download(new TrainingQuestionsTemplateExport($training), $filename);
+    }
+
+    public function importTemplate(Request $request, Training $training): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        $import = new TrainingQuestionsImport($training);
+        Excel::import($import, $request->file('file'));
+
+        $summary = $import->summary();
+
+        return response()->json([
+            'message' => 'Archivo de preguntas procesado correctamente.',
+            'created' => $summary['created'],
+            'updated' => $summary['updated'],
+            'skipped' => $summary['skipped'],
+            'errors' => $summary['errors'],
         ]);
     }
 

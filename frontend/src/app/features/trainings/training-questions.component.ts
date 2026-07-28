@@ -40,6 +40,31 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
       </div>
 
       <div modal-body>
+        <div class="card border border-white/10 rounded-3 p-3 mb-3">
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+            <div class="d-flex align-items-start gap-3">
+              <span class="material-symbols-outlined text-on-surface-variant mt-1">description</span>
+              <div class="d-flex flex-column gap-1">
+                <div class="text-on-surface fw-semibold">Carga masiva y plantilla</div>
+                <div class="text-on-surface-variant font-label-sm">
+                  Descarga la plantilla para preguntas de opcion multiple o si/no, completala y vuelve a cargarla.
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <input #questionsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importQuestions($event)" />
+              <button type="button" class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="downloadTemplate()" [disabled]="exportingTemplate">
+                <span class="material-symbols-outlined text-[16px]">download</span>
+                {{ exportingTemplate ? 'Generando...' : 'Descargar plantilla' }}
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="questionsFileInput.click()" [disabled]="importingTemplate">
+                <span class="material-symbols-outlined text-[16px]">upload_file</span>
+                {{ importingTemplate ? 'Cargando...' : 'Cargar Excel' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div *ngIf="message" class="alert alert-success alert-dismissible mb-3">
           <button type="button" class="btn-close" aria-label="Close" (click)="message = ''"></button>
           {{ message }}
@@ -259,6 +284,8 @@ export class TrainingQuestionsComponent implements OnInit {
   loading = true;
   message = '';
   errorMessage = '';
+  exportingTemplate = false;
+  importingTemplate = false;
 
   editingQuestion = false;
   editingQuestionId: number | null = null;
@@ -306,6 +333,64 @@ export class TrainingQuestionsComponent implements OnInit {
     this.editingOptions = [];
     this.editingQuestionMaterials = [];
     this.clearQuestionMaterial();
+  }
+
+  downloadTemplate(): void {
+    if (this.exportingTemplate || !this.trainingId) {
+      return;
+    }
+
+    this.errorMessage = '';
+    this.exportingTemplate = true;
+
+    this.loadingService.track(this.trainingService.downloadTrainingQuestionsTemplate(this.trainingId))
+      .pipe(finalize(() => (this.exportingTemplate = false)))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `plantilla-preguntas-${this.trainingId}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.message = 'Plantilla Excel descargada correctamente.';
+        },
+        error: () => {
+          this.errorMessage = 'Error al descargar la plantilla Excel.';
+        }
+      });
+  }
+
+  importQuestions(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file || this.importingTemplate || !this.trainingId) {
+      input.value = '';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.importingTemplate = true;
+
+    this.loadingService.track(this.trainingService.importTrainingQuestionsTemplate(this.trainingId, file))
+      .pipe(finalize(() => {
+        this.importingTemplate = false;
+        input.value = '';
+      }))
+      .subscribe({
+        next: (result) => {
+          this.message = result.message || `Carga procesada: ${result.created} creadas, ${result.updated} actualizadas y ${result.skipped} omitidas.`;
+          if (result.errors.length > 0) {
+            this.errorMessage = `Se omitieron ${result.skipped} filas por errores de validacion.`;
+          }
+          this.loadQuestions();
+          this.saved.emit();
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Error al cargar el Excel de preguntas.';
+        }
+      });
   }
 
   editQuestion(q: Question): void {

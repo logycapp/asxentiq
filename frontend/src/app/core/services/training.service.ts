@@ -75,6 +75,17 @@ export interface QuestionSavePayload {
   options?: QuestionSaveOption[];
 }
 
+export interface QuestionImportResult {
+  message: string;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: Array<{
+    row: number;
+    errors: string[];
+  }>;
+}
+
 export interface TrainingMaterial {
   id: number;
   trainable_type: string;
@@ -211,6 +222,17 @@ export interface TrainingListSummary {
   cancelled: number;
 }
 
+export interface TrainingDashboardStats {
+  total: number;
+  scheduled: number;
+  completed: number;
+  cancelled: number;
+  questions_total: number;
+  users_total: number;
+  participants_total: number;
+  with_questions: number;
+}
+
 export interface TrainingCategory {
   id: number;
   empresa_id?: number | null;
@@ -334,6 +356,10 @@ export class TrainingService {
     return this.http.get<TrainingListResponse>(this.apiUrl, { params: httpParams });
   }
 
+  getDashboardStats(): Observable<TrainingDashboardStats> {
+    return this.http.get<TrainingDashboardStats>(`${environment.apiUrl}/dashboard/trainings/stats`);
+  }
+
   get(id: number): Observable<Training> {
     return this.http.get<Training>(`${this.apiUrl}/${id}`);
   }
@@ -368,6 +394,19 @@ export class TrainingService {
 
   createQuestion(trainingId: number, payload: QuestionSavePayload): Observable<{ message: string; question: Question }> {
     return this.http.post<{ message: string; question: Question }>(`${this.apiUrl}/${trainingId}/questions`, payload);
+  }
+
+  downloadTrainingQuestionsTemplate(trainingId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${trainingId}/questions/template`, {
+      responseType: 'blob'
+    });
+  }
+
+  importTrainingQuestionsTemplate(trainingId: number, file: File): Observable<QuestionImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<QuestionImportResult>(`${this.apiUrl}/${trainingId}/questions/import`, formData);
   }
 
   updateQuestion(questionId: number, payload: QuestionSavePayload): Observable<{ message: string; question: Question }> {
