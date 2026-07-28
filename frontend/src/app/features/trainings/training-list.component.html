@@ -137,7 +137,7 @@
               <span class="text-on-surface fw-semibold">{{ t.title }}</span>
             </td>
             <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
-            <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
+            <td class="py-3 text-on-surface-variant text-nowrap training-date-cell">{{ t.scheduled_date | date:'dd/MM/yyyy' }}</td>
             <td class="py-3">
               <span [class]="statusBadgeClass(t.status)">
                 {{ statusLabel(t.status) }}
@@ -234,7 +234,7 @@
                 <span class="text-on-surface fw-semibold">{{ t.title }}</span>
               </td>
               <td class="py-3 text-on-surface-variant">{{ modalityLabel(t.modality) }}</td>
-              <td class="py-3 text-on-surface-variant">{{ t.scheduled_date }}</td>
+              <td class="py-3 text-on-surface-variant text-nowrap training-date-cell">{{ t.scheduled_date | date:'dd/MM/yyyy' }}</td>
               <td class="py-3">
                 <span [class]="statusBadgeClass(t.status)">
                   {{ statusLabel(t.status) }}
@@ -346,26 +346,19 @@
           <a routerLink="/trainings_programs" class="btn btn-sm btn-outline-dark fw-semibold">Gestionar programas</a>
         </div>
       </div>
-      <div class="col-md-6">
+      <div [class]="activeProgramId ? 'col-md-9' : 'col-md-6'">
         <label class="form-label small text-on-surface-variant">Titulo *</label>
         <input class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editTitle" />
       </div>
-      <div class="col-md-3" *ngIf="activeProgramId; else editProgramSelect">
+      <div *ngIf="!activeProgramId" class="col-md-3">
         <label class="form-label small text-on-surface-variant">Programa *</label>
-        <input class="form-control bg-transparent border-white/10 text-on-surface" [value]="activeProgramName || 'Programa'" readonly />
-        <small class="text-on-surface-variant d-block mt-1">El programa queda fijado desde el padre.</small>
+        <app-select3
+          [options]="categoryOptions"
+          [(ngModel)]="editTrainingCategoryId"
+          placeholder="Selecciona un programa"
+          [disabled]="categories.length === 0"
+        ></app-select3>
       </div>
-      <ng-template #editProgramSelect>
-        <div class="col-md-3">
-          <label class="form-label small text-on-surface-variant">Programa *</label>
-          <app-select3
-            [options]="categoryOptions"
-            [(ngModel)]="editTrainingCategoryId"
-            placeholder="Selecciona un programa"
-            [disabled]="categories.length === 0"
-          ></app-select3>
-        </div>
-      </ng-template>
       <div class="col-md-3">
         <label class="form-label small text-on-surface-variant">Estado *</label>
         <app-select3

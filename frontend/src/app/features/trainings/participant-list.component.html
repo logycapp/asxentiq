@@ -227,22 +227,26 @@
 <div *ngIf="!loading" class="card glass-card border-0 rounded-4 p-4 mb-4">
   <div class="row g-3 align-items-center justify-content-between">
     <div class="col-12 col-xl-auto">
-      <div class="d-flex align-items-center gap-2">
-        <span class="material-symbols-outlined text-on-surface-variant">description</span>
-        <span class="text-on-surface fw-semibold">Carga masiva</span>
-        <span class="text-on-surface-variant font-label-sm">descarga el Excel, completalo y vuelve a subirlo para crear o actualizar participantes.</span>
+      <div class="d-flex align-items-start gap-3">
+        <span class="material-symbols-outlined text-on-surface-variant mt-1">description</span>
+        <div class="d-flex flex-column gap-1">
+          <div class="text-on-surface fw-semibold">Carga masiva y plantilla</div>
+          <div class="text-on-surface-variant font-label-sm">
+            Descarga la plantilla para registrar o actualizar participantes y vuelve a cargarla cuando termines.
+          </div>
+        </div>
       </div>
     </div>
     <div class="col-12 col-xl-auto">
       <div class="d-flex gap-2 flex-wrap">
         <input #participantsFileInput type="file" class="d-none" accept=".xlsx,.xls" (change)="importReport($event)" />
+        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="downloadReport()" [disabled]="exporting" data-bs-toggle="tooltip" data-bs-placement="top" title="Descargar plantilla" aria-label="Descargar plantilla">
+          <span class="material-symbols-outlined text-[16px]">download</span>
+          {{ exporting ? 'Generando...' : 'Descargar plantilla' }}
+        </button>
         <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="participantsFileInput.click()" [disabled]="importing" data-bs-toggle="tooltip" data-bs-placement="top" title="Cargar Excel" aria-label="Cargar Excel">
           <span class="material-symbols-outlined text-[16px]">upload_file</span>
           {{ importing ? 'Cargando...' : 'Cargar Excel' }}
-        </button>
-        <button class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1" (click)="downloadReport()" [disabled]="exporting" data-bs-toggle="tooltip" data-bs-placement="top" title="Descargar Excel" aria-label="Descargar Excel">
-          <span class="material-symbols-outlined text-[16px]">download</span>
-          {{ exporting ? 'Generando...' : 'Descargar Excel' }}
         </button>
       </div>
     </div>

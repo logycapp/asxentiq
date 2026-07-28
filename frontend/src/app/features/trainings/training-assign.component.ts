@@ -88,20 +88,20 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
             <button
               type="button"
               class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
-              (click)="participantsFileInput.click()"
-              [disabled]="importing"
-            >
-              <span class="material-symbols-outlined text-[16px]">upload_file</span>
-              {{ importing ? 'Cargando...' : 'Cargar Excel' }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
               (click)="downloadTemplate()"
               [disabled]="exporting"
             >
               <span class="material-symbols-outlined text-[16px]">download</span>
               {{ exporting ? 'Generando...' : 'Descargar plantilla' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
+              (click)="participantsFileInput.click()"
+              [disabled]="importing"
+            >
+              <span class="material-symbols-outlined text-[16px]">upload_file</span>
+              {{ importing ? 'Cargando...' : 'Cargar Excel' }}
             </button>
           </div>
         </div>

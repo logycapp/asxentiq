@@ -49,7 +49,7 @@ import { Select3Component } from '../../shared/select3.component';
               </div>
             </div>
 
-            <div class="col-md-6">
+            <div [class]="fixedTrainingCategoryId ? 'col-md-9' : 'col-md-6'">
               <label class="form-label small text-on-surface-variant">Titulo *</label>
               <input #titleModel="ngModel" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="model.title" name="title" required />
               <div class="invalid-feedback d-block" *ngIf="(titleModel.touched || trainingForm.submitted) && titleModel.invalid">
@@ -57,31 +57,23 @@ import { Select3Component } from '../../shared/select3.component';
               </div>
             </div>
 
-            <div class="col-md-3" *ngIf="fixedTrainingCategoryId; else programSelectTemplate">
+            <div *ngIf="!fixedTrainingCategoryId; else fixedProgramHidden" class="col-md-3">
               <label class="form-label small text-on-surface-variant">Programa *</label>
-              <input
-                class="form-control bg-transparent border-white/10 text-on-surface"
-                [value]="fixedTrainingCategoryLabel || selectedCategoryLabel"
-                readonly
-              />
-              <small class="text-on-surface-variant d-block mt-1">El programa queda fijado desde el padre.</small>
-            </div>
-            <ng-template #programSelectTemplate>
-              <div class="col-md-3">
-                <label class="form-label small text-on-surface-variant">Programa *</label>
-                <app-select3
-                  #categoryModel="ngModel"
-                  [options]="categoryOptions"
-                  [(ngModel)]="model.training_category_id"
-                  name="training_category_id"
-                  placeholder="Selecciona un programa"
-                  [disabled]="categories.length === 0"
-                  required
-                ></app-select3>
-                <div class="invalid-feedback d-block" *ngIf="(categoryModel.touched || trainingForm.submitted) && categoryModel.invalid">
-                  Selecciona un programa.
-                </div>
+              <app-select3
+                #categoryModel="ngModel"
+                [options]="categoryOptions"
+                [(ngModel)]="model.training_category_id"
+                name="training_category_id"
+                placeholder="Selecciona un programa"
+                [disabled]="categories.length === 0"
+                required
+              ></app-select3>
+              <div class="invalid-feedback d-block" *ngIf="(categoryModel.touched || trainingForm.submitted) && categoryModel.invalid">
+                Selecciona un programa.
               </div>
+            </div>
+            <ng-template #fixedProgramHidden>
+              <input type="hidden" [(ngModel)]="model.training_category_id" name="training_category_id" />
             </ng-template>
 
             <div class="col-md-3">

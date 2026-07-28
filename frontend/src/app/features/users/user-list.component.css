@@ -66,47 +66,6 @@
   color: #b91c1c;
 }
 
-:host .user-consent-badge {
-  display: inline-flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.15rem;
-  min-width: 8.25rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  white-space: normal;
-}
-
-:host .user-consent-badge__label {
-  display: block;
-}
-
-:host .user-consent-badge__value {
-  display: block;
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  font-weight: 600;
-}
-
-:host .user-consent-approved {
-  background: rgba(34, 197, 94, 0.14);
-  border-color: rgba(34, 197, 94, 0.32);
-  color: #15803d;
-}
-
-:host .user-consent-pending {
-  background: rgba(148, 163, 184, 0.14);
-  border-color: rgba(148, 163, 184, 0.28);
-  color: #64748b;
-}
-
 :host-context(.light) .user-table-head th {
   color: #334155;
 }
@@ -136,16 +95,4 @@
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.28);
   color: #b91c1c;
-}
-
-:host-context(.light) .user-consent-approved {
-  background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.25);
-  color: #166534;
-}
-
-:host-context(.light) .user-consent-pending {
-  background: rgba(148, 163, 184, 0.12);
-  border-color: rgba(148, 163, 184, 0.25);
-  color: #475569;
 }

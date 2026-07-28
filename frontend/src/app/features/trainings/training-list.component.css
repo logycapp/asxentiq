@@ -32,6 +32,10 @@
   flex: 0 0 auto;
 }
 
+:host .training-date-cell {
+  min-width: 11.5rem;
+}
+
 :host .training-status-badge {
   display: inline-flex;
   align-items: center;

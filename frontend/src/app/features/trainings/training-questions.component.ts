@@ -58,7 +58,6 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
           <div class="mb-2">
             <label class="form-label small text-on-surface-variant">Tipo</label>
             <select class="form-select bg-transparent border-white/10 text-on-surface" [(ngModel)]="editForm.type" (change)="onTypeChange()">
-              <option value="open">Abierta</option>
               <option value="multiple_choice">Opcion Multiple</option>
               <option value="yes_no">Si / No</option>
             </select>
@@ -137,7 +136,7 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
                 <span class="material-symbols-outlined text-[16px]">close</span>
               </button>
             </div>
-            <button type="button" class="btn btn-outline-light fw-semibold btn-sm d-inline-flex align-items-center gap-1 mt-1" (click)="addOption()">
+            <button type="button" class="btn btn-outline-light fw-semibold btn-sm d-inline-flex align-items-center gap-1 mt-1 training-option-btn" (click)="addOption()">
               <span class="material-symbols-outlined text-[16px]">add</span>
               Opcion
             </button>
@@ -214,7 +213,32 @@ import { TrainingService, Question, QuestionOption } from '../../core/services/t
       </div>
     </app-modal-shell>
   `,
-  styles: [/* styles intentionally cleared for custom implementation */]
+  styles: [`
+    :host .training-option-btn {
+      color: #f8fafc;
+      border-color: rgba(248, 250, 252, 0.55);
+    }
+
+    :host .training-option-btn:hover,
+    :host .training-option-btn:focus-visible {
+      color: #ffffff;
+      border-color: rgba(248, 250, 252, 0.8);
+      background: rgba(248, 250, 252, 0.08);
+    }
+
+    :host-context(.light) .training-option-btn {
+      color: #0f172a;
+      border-color: rgba(15, 23, 42, 0.2);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    :host-context(.light) .training-option-btn:hover,
+    :host-context(.light) .training-option-btn:focus-visible {
+      color: #0f172a;
+      border-color: rgba(37, 99, 235, 0.35);
+      background: rgba(37, 99, 235, 0.08);
+    }
+  `]
 })
 export class TrainingQuestionsComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
@@ -238,7 +262,7 @@ export class TrainingQuestionsComponent implements OnInit {
 
   editingQuestion = false;
   editingQuestionId: number | null = null;
-  editForm: Partial<Question> = { question_text: '', type: 'open', order: 0 };
+  editForm: Partial<Question> = { question_text: '', type: 'multiple_choice', order: 0 };
   editingOptions: Partial<QuestionOption & { _tempId?: number }>[] = [];
   editingQuestionMaterials: NonNullable<Question['materials']> = [];
   questionMaterialFile: File | null = null;
@@ -278,7 +302,7 @@ export class TrainingQuestionsComponent implements OnInit {
   showAddForm(): void {
     this.editingQuestion = true;
     this.editingQuestionId = null;
-    this.editForm = { question_text: '', type: 'open', order: this.questions.length + 1 };
+    this.editForm = { question_text: '', type: 'multiple_choice', order: this.questions.length + 1 };
     this.editingOptions = [];
     this.editingQuestionMaterials = [];
     this.clearQuestionMaterial();

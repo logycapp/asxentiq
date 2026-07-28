@@ -96,7 +96,6 @@
           <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th user-table-th">
             <button class="sort-trigger user-sort-trigger" type="button" (click)="sortBy('active')">Estado <span class="material-symbols-outlined sort-icon">{{ getSortIcon('active') }}</span></button>
           </th>
-          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase user-table-th">Consentimiento</th>
           <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end user-table-th">Acciones</th>
         </tr>
       </thead>
@@ -113,47 +112,22 @@
             <span *ngIf="user.active" class="badge rounded-pill user-status-badge user-status-active">Activo</span>
             <span *ngIf="!user.active" class="badge rounded-pill user-status-badge user-status-inactive">Inactivo</span>
           </td>
-          <td class="py-3">
-            <ng-container *ngIf="user.privacy_consent_accepted_at; else consentPending">
-              <span
-                class="badge rounded-pill user-consent-badge user-consent-approved d-inline-flex flex-column align-items-start gap-1"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                [attr.title]="'Autorizado el ' + (user.privacy_consent_accepted_at | date:'dd/MM/yyyy HH:mm')"
-                [attr.aria-label]="'Autorizado el ' + (user.privacy_consent_accepted_at | date:'dd/MM/yyyy HH:mm')"
-              >
-                <span class="user-consent-badge__label">Autorizado</span>
-                <span class="user-consent-badge__value">{{ user.privacy_consent_accepted_at | date:'dd/MM/yyyy HH:mm' }}</span>
-              </span>
-            </ng-container>
-            <ng-template #consentPending>
-              <span
-                class="badge rounded-pill user-consent-badge user-consent-pending"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                title="Pendiente de autorización"
-                aria-label="Pendiente de autorización"
-              >
-                Pendiente
-              </span>
-            </ng-template>
-          </td>
           <td class="pe-4 py-3 text-end">
             <div class="dashboard-action-group">
-              <button class="btn btn-sm btn-warning-light fw-semibold" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(user)">
-                <span class="material-symbols-outlined">edit</span><span>Editar</span>
+              <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center justify-content-center" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(user)">
+                <span class="material-symbols-outlined">edit</span>
               </button>
-              <button class="btn btn-sm btn-outline-info fw-semibold" type="button" title="Permisos de menu" aria-label="Permisos de menu" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openPermModal(user)">
-                <span class="material-symbols-outlined">info</span><span>Info</span>
+              <button class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center justify-content-center" type="button" title="Permisos de menu" aria-label="Permisos de menu" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openPermModal(user)">
+                <span class="material-symbols-outlined">info</span>
               </button>
-              <button *ngIf="!user.active" class="btn btn-sm btn-outline-info fw-semibold" type="button" (click)="activate(user)" title="Activar" aria-label="Activar" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">check_circle</span><span>Activar</span>
+              <button *ngIf="!user.active" class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center justify-content-center" type="button" (click)="activate(user)" title="Activar" aria-label="Activar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <span class="material-symbols-outlined">check_circle</span>
               </button>
-              <button *ngIf="user.active" class="btn btn-sm btn-outline-info fw-semibold" type="button" (click)="deactivate(user)" title="Inactivar" aria-label="Inactivar" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">block</span><span>Inactivar</span>
+              <button *ngIf="user.active" class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center justify-content-center" type="button" (click)="deactivate(user)" title="Inactivar" aria-label="Inactivar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <span class="material-symbols-outlined">block</span>
               </button>
-              <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(user)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
-                <span class="material-symbols-outlined">delete</span><span>Eliminar</span>
+              <button class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center justify-content-center" type="button" (click)="remove(user)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
+                <span class="material-symbols-outlined">delete</span>
               </button>
             </div>
           </td>
