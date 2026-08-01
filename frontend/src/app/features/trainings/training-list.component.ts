@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Tooltip } from 'bootstrap';
@@ -99,6 +99,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   trainingMaterials: NonNullable<Training['materials']> = [];
   trainingMaterialFile: File | null = null;
   trainingMaterialType = 'pdf';
+  @ViewChild('trainingMaterialInput') private trainingMaterialInput?: ElementRef<HTMLInputElement>;
   loadingEditDetails = false;
   allParticipants: TrainingParticipant[] = [];
   assignedParticipants: TrainingParticipant[] = [];
@@ -125,6 +126,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
   editLocation = '';
   editInstructor = '';
   editMandatory = true;
+  editMaterialWithIndexation = false;
   saving = false;
 
   get categoryOptions(): Array<{ value: number; label: string }> {
@@ -154,6 +156,50 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'spreadsheet', label: 'Hoja de calculo' },
     { value: 'other', label: 'Otro' },
   ];
+
+  get trainingMaterialTypeOptions(): Array<{ value: string; label: string }> {
+    return this.editMaterialWithIndexation ? [{ value: 'video', label: 'Video' }] : this.materialTypeOptions;
+  }
+
+  get trainingMaterialAccept(): string {
+    if (this.editMaterialWithIndexation) {
+      return 'video/*,.mp4,.m4v,.mov,.avi,.mkv,.webm';
+    }
+
+    switch (this.trainingMaterialType) {
+      case 'video':
+        return 'video/*,.mp4,.m4v,.mov,.avi,.mkv,.webm';
+      case 'spreadsheet':
+        return '.csv,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv';
+      case 'other':
+        return '*/*';
+      case 'pdf':
+      default:
+        return 'application/pdf,.pdf';
+    }
+  }
+
+  get trainingMaterialHint(): string {
+    if (this.editMaterialWithIndexation) {
+      return 'Se aceptan solo videos por la indexacion.';
+    }
+
+    switch (this.trainingMaterialType) {
+      case 'video':
+        return 'Se aceptan archivos de video.';
+      case 'spreadsheet':
+        return 'Se aceptan hojas de calculo y CSV.';
+      case 'other':
+        return 'Se aceptan archivos generales.';
+      case 'pdf':
+      default:
+        return 'Se aceptan archivos PDF.';
+    }
+  }
+
+  getIndexationMaterialId(training: Training): number | null {
+    return training.latestMaterial?.id ?? training.materials?.[0]?.id ?? null;
+  }
 
   ngOnInit(): void {
     this.updateRouteFlags();
@@ -344,6 +390,10 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editLocation = training.location || '';
     this.editInstructor = training.instructor || '';
     this.editMandatory = training.mandatory;
+    this.editMaterialWithIndexation = training.material_with_indexation ?? false;
+    if (this.editMaterialWithIndexation) {
+      this.trainingMaterialType = 'video';
+    }
     this.errorMessage = '';
     this.saving = false;
     this.loadEditTrainingDetails(training.id);
@@ -366,6 +416,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.trainingMaterialType = 'pdf';
     this.editTrainingCategoryId = null;
     this.editMaxAttempts = 1;
+    this.editMaterialWithIndexation = false;
     this.loadingEditDetails = false;
     this.allParticipants = [];
     this.assignedParticipants = [];
@@ -423,6 +474,7 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
       location: this.editLocation || undefined,
       instructor: this.editInstructor || undefined,
       mandatory: this.editMandatory,
+      material_with_indexation: this.editMaterialWithIndexation,
     };
 
     this.saving = true;
@@ -454,8 +506,8 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.closeEditModal();
                 this.loadTrainings();
               },
-              error: () => {
-                this.errorMessage = 'La capacitacion se guardo, pero no se pudo cargar el material.';
+              error: (error) => {
+                this.errorMessage = error?.error?.message || 'La capacitacion se guardo, pero no se pudo cargar el material.';
               }
             });
         },
@@ -471,7 +523,9 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.editingTraining = training;
         this.editTrainingCategoryId = training.training_category_id ?? training.category?.id ?? this.editTrainingCategoryId;
         this.editMaxAttempts = training.max_attempts ?? 1;
+        this.editMaterialWithIndexation = training.material_with_indexation ?? false;
         this.trainingMaterials = training.materials ?? [];
+        this.trainingMaterialType = this.editMaterialWithIndexation ? 'video' : this.trainingMaterials[0]?.type ?? 'pdf';
         this.loadingEditDetails = false;
       },
       error: () => {
@@ -486,9 +540,42 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.trainingMaterialFile = input.files?.[0] ?? null;
   }
 
+  onTrainingMaterialTypeChange(value: string | number | boolean | null): void {
+    if (this.editMaterialWithIndexation) {
+      this.trainingMaterialType = 'video';
+      return;
+    }
+
+    this.trainingMaterialType = typeof value === 'string' ? value : 'pdf';
+    this.trainingMaterialFile = null;
+    this.resetTrainingMaterialInput();
+  }
+
+  onMaterialWithIndexationChange(value: string | number | boolean | null): void {
+    this.editMaterialWithIndexation = value === true;
+
+    if (this.editMaterialWithIndexation) {
+      this.trainingMaterialType = 'video';
+      this.trainingMaterialFile = null;
+      this.resetTrainingMaterialInput();
+      return;
+    }
+
+    if (this.trainingMaterialType === 'video') {
+      this.trainingMaterialType = 'pdf';
+    }
+  }
+
   clearTrainingMaterial(): void {
     this.trainingMaterialFile = null;
     this.trainingMaterialType = 'pdf';
+    this.resetTrainingMaterialInput();
+  }
+
+  private resetTrainingMaterialInput(): void {
+    if (this.trainingMaterialInput?.nativeElement) {
+      this.trainingMaterialInput.nativeElement.value = '';
+    }
   }
 
   removeTrainingMaterial(material: NonNullable<Training['materials']>[number]): void {

@@ -64,6 +64,10 @@ export class VideoIndexActionService {
     return this.http.get<VideoIndexStoredResponse>(`${this.apiUrl}/trainings/${trainingId}/indexation`);
   }
 
+  clearIndexation(trainingId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/trainings/${trainingId}/indexation`);
+  }
+
   analyzeAudio(trainingId: number, audioPath: string): Observable<VideoIndexAnalysisResponse> {
     return this.http.post<VideoIndexAnalysisResponse>(
       `${this.apiUrl}/trainings/${trainingId}/analyze-audio`,

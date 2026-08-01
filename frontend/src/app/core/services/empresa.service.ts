@@ -10,11 +10,18 @@ export interface Empresa {
   address?: string | null;
   phone?: string | null;
   email?: string | null;
+  security_token?: string | null;
   active: boolean;
   logo_path?: string | null;
   logo_url?: string | null;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface EmpresaPublicInfo {
+  id: number;
+  name: string;
+  logo_url?: string | null;
 }
 
 export interface EmpresaPayload {
@@ -23,6 +30,7 @@ export interface EmpresaPayload {
   address?: string | null;
   phone?: string | null;
   email?: string | null;
+  security_token?: string | null;
   active: boolean;
 }
 
@@ -37,6 +45,10 @@ export class EmpresaService {
 
   get(id: number): Observable<Empresa> {
     return this.http.get<Empresa>(`${this.apiUrl}/${id}`);
+  }
+
+  getByToken(token: string): Observable<EmpresaPublicInfo> {
+    return this.http.get<EmpresaPublicInfo>(`${this.apiUrl}/token/${encodeURIComponent(token)}`);
   }
 
   create(payload: FormData): Observable<{ message: string; empresa: Empresa }> {

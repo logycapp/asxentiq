@@ -54,7 +54,7 @@ import { TrainingService, Training, SubmitAnswer } from '../../core/services/tra
                 class="btn public-exam-hero-action public-exam-hero-action-blink"
                 (click)="startExam()"
               >
-                Comenzar examen
+                {{ training.attempt_in_progress || hasStartedExam(training.id) ? 'Continuar examen' : 'Comenzar examen' }}
               </button>
               <button
                 *ngIf="!training.materials || training.materials.length === 0"
@@ -836,24 +836,22 @@ export class PublicExamComponent implements OnInit {
     return `public_training_exam_started_${trainingId}`;
   }
 
-  private hasStartedExam(trainingId: number): boolean {
+  hasStartedExam(trainingId: number): boolean {
     return localStorage.getItem(this.examStateKey(trainingId)) === '1';
   }
 
   loadExam(id: number): void {
-    this.loadingService.track(this.trainingService.takeExam(id))
+      this.loadingService.track(this.trainingService.takeExam(id))
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (training) => {
           this.training = training;
-          if (training.attempt_in_progress || this.hasStartedExam(training.id)) {
-            this.step = 'exam';
-          } else if (!training.materials || training.materials.length === 0) {
+          if (!training.materials || training.materials.length === 0) {
             this.startExam();
             return;
-          } else {
-            this.step = 'material';
           }
+
+          this.step = 'material';
           this.currentQuestionIndex = 0;
         },
         error: (err) => {
@@ -972,13 +970,6 @@ export class PublicExamComponent implements OnInit {
 
   startExam(): void {
     if (!this.training) {
-      return;
-    }
-
-    if (this.training.attempt_in_progress || this.hasStartedExam(this.training.id)) {
-      localStorage.setItem(this.examStateKey(this.training.id), '1');
-      this.step = 'exam';
-      this.currentQuestionIndex = 0;
       return;
     }
 

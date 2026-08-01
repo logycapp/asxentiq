@@ -11,6 +11,26 @@ use Illuminate\Validation\Rule;
 
 class EmpresaController extends Controller
 {
+    public function showByToken(string $token): JsonResponse
+    {
+        $empresa = Empresa::query()
+            ->where('security_token', $token)
+            ->select(['id', 'name', 'logo_path'])
+            ->first();
+
+        if (! $empresa) {
+            return response()->json([
+                'message' => 'No se encontró una empresa para el token proporcionado.',
+            ], 404);
+        }
+
+        return response()->json([
+            'id' => $empresa->id,
+            'name' => $empresa->name,
+            'logo_url' => $empresa->logo_url,
+        ]);
+    }
+
     public function index(): JsonResponse
     {
         $empresas = Empresa::query()
@@ -35,6 +55,7 @@ class EmpresaController extends Controller
             'address' => $data['address'] ?? null,
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
+            'security_token' => $data['security_token'] ?? null,
             'active' => $data['active'] ?? true,
             'logo_path' => $this->storeLogo($request),
         ]);
@@ -65,6 +86,9 @@ class EmpresaController extends Controller
             'address' => $data['address'] ?? null,
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
+            'security_token' => array_key_exists('security_token', $data)
+                ? ($data['security_token'] ?? null)
+                : $empresa->security_token,
             'active' => $data['active'] ?? $empresa->active,
             'logo_path' => $logoPath,
         ]);
@@ -130,6 +154,7 @@ class EmpresaController extends Controller
             'address' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('empresas', 'email')->ignore($empresa?->id)],
+            'security_token' => ['nullable', 'string', 'max:120', Rule::unique('empresas', 'security_token')->ignore($empresa?->id)],
             'active' => ['sometimes', 'boolean'],
             'logo' => ['nullable', 'file', 'image', 'mimes:png', 'max:10240'],
         ]);

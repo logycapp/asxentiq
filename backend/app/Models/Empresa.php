@@ -13,6 +13,7 @@ class Empresa extends Model
         'address',
         'phone',
         'email',
+        'security_token',
         'active',
         'logo_path',
     ];

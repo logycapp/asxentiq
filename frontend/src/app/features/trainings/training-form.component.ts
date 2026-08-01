@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -121,6 +121,17 @@ import { Select3Component } from '../../shared/select3.component';
               ></app-select3>
             </div>
 
+            <div class="col-md-4">
+              <label class="form-label small text-on-surface-variant">Material con indexacion</label>
+              <app-select3
+                [options]="booleanOptions"
+                [(ngModel)]="model.material_with_indexation"
+                name="material_with_indexation"
+                placeholder="Selecciona una opcion"
+                (ngModelChange)="onMaterialWithIndexationChange($event)"
+              ></app-select3>
+            </div>
+
             <div class="col-md-3">
               <label class="form-label small text-on-surface-variant">Intentos permitidos *</label>
               <input
@@ -176,28 +187,39 @@ import { Select3Component } from '../../shared/select3.component';
                   <div>
                     <label class="form-label small text-on-surface-variant mb-1">Material general opcional</label>
                     <div class="text-on-surface-variant font-label-sm">
-                      Se mostrara al participante antes de iniciar la prueba. No es obligatorio.
+                      Se mostrara al participante antes de iniciar la prueba. Solo se permite un material por capacitacion.
                     </div>
                   </div>
                   <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1">Opcional</span>
                 </div>
 
-                <div class="row g-2 align-items-end">
-                  <div class="col-lg-7">
-                    <label class="form-label small text-on-surface-variant">Archivo</label>
-                    <input type="file" class="form-control bg-transparent border-white/10 text-on-surface" (change)="onTrainingMaterialSelected($event)" />
-                  </div>
-                  <div class="col-lg-3">
-                    <label class="form-label small text-on-surface-variant">Tipo</label>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label small text-on-surface-variant">Tipo de archivo *</label>
                     <app-select3
-                      [options]="materialTypeOptions"
+                      [options]="trainingMaterialTypeOptions"
                       [(ngModel)]="trainingMaterialType"
                       name="trainingMaterialType"
                       placeholder="Selecciona un tipo"
+                      (ngModelChange)="onTrainingMaterialTypeChange($event)"
                     ></app-select3>
                   </div>
-                  <div class="col-lg-2">
-                    <button type="button" class="btn btn-outline-light fw-semibold w-100" (click)="clearTrainingMaterial()">
+                  <div class="col-12">
+                    <label class="form-label small text-on-surface-variant">Archivo *</label>
+                    <input
+                      #trainingMaterialInput
+                      type="file"
+                      class="form-control bg-transparent border-white/10 text-on-surface"
+                      [accept]="trainingMaterialAccept"
+                      [disabled]="!trainingMaterialType"
+                      (change)="onTrainingMaterialSelected($event)"
+                    />
+                    <div class="text-on-surface-variant font-label-sm mt-2">
+                      {{ trainingMaterialHint }}
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 col-lg-3">
+                    <button type="button" class="btn btn-outline-secondary fw-semibold w-100" (click)="clearTrainingMaterial()">
                       Limpiar
                     </button>
                   </div>
@@ -205,7 +227,7 @@ import { Select3Component } from '../../shared/select3.component';
 
                 <div *ngIf="trainingMaterials.length > 0" class="mt-3">
                   <div class="font-label-sm text-on-surface-variant mb-2">Material ya cargado:</div>
-                  <div *ngFor="let material of trainingMaterials" class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-white/5">
+                  <div *ngIf="trainingMaterials[0] as material" class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-white/5">
                     <div class="d-flex align-items-center gap-2">
                       <span class="text-on-surface">{{ material.filename }}</span>
                       <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
@@ -250,6 +272,7 @@ export class TrainingFormComponent implements OnInit {
   trainingMaterialFile: File | null = null;
   trainingMaterialType = 'pdf';
   @ViewChild('trainingForm') private trainingForm?: NgForm;
+  @ViewChild('trainingMaterialInput') private trainingMaterialInput?: ElementRef<HTMLInputElement>;
 
   model: Partial<Training> = {
     training_category_id: undefined,
@@ -262,6 +285,7 @@ export class TrainingFormComponent implements OnInit {
     location: '',
     instructor: '',
     mandatory: true,
+    material_with_indexation: false,
     status: 'scheduled',
     passing_score: 70,
     max_attempts: 1,
@@ -300,6 +324,10 @@ export class TrainingFormComponent implements OnInit {
     { value: 'other', label: 'Otro' },
   ];
 
+  get trainingMaterialTypeOptions(): Array<{ value: string; label: string }> {
+    return this.model.material_with_indexation ? [{ value: 'video', label: 'Video' }] : this.materialTypeOptions;
+  }
+
   ngOnInit(): void {
     this.loadCategories();
     const id = this.trainingIdInput ?? Number(this.route.snapshot.paramMap.get('id'));
@@ -332,6 +360,7 @@ export class TrainingFormComponent implements OnInit {
             location: training.location ?? undefined,
             instructor: training.instructor ?? undefined,
             mandatory: training.mandatory,
+            material_with_indexation: training.material_with_indexation ?? false,
             status: training.status,
             passing_score: training.passing_score,
             max_attempts: training.max_attempts ?? 1,
@@ -341,6 +370,8 @@ export class TrainingFormComponent implements OnInit {
             this.model.training_category_id = this.fixedTrainingCategoryId;
           }
           this.trainingMaterials = training.materials ?? [];
+          this.trainingMaterialType = this.model.material_with_indexation ? 'video' : this.trainingMaterials[0]?.type ?? 'pdf';
+          this.resetTrainingMaterialInput();
         },
         error: () => {
           this.errorMessage = 'Error al cargar la capacitacion.';
@@ -386,18 +417,23 @@ export class TrainingFormComponent implements OnInit {
           const materialFile = this.trainingMaterialFile;
           const materialType = this.trainingMaterialType;
 
-          this.loadingService.track(this.trainingService.uploadTrainingMaterial(training.id, materialFile, materialType))
-            .subscribe({
-              next: (materialRes) => {
-                this.trainingMaterials = [...this.trainingMaterials, materialRes.material];
-                this.trainingMaterialFile = null;
-                this.finishSave();
-              },
-              error: () => {
-                this.saving = false;
-                this.errorMessage = 'La capacitacion se guardo, pero no se pudo cargar el material.';
-              }
-            });
+          const uploadMaterial = (): void => {
+            this.loadingService.track(this.trainingService.uploadTrainingMaterial(training.id, materialFile, materialType))
+              .subscribe({
+                next: (materialRes) => {
+                  this.trainingMaterials = [materialRes.material];
+                  this.trainingMaterialFile = null;
+                  this.resetTrainingMaterialInput();
+                  this.finishSave();
+                },
+                error: (error) => {
+                  this.saving = false;
+                  this.errorMessage = error?.error?.message || 'La capacitacion se guardo, pero no se pudo cargar el material.';
+                }
+              });
+          };
+
+          uploadMaterial();
         },
         error: () => {
           this.saving = false;
@@ -411,9 +447,72 @@ export class TrainingFormComponent implements OnInit {
     this.trainingMaterialFile = input.files?.[0] ?? null;
   }
 
+  onTrainingMaterialTypeChange(value: string | number | boolean | null): void {
+    if (this.model.material_with_indexation) {
+      this.trainingMaterialType = 'video';
+      return;
+    }
+
+    this.trainingMaterialType = typeof value === 'string' ? value : 'pdf';
+    this.trainingMaterialFile = null;
+    this.resetTrainingMaterialInput();
+  }
+
+  onMaterialWithIndexationChange(value: string | number | boolean | null): void {
+    this.model.material_with_indexation = value === true;
+
+    if (this.model.material_with_indexation) {
+      this.trainingMaterialType = 'video';
+      this.trainingMaterialFile = null;
+      this.resetTrainingMaterialInput();
+      return;
+    }
+
+    if (this.trainingMaterialType === 'video') {
+      this.trainingMaterialType = 'pdf';
+    }
+  }
+
   clearTrainingMaterial(): void {
     this.trainingMaterialFile = null;
     this.trainingMaterialType = 'pdf';
+    this.resetTrainingMaterialInput();
+  }
+
+  get trainingMaterialAccept(): string {
+    if (this.model.material_with_indexation) {
+      return 'video/*,.mp4,.m4v,.mov,.avi,.mkv,.webm';
+    }
+
+    switch (this.trainingMaterialType) {
+      case 'video':
+        return 'video/*,.mp4,.m4v,.mov,.avi,.mkv,.webm';
+      case 'spreadsheet':
+        return '.csv,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv';
+      case 'other':
+        return '*/*';
+      case 'pdf':
+      default:
+        return 'application/pdf,.pdf';
+    }
+  }
+
+  get trainingMaterialHint(): string {
+    if (this.model.material_with_indexation) {
+      return 'Se aceptan solo videos por la indexacion.';
+    }
+
+    switch (this.trainingMaterialType) {
+      case 'video':
+        return 'Se aceptan archivos de video.';
+      case 'spreadsheet':
+        return 'Se aceptan hojas de calculo y CSV.';
+      case 'other':
+        return 'Se aceptan archivos generales.';
+      case 'pdf':
+      default:
+        return 'Se aceptan archivos PDF.';
+    }
   }
 
   loadCategories(): void {
@@ -444,6 +543,12 @@ export class TrainingFormComponent implements OnInit {
         this.errorMessage = 'No se pudo eliminar el material.';
       }
     });
+  }
+
+  private resetTrainingMaterialInput(): void {
+    if (this.trainingMaterialInput?.nativeElement) {
+      this.trainingMaterialInput.nativeElement.value = '';
+    }
   }
 
   finishSave(): void {

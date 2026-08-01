@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,22 +25,31 @@ class MenuController extends Controller
         $roleId = $user->roleRelation?->id;
 
         $allItems = MenuItem::query()
+            ->with(['roles:id,name,slug', 'users:id'])
             ->where('enabled', true)
             ->whereNotIn('route', self::HIDDEN_MAIN_MENU_ROUTES)
-            ->where(function ($query) use ($roleId, $user): void {
-                $query->whereHas('users', fn ($userQuery) => $userQuery->where('users.id', $user->id));
-
-                if ($roleId) {
-                    $query->orWhereHas('roles', fn ($roleQuery) => $roleQuery->where('roles.id', $roleId));
-                }
-            })
             ->whereNotIn('route', self::HIDDEN_CHILD_MENU_ROUTES)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
 
-        $parentItems = $allItems->whereNull('parent_id');
-        $childItems = $allItems->whereNotNull('parent_id');
+        $authorizedItemIds = $allItems
+            ->filter(fn (MenuItem $item): bool => $this->isAuthorized($item, $user, $roleId))
+            ->pluck('id');
+
+        $visibleParentIds = $allItems
+            ->filter(static fn (MenuItem $item): bool => $item->parent_id !== null)
+            ->filter(fn (MenuItem $item): bool => $authorizedItemIds->contains($item->id))
+            ->pluck('parent_id')
+            ->filter()
+            ->unique();
+
+        $visibleItems = $allItems->filter(
+            fn (MenuItem $item): bool => $authorizedItemIds->contains($item->id) || $visibleParentIds->contains($item->id)
+        );
+
+        $parentItems = $visibleItems->whereNull('parent_id');
+        $childItems = $visibleItems->whereNotNull('parent_id');
 
         $items = $parentItems->map(static function (MenuItem $item) use ($childItems): array {
             $childrenBase = $childItems->where('parent_id', $item->id)->values()->map(static fn (MenuItem $child): array => [
@@ -80,5 +90,18 @@ class MenuController extends Controller
         })->values();
 
         return response()->json($items);
+    }
+
+    private function isAuthorized(MenuItem $item, User $user, ?int $roleId): bool
+    {
+        if ($item->users->contains('id', $user->id)) {
+            return true;
+        }
+
+        if ($roleId && $item->roles->contains('id', $roleId)) {
+            return true;
+        }
+
+        return false;
     }
 }

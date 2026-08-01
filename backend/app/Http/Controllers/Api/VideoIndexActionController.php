@@ -183,6 +183,35 @@ class VideoIndexActionController extends Controller
         return response()->json($this->formatAnalysisResponse($training, $indexation, false));
     }
 
+    public function clearIndexation(Training $training): JsonResponse
+    {
+        if (! Schema::hasTable('training_audio_indexations')) {
+            return response()->json([
+                'message' => 'La indexacion no esta disponible en este entorno.',
+            ], 422);
+        }
+
+        $training->load('audioIndexation');
+
+        if (! $training->audioIndexation) {
+            return response()->json([
+                'message' => 'La capacitacion no tiene indexacion guardada.',
+            ], 404);
+        }
+
+        $indexation = $training->audioIndexation;
+
+        if ($indexation->audio_path) {
+            Storage::disk('public')->delete($indexation->audio_path);
+        }
+
+        $indexation->delete();
+
+        return response()->json([
+            'message' => 'La indexacion se limpio correctamente.',
+        ]);
+    }
+
     private function normalizePublicPath(string $path, array|string $requiredPrefixes): ?string
     {
         $path = trim($path);

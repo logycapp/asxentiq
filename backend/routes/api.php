@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::get('/storage/{path}', [StorageController::class, 'show'])->where('path', '.*');
+Route::get('/empresas/token/{token}', [EmpresaController::class, 'showByToken']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/me', [AuthController::class, 'me']);
@@ -42,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/video-indexaction/trainings/{training}/indexation', [VideoIndexActionController::class, 'showIndexation']);
     Route::post('/video-indexaction/extract-audio', [VideoIndexActionController::class, 'extractAudio']);
     Route::post('/video-indexaction/trainings/{training}/analyze-audio', [VideoIndexActionController::class, 'analyzeAudio']);
+    Route::delete('/video-indexaction/trainings/{training}/indexation', [VideoIndexActionController::class, 'clearIndexation']);
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar/generate', [ProfileController::class, 'generateAvatar']);
@@ -104,6 +106,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/trainings/{training}/participants', [TrainingController::class, 'participants']);
         Route::get('/trainings/{training}/participants/export', [TrainingController::class, 'downloadParticipantsReport']);
         Route::get('/trainings/{training}/participants/report', [TrainingController::class, 'downloadTrainingParticipantsReport']);
+        Route::get('/trainings/{training}/participants/report-detailed', [TrainingController::class, 'downloadTrainingParticipantsAnswersReport']);
         Route::post('/trainings/{training}/participants/import', [TrainingController::class, 'importParticipantsReport']);
         Route::post('/trainings/{training}/participants', [TrainingController::class, 'storeParticipant']);
         Route::put('/trainings/{training}/participants/{participant}', [TrainingController::class, 'updateParticipant']);

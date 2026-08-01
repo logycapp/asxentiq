@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { catchError, finalize, of, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { EmpresaService } from '../../core/services/empresa.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +18,10 @@ import { ModalShellComponent } from '../../core/components/modal-shell.component
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly empresaService = inject(EmpresaService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   loading = false;
   errorMessage = '';
@@ -24,6 +29,8 @@ export class LoginComponent {
   recoveryLoading = false;
   recoveryError = '';
   recoveryMessage = '';
+  companyLogoUrl = 'assets/template/logos/logo_principal/logo_dark.png';
+  companyName = 'Asxentiq';
 
   readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -33,6 +40,34 @@ export class LoginComponent {
   readonly recoveryForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]]
   });
+
+  ngOnInit(): void {
+    this.route.paramMap
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap((params) => {
+          const token = params.get('token');
+
+          if (!token) {
+            this.companyLogoUrl = 'assets/template/logos/logo_principal/logo_dark.png';
+            this.companyName = 'Asxentiq';
+            return of(null);
+          }
+
+          return this.empresaService.getByToken(token).pipe(
+            catchError(() => of(null))
+          );
+        })
+      )
+      .subscribe((empresa) => {
+        if (!empresa) {
+          return;
+        }
+
+        this.companyName = empresa.name || 'Asxentiq';
+        this.companyLogoUrl = empresa.logo_url || 'assets/template/logos/logo_principal/logo_dark.png';
+      });
+  }
 
   submit(): void {
     if (this.form.invalid) {

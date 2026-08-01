@@ -36,6 +36,11 @@
       <section class="form-panel">
         <div class="login-card">
           <div class="card-heading">
+            <img
+              class="card-brand-mark"
+              [src]="companyLogoUrl"
+              [alt]="companyName"
+            >
             <p class="eyebrow">Bienvenido de nuevo</p>
             <h2>Inicia sesion en Asxentiq</h2>
             <p class="subtitle">
@@ -121,6 +126,7 @@
     kicker="Asxentiq"
     size="sm"
     headerVariant="primary"
+    surfaceVariant="light"
     [showPrimaryButton]="true"
     [showSecondaryButton]="true"
     [showFooterClose]="false"

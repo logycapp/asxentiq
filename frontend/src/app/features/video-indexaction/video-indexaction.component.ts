@@ -113,6 +113,16 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
               <span class="material-symbols-outlined text-[18px]">psychology</span>
               {{ analyzingAudio ? 'Indexando...' : 'Indexar MP3' }}
             </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-danger fw-semibold d-inline-flex align-items-center justify-content-center gap-2"
+              [disabled]="!hasStoredIndexation() || clearingIndexation"
+              (click)="clearIndexation()"
+            >
+              <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+              {{ clearingIndexation ? 'Limpiando...' : 'Limpiar indexacion' }}
+            </button>
           </div>
 
           <div *ngIf="extractErrorMessage" class="alert alert-danger mb-3">
@@ -268,6 +278,7 @@ export class VideoIndexActionComponent implements OnInit {
   extractErrorMessage = '';
   analyzingAudio = false;
   analysisErrorMessage = '';
+  clearingIndexation = false;
   selectedTemaIndex = 0;
 
   ngOnInit(): void {
@@ -451,6 +462,35 @@ export class VideoIndexActionComponent implements OnInit {
       });
   }
 
+  clearIndexation(): void {
+    if (this.selectedTrainingId === null || !this.hasStoredIndexation()) {
+      return;
+    }
+
+    if (!window.confirm('Eliminar la indexacion guardada de esta capacitacion?')) {
+      return;
+    }
+
+    this.clearingIndexation = true;
+    this.analysisErrorMessage = '';
+    this.extractErrorMessage = '';
+
+    this.loadingService
+      .track(this.videoIndexActionService.clearIndexation(this.selectedTrainingId))
+      .pipe(finalize(() => (this.clearingIndexation = false)))
+      .subscribe({
+        next: () => {
+          this.analysisResponse = null;
+          this.extractedAudio = null;
+          this.extractedAudioUrl = null;
+          this.selectedTemaIndex = 0;
+        },
+        error: (error) => {
+          this.analysisErrorMessage = error?.error?.message || 'No fue posible limpiar la indexacion.';
+        }
+      });
+  }
+
   private syncRouteSelection(): void {
     const queryParams: Record<string, number> = {};
 
@@ -505,7 +545,11 @@ export class VideoIndexActionComponent implements OnInit {
       error: () => {
         this.analysisResponse = null;
       }
-    });
+      });
+  }
+
+  hasStoredIndexation(): boolean {
+    return !!this.analysisResponse || !!this.extractedAudio?.audio?.path;
   }
 
   getSegmentsForTheme(themeOrder: number): VideoIndexAnalysisResponse['segmentos'] {

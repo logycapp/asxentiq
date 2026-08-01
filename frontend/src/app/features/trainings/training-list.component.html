@@ -123,8 +123,8 @@
                 </button>
               </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('users_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de usuarios" aria-label="Ordenar por cantidad de usuarios">
-                  Usuarios <span class="material-symbols-outlined sort-icon">{{ getSortIcon('users_count') }}</span>
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('participants_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de participantes" aria-label="Ordenar por cantidad de participantes">
+                  Participantes <span class="material-symbols-outlined sort-icon">{{ getSortIcon('participants_count') }}</span>
                 </button>
               </th>
               <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
@@ -144,7 +144,7 @@
               </span>
             </td>
             <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.questions_count ?? 0 }}</span></td>
-            <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.users_count ?? 0 }}</span></td>
+            <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.participants_count ?? 0 }}</span></td>
             <td class="pe-4 py-3 text-end">
               <div class="dashboard-action-group">
                 <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
@@ -155,6 +155,18 @@
                 </button>
                 <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'participants']" title="Participantes" aria-label="Participantes" data-bs-toggle="tooltip" data-bs-placement="top">
                   <span class="material-symbols-outlined">group_add</span>
+                </a>
+                <a
+                  *ngIf="t.material_with_indexation && getIndexationMaterialId(t) as materialId"
+                  class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
+                  [routerLink]="['/video_indexaction']"
+                  [queryParams]="{ training: t.id, material: materialId }"
+                  title="Abrir indexacion"
+                  aria-label="Abrir indexacion"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                >
+                  <span class="material-symbols-outlined">smart_display</span>
                 </a>
                 <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(t)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
                   <span class="material-symbols-outlined">delete</span>
@@ -220,8 +232,8 @@
                 </button>
               </th>
               <th class="py-3 font-label-sm text-on-surface-variant text-uppercase sortable-th training-table-th">
-                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('users_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de usuarios" aria-label="Ordenar por cantidad de usuarios">
-                  Usuarios <span class="material-symbols-outlined sort-icon">{{ getSortIcon('users_count') }}</span>
+                <button class="sort-trigger training-sort-trigger" type="button" (click)="toggleSort('participants_count')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ordenar por cantidad de participantes" aria-label="Ordenar por cantidad de participantes">
+                  Participantes <span class="material-symbols-outlined sort-icon">{{ getSortIcon('participants_count') }}</span>
                 </button>
               </th>
               <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end training-table-th">Acciones</th>
@@ -241,7 +253,7 @@
                 </span>
               </td>
               <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.questions_count ?? 0 }}</span></td>
-              <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.users_count ?? 0 }}</span></td>
+              <td class="py-3"><span class="badge rounded-pill bg-primary/10 text-primary border border-primary/20 px-3 py-2">{{ t.participants_count ?? 0 }}</span></td>
               <td class="pe-4 py-3 text-end">
                 <div class="dashboard-action-group">
                   <button class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1" type="button" title="Editar" aria-label="Editar" data-bs-toggle="tooltip" data-bs-placement="top" (click)="openEditModal(t)">
@@ -252,6 +264,18 @@
                   </button>
                   <a class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1" [routerLink]="['/trainings_programs', activeProgramId, 'trainings', t.id, 'participants']" title="Participantes" aria-label="Participantes" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">group_add</span>
+                  </a>
+                  <a
+                    *ngIf="t.material_with_indexation && getIndexationMaterialId(t) as materialId"
+                    class="btn btn-sm btn-outline-success fw-semibold d-inline-flex align-items-center gap-1"
+                    [routerLink]="['/video_indexaction']"
+                    [queryParams]="{ training: t.id, material: materialId }"
+                    title="Abrir indexacion"
+                    aria-label="Abrir indexacion"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                  >
+                    <span class="material-symbols-outlined">smart_display</span>
                   </a>
                   <button class="btn btn-sm btn-outline-danger fw-semibold" type="button" (click)="remove(t)" title="Eliminar" aria-label="Eliminar" data-bs-toggle="tooltip" data-bs-placement="top">
                     <span class="material-symbols-outlined">delete</span>
@@ -387,6 +411,15 @@
           placeholder="Selecciona una opcion"
         ></app-select3>
       </div>
+      <div class="col-md-4">
+        <label class="form-label small text-on-surface-variant">Material con indexacion</label>
+        <app-select3
+          [options]="booleanOptions"
+          [(ngModel)]="editMaterialWithIndexation"
+          placeholder="Selecciona una opcion"
+          (ngModelChange)="onMaterialWithIndexationChange($event)"
+        ></app-select3>
+      </div>
       <div class="col-md-3">
         <label class="form-label small text-on-surface-variant">Intentos permitidos *</label>
         <input type="number" class="form-control bg-transparent border-white/10 text-on-surface" [(ngModel)]="editMaxAttempts" min="1" required />
@@ -424,50 +457,53 @@
             <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-3 py-1">Opcional</span>
           </div>
 
-          <div class="row g-2 align-items-end">
-            <div class="col-lg-7">
-              <label class="form-label small text-on-surface-variant">Archivo</label>
-              <input type="file" class="form-control bg-transparent border-white/10 text-on-surface" (change)="onTrainingMaterialSelected($event)" />
-            </div>
-            <div class="col-lg-3">
+          <div class="row g-3 align-items-start">
+            <div class="col-12 col-lg-4">
               <label class="form-label small text-on-surface-variant">Tipo</label>
               <app-select3
-                [options]="materialTypeOptions"
+                [options]="trainingMaterialTypeOptions"
                 [(ngModel)]="trainingMaterialType"
                 name="trainingMaterialType"
                 placeholder="Selecciona un tipo"
+                (ngModelChange)="onTrainingMaterialTypeChange($event)"
               ></app-select3>
             </div>
-            <div class="col-lg-2">
-              <button type="button" class="btn btn-outline-light fw-semibold w-100" (click)="clearTrainingMaterial()">
+            <div class="col-12 col-lg-4">
+              <label class="form-label small text-on-surface-variant">Archivo</label>
+              <input
+                #trainingMaterialInput
+                type="file"
+                class="form-control bg-transparent border-white/10 text-on-surface"
+                [accept]="trainingMaterialAccept"
+                [disabled]="!trainingMaterialType"
+                (change)="onTrainingMaterialSelected($event)"
+              />
+              <div class="text-on-surface-variant font-label-sm mt-2">
+                {{ trainingMaterialHint }}
+              </div>
+              <button type="button" class="btn btn-outline-secondary fw-semibold mt-3" (click)="clearTrainingMaterial()">
                 Limpiar
               </button>
             </div>
-          </div>
-
-          <div *ngIf="loadingEditDetails" class="text-center py-3">
-            <div class="text-on-surface-variant font-label-sm">Cargando material...</div>
-          </div>
-
-          <div *ngIf="trainingMaterials.length > 0" class="mt-3">
-            <div class="font-label-sm text-on-surface-variant mb-2">Material ya cargado:</div>
-            <div *ngFor="let material of trainingMaterials" class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-white/5">
-              <div class="d-flex align-items-center gap-2">
-                <span class="text-on-surface">{{ material.filename }}</span>
-                <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
+            <div class="col-12 col-lg-4">
+              <div *ngIf="loadingEditDetails" class="text-center py-3">
+                <div class="text-on-surface-variant font-label-sm">Cargando material...</div>
               </div>
-              <button type="button" class="btn btn-sm btn-outline-danger fw-semibold" (click)="removeTrainingMaterial(material)">
-                Eliminar
-              </button>
+              <div *ngIf="trainingMaterials.length > 0">
+                <div class="font-label-sm text-on-surface-variant mb-2">Material ya cargado:</div>
+                <div *ngFor="let material of trainingMaterials" class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-white/5">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="text-on-surface">{{ material.filename }}</span>
+                    <span class="badge rounded-pill bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 text-uppercase">{{ material.type }}</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger fw-semibold" (click)="removeTrainingMaterial(material)">
+                    Eliminar
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="mt-3">
-            <a [routerLink]="['/video_indexaction']" [queryParams]="{ training: editingTraining.id }" class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1">
-              <span class="material-symbols-outlined text-[16px]">smart_display</span>
-              Abrir video_indexaction
-            </a>
-          </div>
         </div>
       </div>
     </div>

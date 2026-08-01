@@ -13,8 +13,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       role="dialog"
     >
       <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-shell-dialog" [ngClass]="sizeClass" role="document">
-        <div class="modal-content glass-card border-0 rounded-4 modal-shell-content">
-          <div class="modal-themed-header" [ngClass]="'modal-themed-' + headerVariant">
+        <div class="modal-content glass-card border-0 rounded-4 modal-shell-content" [ngClass]="{'modal-shell-content--light': surfaceVariant === 'light'}">
+          <div class="modal-themed-header" [ngClass]="['modal-themed-' + headerVariant, surfaceVariant === 'light' ? 'modal-themed-header--light' : '']">
             <div>
               <p *ngIf="kicker" class="font-label-md text-on-surface-variant opacity-75 mb-1">{{ kicker }}</p>
               <h5 class="modal-title font-headline-lg mb-1">{{ title }}</h5>
@@ -34,11 +34,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             </button>
           </div>
 
-          <div class="modal-body">
+          <div class="modal-body" [ngClass]="surfaceVariant === 'light' ? 'modal-body--light' : ''">
             <ng-content select="[modal-body]"></ng-content>
           </div>
 
-          <div class="modal-footer border-white/10" *ngIf="showFooter">
+          <div class="modal-footer" [ngClass]="surfaceVariant === 'light' ? 'modal-footer--light border-top border-secondary-subtle' : 'border-white/10'" *ngIf="showFooter">
             <div class="d-flex w-100 justify-content-between align-items-center gap-3">
               <div>
                 <ng-content select="[modal-footer-start]"></ng-content>
@@ -132,6 +132,43 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       flex-shrink: 0;
     }
 
+    .modal-shell-content--light {
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 28px 70px rgba(15, 23, 42, 0.16);
+      color: #0f172a;
+    }
+
+    .modal-shell-content--light .modal-themed-header {
+      padding: 1.5rem 1.5rem 1.1rem;
+      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .modal-shell-content--light .modal-themed-header--light .modal-title,
+    .modal-shell-content--light .modal-themed-header--light .modal-subtitle,
+    .modal-shell-content--light .modal-themed-header--light .font-label-md.text-on-surface-variant.opacity-75.mb-1 {
+      color: #0f172a !important;
+      opacity: 1;
+    }
+
+    .modal-shell-content--light .modal-themed-header--light .modal-close-btn {
+      color: #334155;
+    }
+
+    .modal-shell-content--light .modal-themed-header--light .modal-close-btn:hover {
+      color: #0f172a;
+    }
+
+    .modal-shell-content--light .modal-body--light {
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    .modal-shell-content--light .modal-footer--light {
+      background: #ffffff;
+    }
+
     @media (max-width: 767.98px) {
       .modal-shell-dialog {
         height: calc(100vh - 1rem);
@@ -154,6 +191,7 @@ export class ModalShellComponent {
   @Input() showFooter = true;
   @Input() headerVariant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' = 'primary';
   @Input() footerVariant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' | '' = '';
+  @Input() surfaceVariant: 'glass' | 'light' = 'glass';
   @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'lg';
   @Input() showPrimaryButton = false;
   @Input() showSecondaryButton = false;

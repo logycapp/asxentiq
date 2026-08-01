@@ -19,19 +19,16 @@ class EnsureMenuAccess
 
         $normalizedRoute = $this->normalizeRoute($route);
 
-        $user->loadMissing('roleRelation');
-
-        $hasAccess = MenuItem::query()
+        $menuItem = MenuItem::query()
+            ->with(['roles:id,name,slug', 'users:id', 'children.roles:id,name,slug', 'children.users:id'])
             ->where('enabled', true)
             ->where('route', $normalizedRoute)
-            ->where(function ($query) use ($user): void {
-                $query->whereHas('users', fn ($userQuery) => $userQuery->where('users.id', $user->id));
+            ->first();
 
-                if ($user->roleRelation?->id) {
-                    $query->orWhereHas('roles', fn ($roleQuery) => $roleQuery->where('roles.id', $user->roleRelation->id));
-                }
-            })
-            ->exists();
+        $hasAccess = $menuItem && (
+            $this->isAuthorized($menuItem, $user) ||
+            $menuItem->children->contains(fn (MenuItem $child): bool => $this->isAuthorized($child, $user))
+        );
 
         if (! $hasAccess) {
             abort(403, 'No autorizado para usar este modulo.');
@@ -45,5 +42,20 @@ class EnsureMenuAccess
         $route = trim($route);
 
         return str_starts_with($route, '/') ? $route : '/'.$route;
+    }
+
+    private function isAuthorized(MenuItem $item, \App\Models\User $user): bool
+    {
+        $user->loadMissing('roleRelation');
+
+        if ($item->users->contains('id', $user->id)) {
+            return true;
+        }
+
+        if ($user->roleRelation?->id && $item->roles->contains('id', $user->roleRelation->id)) {
+            return true;
+        }
+
+        return false;
     }
 }

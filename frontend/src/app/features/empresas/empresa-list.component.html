@@ -264,6 +264,25 @@
           <input id="email" class="form-control" type="email" formControlName="email">
         </div>
 
+        <div class="col-12">
+          <label class="form-label d-flex align-items-center justify-content-between gap-2" for="security_token">
+            <span>Token de seguridad</span>
+            <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" (click)="generateSecurityToken()">
+              Generar token
+            </button>
+          </label>
+          <input
+            id="security_token"
+            class="form-control font-mono"
+            type="text"
+            formControlName="security_token"
+            placeholder="Haz clic en Generar token"
+          >
+          <div class="text-secondary small mt-2">
+            Usa este token para validar integraciones o accesos externos de la empresa.
+          </div>
+        </div>
+
         <div class="col-lg-6">
           <label class="form-label" for="phone">Telefono</label>
           <input id="phone" class="form-control" type="text" formControlName="phone">

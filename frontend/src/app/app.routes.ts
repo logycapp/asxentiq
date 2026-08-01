@@ -41,6 +41,11 @@ export const appRoutes: Routes = [
     component: LoginComponent
   },
   {
+    path: 'login/:token',
+    canActivate: [guestGuard],
+    component: LoginComponent
+  },
+  {
     path: 'forgot-password',
     canActivate: [guestGuard],
     component: PasswordRecoveryComponent

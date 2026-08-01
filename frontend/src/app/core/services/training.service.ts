@@ -15,6 +15,7 @@ export interface Training {
   location?: string;
   instructor?: string;
   mandatory: boolean;
+  material_with_indexation?: boolean;
   status: string;
   passing_score: number;
   max_attempts?: number;
@@ -26,6 +27,7 @@ export interface Training {
   category?: TrainingCategory | null;
   questions?: Question[];
   materials?: TrainingMaterial[];
+  latestMaterial?: TrainingMaterial | null;
   audioIndexation?: TrainingAudioIndexation | null;
   users?: any[];
   participants?: TrainingParticipant[];
@@ -497,6 +499,12 @@ export class TrainingService {
 
   downloadTrainingParticipantsReport(trainingId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${trainingId}/participants/report`, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadTrainingParticipantsDetailedReport(trainingId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${trainingId}/participants/report-detailed`, {
       responseType: 'blob'
     });
   }

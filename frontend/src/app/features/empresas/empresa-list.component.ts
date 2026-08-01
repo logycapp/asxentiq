@@ -96,6 +96,7 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
     address: [''],
     phone: [''],
     email: [''],
+    security_token: [''],
     active: [true, [Validators.required]]
   });
 
@@ -151,6 +152,7 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
       address: '',
       phone: '',
       email: '',
+      security_token: '',
       active: true
     });
   }
@@ -170,6 +172,7 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
       address: empresa.address ?? '',
       phone: empresa.phone ?? '',
       email: empresa.email ?? '',
+      security_token: empresa.security_token ?? '',
       active: empresa.active
     });
   }
@@ -193,6 +196,7 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
       address: '',
       phone: '',
       email: '',
+      security_token: '',
       active: true
     });
 
@@ -394,6 +398,14 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.previewLogoUrl || this.currentLogoUrl;
   }
 
+  generateSecurityToken(): void {
+    this.empresaForm.patchValue({
+      security_token: this.createSecurityToken()
+    });
+    this.empresaForm.controls.security_token.markAsDirty();
+    this.empresaForm.controls.security_token.markAsTouched();
+  }
+
   get isEmpresaEditMode(): boolean {
     return this.empresaModalMode === 'edit';
   }
@@ -463,6 +475,7 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
     payload.append('address', raw.address?.trim() || '');
     payload.append('phone', raw.phone?.trim() || '');
     payload.append('email', raw.email?.trim() || '');
+    payload.append('security_token', raw.security_token?.trim() || '');
     payload.append('active', Boolean(raw.active) ? '1' : '0');
 
     if (this.selectedLogo) {
@@ -477,6 +490,14 @@ export class EmpresaListComponent implements OnInit, AfterViewInit, OnDestroy {
       URL.revokeObjectURL(this.previewLogoUrl);
       this.previewLogoUrl = '';
     }
+  }
+
+  private createSecurityToken(length = 48): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const values = new Uint32Array(length);
+    window.crypto.getRandomValues(values);
+
+    return Array.from(values, (value) => chars[value % chars.length]).join('');
   }
 
   private syncModalWithRoute(): void {

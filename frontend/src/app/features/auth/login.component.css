@@ -33,8 +33,9 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 1.75rem;
-  padding: clamp(0.9rem, 2.5vw, 2.25rem) clamp(1.5rem, 4vw, 4rem) clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+  gap: 1.35rem;
+  padding: clamp(0.85rem, 2.2vw, 1.6rem) clamp(1.5rem, 4vw, 4rem) clamp(1.25rem, 3vw, 2rem);
   background:
     linear-gradient(140deg, rgba(4, 41, 79, 0.99) 0%, rgba(3, 20, 42, 1) 100%);
   color: #e4e2e4;
@@ -71,11 +72,19 @@
   z-index: 1;
 }
 
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
 .hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
-  margin-bottom: 1.75rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
   padding: 0.7rem 1rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.07);
@@ -96,8 +105,10 @@
 
 .brand-mark {
   display: block;
-  width: min(100%, 340px);
-  margin-bottom: 1.75rem;
+  width: min(100%, 280px);
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1.25rem;
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
 }
 
@@ -105,7 +116,7 @@
   max-width: 30rem;
   margin: 0 0 1rem;
   color: #ffffff;
-  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-size: clamp(1.65rem, 3.2vw, 2.55rem);
   line-height: 1.04;
   letter-spacing: -0.03em;
 }
@@ -120,18 +131,21 @@
 
 .signal-panel {
   max-width: 30rem;
-  margin-top: auto;
+  margin-top: 0;
+  align-self: center;
   padding: 1.1rem 1.2rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+  text-align: center;
 }
 
 .signal-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   color: #ffffff;
@@ -156,6 +170,10 @@
   line-height: 1.65;
 }
 
+.signal-panel .pulse {
+  flex: 0 0 auto;
+}
+
 .form-panel {
   display: flex;
   align-items: center;
@@ -164,8 +182,8 @@
 }
 
 .login-card {
-  width: min(100%, 36rem);
-  padding: clamp(1.5rem, 3vw, 3rem);
+  width: min(100%, 30rem);
+  padding: clamp(1.1rem, 2.1vw, 2rem);
   border-radius: 1.5rem;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -174,13 +192,20 @@
 }
 
 .card-heading {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.95rem;
+}
+
+.card-brand-mark {
+  display: block;
+  width: min(100%, 100px);
+  margin: 0 auto 0.55rem;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.12));
 }
 
 .eyebrow {
   display: inline-flex;
   margin: 0 0 1rem;
-  padding: 0.45rem 0.8rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 999px;
   background: rgba(4, 87, 191, 0.08);
   color: #0457bf;
@@ -192,15 +217,15 @@
 
 .login-card h2 {
   margin: 0;
-  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
   line-height: 1.08;
   letter-spacing: -0.03em;
 }
 
 .subtitle {
-  margin: 0.9rem 0 0;
+  margin: 0.6rem 0 0;
   color: #64748b;
-  line-height: 1.7;
+  line-height: 1.55;
 }
 
 .login-error {
@@ -227,13 +252,13 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.7rem;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.3rem;
   color: #0f172a;
   font-weight: 700;
 }
@@ -245,12 +270,13 @@
 
 .form-control {
   width: 100%;
-  padding: 0.95rem 1rem;
+  padding: 0.76rem 0.9rem;
   border-radius: 1rem;
   border: 1px solid rgba(15, 23, 42, 0.14);
   background: #ffffff;
   color: #0f172a;
   font: inherit;
+  font-weight: 500;
   outline: none;
   box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
@@ -277,7 +303,7 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-top: 0.1rem;
+  margin-top: 0;
 }
 
 .remember {
@@ -324,8 +350,8 @@
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  margin-top: 0.2rem;
-  padding: 1rem 1.1rem;
+  margin-top: 0.05rem;
+  padding: 0.82rem 0.95rem;
   border: 0;
   border-radius: 1rem;
   background: linear-gradient(135deg, #0457bf 0%, #0b76ff 100%);
@@ -359,9 +385,9 @@
 }
 
 .footer-copy {
-  margin: 1rem 0 0;
+  margin: 0.7rem 0 0;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 
 .footer-copy span {

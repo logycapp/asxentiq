@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exports\TrainingParticipantsExport;
+use App\Exports\TrainingParticipantsAnswersDetailedExport;
 use App\Exports\TrainingParticipantsDetailedExport;
 use App\Http\Controllers\Controller;
 use App\Imports\TrainingParticipantsImport;
@@ -24,8 +25,8 @@ class TrainingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Training::query()
-            ->with('category')
-            ->withCount(['questions', 'users']);
+            ->with(['category', 'latestMaterial', 'materials'])
+            ->withCount(['questions', 'users', 'participants']);
 
         $categoryId = (int) $request->input('training_category_id', 0);
         if ($categoryId > 0) {
@@ -58,7 +59,7 @@ class TrainingController extends Controller
             'scheduled_date',
             'status',
             'questions_count',
-            'users_count',
+            'participants_count',
         ];
 
         $sortBy = $request->string('sort_by', 'scheduled_date')->toString();
@@ -127,12 +128,14 @@ class TrainingController extends Controller
             'location' => ['nullable', 'string', 'max:255'],
             'instructor' => ['nullable', 'string', 'max:255'],
             'mandatory' => ['boolean'],
+            'material_with_indexation' => ['boolean'],
             'status' => ['required', 'string', 'in:scheduled,completed,cancelled'],
             'passing_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'max_attempts' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $data['max_attempts'] = $data['max_attempts'] ?? 1;
+        $data['material_with_indexation'] = $data['material_with_indexation'] ?? false;
 
         $training = Training::query()->create($data);
 
@@ -145,6 +148,7 @@ class TrainingController extends Controller
     public function show(Training $training): JsonResponse
     {
         $relations = ['category', 'questions.options', 'materials', 'users', 'participants'];
+        $relations[] = 'latestMaterial';
 
         if (Schema::hasTable('training_audio_indexations')) {
             $relations[] = 'audioIndexation';
@@ -168,6 +172,7 @@ class TrainingController extends Controller
             'location' => ['nullable', 'string', 'max:255'],
             'instructor' => ['nullable', 'string', 'max:255'],
             'mandatory' => ['boolean'],
+            'material_with_indexation' => ['boolean'],
             'status' => ['required', 'string', 'in:scheduled,completed,cancelled'],
             'passing_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'max_attempts' => ['nullable', 'integer', 'min:1'],
@@ -177,7 +182,7 @@ class TrainingController extends Controller
 
         $training->update($data);
 
-        $relations = ['category', 'questions.options', 'materials'];
+        $relations = ['category', 'questions.options', 'materials', 'latestMaterial'];
 
         if (Schema::hasTable('training_audio_indexations')) {
             $relations[] = 'audioIndexation';
@@ -323,6 +328,18 @@ class TrainingController extends Controller
         $filename = 'reporte-participantes-' . Str::slug($training->title) . '.xlsx';
 
         return Excel::download(new TrainingParticipantsDetailedExport($training), $filename);
+    }
+
+    public function downloadTrainingParticipantsAnswersReport(Training $training)
+    {
+        $training->loadMissing('category');
+        if (! $training->category?->empresa_id) {
+            return response()->json(['message' => 'El programa de esta capacitacion no tiene empresa asociada.'], 422);
+        }
+
+        $filename = 'reporte-participantes-detallado-' . Str::slug($training->title) . '.xlsx';
+
+        return Excel::download(new TrainingParticipantsAnswersDetailedExport($training), $filename);
     }
 
     public function importParticipantsReport(Request $request, Training $training): JsonResponse
@@ -674,6 +691,14 @@ class TrainingController extends Controller
             'type' => ['required', 'string', 'in:video,pdf,spreadsheet,other'],
         ]);
 
+        if ($training->material_with_indexation && $data['type'] !== 'video') {
+            return response()->json([
+                'message' => 'Cuando el material con indexacion esta activado, solo se permite video.',
+            ], 422);
+        }
+
+        $existingMaterials = $training->materials()->get();
+
         $file = $request->file('file');
         $filename = $file->getClientOriginalName();
         $filepath = $file->store('trainings/' . $training->id, 'public');
@@ -685,6 +710,15 @@ class TrainingController extends Controller
             'filesize' => $file->getSize(),
             'type' => $data['type'],
         ]);
+
+        foreach ($existingMaterials as $existingMaterial) {
+            if ($existingMaterial->id === $material->id) {
+                continue;
+            }
+
+            Storage::disk('public')->delete($existingMaterial->filepath);
+            $existingMaterial->delete();
+        }
 
         return response()->json([
             'message' => 'Material subido correctamente.',

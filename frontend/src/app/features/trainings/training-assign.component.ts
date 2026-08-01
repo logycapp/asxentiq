@@ -332,22 +332,33 @@ import { PageHeaderComponent } from '../admin/layout/page-header/page-header.com
         <div class="col-12 col-xl-auto">
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="material-symbols-outlined text-on-surface-variant">summarize</span>
-            <span class="text-on-surface fw-semibold">Reporte completo</span>
+            <span class="text-on-surface fw-semibold">Reportes</span>
             <span class="text-on-surface-variant font-label-sm">
-              Descarga un Excel con asistencia, puntaje, resultado y observaciones de cada participante.
+              Descarga un Excel general o un detallado con las respuestas por pregunta de cada participante.
             </span>
           </div>
         </div>
         <div class="col-12 col-xl-auto">
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1"
-            (click)="downloadFullReport()"
-            [disabled]="reportExporting"
-          >
-            <span class="material-symbols-outlined text-[16px]">table_view</span>
-            {{ reportExporting ? 'Generando...' : 'Descargar reporte' }}
-          </button>
+          <div class="d-flex gap-2 flex-wrap">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1"
+              (click)="downloadFullReport()"
+              [disabled]="reportExporting"
+            >
+              <span class="material-symbols-outlined text-[16px]">table_view</span>
+              {{ reportExporting ? 'Generando...' : 'Reporte general' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-info fw-semibold d-inline-flex align-items-center gap-1"
+              (click)="downloadDetailedReport()"
+              [disabled]="reportDetailedExporting"
+            >
+              <span class="material-symbols-outlined text-[16px]">table_view</span>
+              {{ reportDetailedExporting ? 'Generando...' : 'Reporte detallado' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -986,6 +997,7 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
   errorMessage = '';
   exporting = false;
   reportExporting = false;
+  reportDetailedExporting = false;
   importing = false;
   loadingParticipants = false;
   creating = false;
@@ -1733,6 +1745,30 @@ export class TrainingAssignComponent implements OnInit, AfterViewInit, OnDestroy
           this.message = 'Reporte Excel descargado correctamente.';
         },
         error: () => (this.errorMessage = 'Error al descargar el reporte Excel.')
+      });
+  }
+
+  downloadDetailedReport(): void {
+    if (this.reportDetailedExporting || !this.trainingId) {
+      return;
+    }
+
+    this.errorMessage = '';
+    this.reportDetailedExporting = true;
+
+    this.loadingService.track(this.trainingService.downloadTrainingParticipantsDetailedReport(this.trainingId))
+      .pipe(finalize(() => (this.reportDetailedExporting = false)))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `reporte-participantes-detallado-${this.trainingId}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.message = 'Reporte detallado Excel descargado correctamente.';
+        },
+        error: () => (this.errorMessage = 'Error al descargar el reporte detallado Excel.')
       });
   }
 
