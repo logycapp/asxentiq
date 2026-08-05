@@ -158,20 +158,20 @@ prepare_backend_env() {
   upsert_env "$BACKEND_ENV" "APP_DEBUG" "$(value_for_env "$BACKEND_ENV" "APP_DEBUG" "true")"
   upsert_env "$BACKEND_ENV" "APP_URL" "$app_url"
   upsert_env "$BACKEND_ENV" "FRONTEND_URL" "$frontend_url"
-  upsert_env "$BACKEND_ENV" "DB_CONNECTION" "$(value_for_env "$BACKEND_ENV" "DB_CONNECTION" "mysql")"
-  upsert_env "$BACKEND_ENV" "DB_HOST" "$(value_for_env "$BACKEND_ENV" "DB_HOST" "127.0.0.1")"
-  upsert_env "$BACKEND_ENV" "DB_PORT" "$(value_for_env "$BACKEND_ENV" "DB_PORT" "3306")"
-  upsert_env "$BACKEND_ENV" "DB_DATABASE" "$(value_for_env "$BACKEND_ENV" "DB_DATABASE" "asxentiq")"
-  upsert_env "$BACKEND_ENV" "DB_USERNAME" "$(value_for_env "$BACKEND_ENV" "DB_USERNAME" "root")"
-  upsert_env "$BACKEND_ENV" "DB_PASSWORD" "$(value_for_env "$BACKEND_ENV" "DB_PASSWORD" "")"
+  upsert_env "$BACKEND_ENV" "DB_CONNECTION" "mysql"
+  upsert_env "$BACKEND_ENV" "DB_HOST" "localhost"
+  upsert_env "$BACKEND_ENV" "DB_PORT" "3306"
+  upsert_env "$BACKEND_ENV" "DB_DATABASE" "asxentiq"
+  upsert_env "$BACKEND_ENV" "DB_USERNAME" "root"
+  upsert_env "$BACKEND_ENV" "DB_PASSWORD" '"ATBBqfN6L44h5yE3EXxkaPKaWRmD08E90EED#"'
   upsert_env "$BACKEND_ENV" "SESSION_DRIVER" "$(value_for_env "$BACKEND_ENV" "SESSION_DRIVER" "cookie")"
   upsert_env "$BACKEND_ENV" "SESSION_DOMAIN" "$(value_for_env "$BACKEND_ENV" "SESSION_DOMAIN" "$session_domain_default")"
   upsert_env "$BACKEND_ENV" "SANCTUM_STATEFUL_DOMAINS" "$(value_for_env "$BACKEND_ENV" "SANCTUM_STATEFUL_DOMAINS" "$sanctum_default")"
 
   case "$(env_file_value "$BACKEND_ENV" "DB_CONNECTION")" in
-    mysql|sqlite) ;;
+    mysql) ;;
     *)
-      echo 'DB_CONNECTION debe ser mysql o sqlite' >&2
+      echo 'DB_CONNECTION debe ser mysql en el modo online' >&2
       exit 1
       ;;
   esac
@@ -184,19 +184,11 @@ ensure_app_key() {
 }
 
 ensure_database() {
-  local db_connection
   local db_host db_port db_name db_user db_pass
-  db_connection="$(env_file_value "$BACKEND_ENV" "DB_CONNECTION")"
-
-  if [[ "$db_connection" == "sqlite" ]]; then
-    prepare_sqlite_env
-    return 0
-  fi
 
   if ! command -v mysql >/dev/null 2>&1; then
-    echo "No se encontró el comando mysql; usando SQLite local como respaldo." >&2
-    prepare_sqlite_env
-    return 0
+    echo "No se encontró el comando mysql; no se puede iniciar el modo online." >&2
+    exit 1
   fi
 
   db_host="$(env_file_value_unquoted "$(env_file_value "$BACKEND_ENV" "DB_HOST")")"
@@ -215,12 +207,6 @@ ensure_database() {
   fi
 
   if mysql "${mysql_args[@]}" -e "CREATE DATABASE IF NOT EXISTS \`${db_name}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if [[ "${SQLITE_FALLBACK:-true}" != "false" ]]; then
-    echo "No fue posible conectar con MySQL; usando SQLite local como respaldo." >&2
-    prepare_sqlite_env
     return 0
   fi
 

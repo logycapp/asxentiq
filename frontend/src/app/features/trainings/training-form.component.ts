@@ -21,10 +21,10 @@ import { Select3Component } from '../../shared/select3.component';
       [headerVariant]="isEdit ? 'warning' : 'info'"
       [footerVariant]="isEdit ? 'warning' : 'primary'"
       size="xl"
-      [showHeaderClose]="true"
+      [showHeaderClose]="!saving"
       [showFooterClose]="false"
       [showPrimaryButton]="true"
-      [showSecondaryButton]="true"
+      [showSecondaryButton]="!saving"
       [primaryLabel]="isEdit ? 'Actualizar' : 'Crear'"
       secondaryLabel="Cancelar"
       [primaryDisabled]="loading || saving || (!fixedTrainingCategoryId && categories.length === 0)"
@@ -34,13 +34,28 @@ import { Select3Component } from '../../shared/select3.component';
       (closeRequested)="closeModal()"
     >
       <div modal-body>
-        <div *ngIf="errorMessage" class="alert alert-danger mb-3">{{ errorMessage }}</div>
+        <div style="position: relative;">
+          <div
+            *ngIf="saving"
+            class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-3"
+            style="z-index: 10; background: rgba(15, 23, 42, 0.72); min-height: 100%;"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="text-center text-white p-4">
+              <div class="spinner-border mb-3" aria-hidden="true"></div>
+              <div class="fw-semibold">{{ trainingMaterialFile ? 'Cargando video...' : 'Guardando capacitacion...' }}</div>
+              <div class="small opacity-75 mt-1">No cierres ni vuelvas a enviar este formulario.</div>
+            </div>
+          </div>
 
-        <div *ngIf="loading" class="text-center py-5">
-          <div class="text-on-surface-variant font-body-md">Cargando capacitacion...</div>
-        </div>
+          <div *ngIf="errorMessage" class="alert alert-danger mb-3">{{ errorMessage }}</div>
 
-        <form (ngSubmit)="save(trainingForm)" #trainingForm="ngForm" id="training-form" novalidate *ngIf="!loading">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="text-on-surface-variant font-body-md">Cargando capacitacion...</div>
+          </div>
+
+          <form (ngSubmit)="save(trainingForm)" #trainingForm="ngForm" id="training-form" novalidate *ngIf="!loading" [attr.inert]="saving ? '' : null">
           <div class="row g-3">
             <div *ngIf="!fixedTrainingCategoryId && categories.length === 0" class="col-12">
               <div class="alert alert-warning py-2 mb-0 small d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
@@ -240,7 +255,8 @@ import { Select3Component } from '../../shared/select3.component';
               </div>
             </div>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
     </app-modal-shell>
   `

@@ -482,12 +482,12 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.loadingService
       .track(this.trainingService.update(this.editingTraining.id, payload))
-      .pipe(finalize(() => (this.saving = false)))
       .subscribe({
         next: (response) => {
           const savedTraining = response.training;
 
           if (!this.trainingMaterialFile) {
+            this.saving = false;
             this.message = response.message;
             this.closeEditModal();
             this.loadTrainings();
@@ -502,16 +502,19 @@ export class TrainingListComponent implements OnInit, AfterViewInit, OnDestroy {
               next: (materialRes) => {
                 this.trainingMaterials = [...this.trainingMaterials, materialRes.material];
                 this.trainingMaterialFile = null;
+                this.saving = false;
                 this.message = `${response.message} Material cargado correctamente.`;
                 this.closeEditModal();
                 this.loadTrainings();
               },
               error: (error) => {
+                this.saving = false;
                 this.errorMessage = error?.error?.message || 'La capacitacion se guardo, pero no se pudo cargar el material.';
               }
             });
         },
         error: (error) => {
+          this.saving = false;
           this.errorMessage = error?.error?.message || 'Error al guardar la capacitacion.';
         }
       });
