@@ -119,7 +119,7 @@ class PublicTrainingController extends Controller
                     }
                 });
             })
-            ->with('category')
+            ->with('category.empresa')
             ->with(['participants' => function ($q) use ($documentNumber): void {
                 $q->where('document_number', $documentNumber);
 
@@ -157,7 +157,7 @@ class PublicTrainingController extends Controller
                     'exists (select 1 from participant_answers pa where pa.training_participant_id = training_participants.id)'
                 );
             })
-            ->with('category')
+            ->with('category.empresa')
             ->with(['participants' => function ($q) use ($documentNumber): void {
                 $q->where('document_number', $documentNumber);
 

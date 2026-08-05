@@ -242,7 +242,7 @@ export interface TrainingCategory {
   description?: string | null;
   sort_order: number;
   trainings_count?: number;
-  empresa?: { id: number; name: string } | null;
+  empresa?: { id: number; name: string; logo_url?: string | null } | null;
   created_at?: string;
   updated_at?: string;
 }

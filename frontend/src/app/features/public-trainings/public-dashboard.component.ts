@@ -101,9 +101,19 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
 
           <div *ngFor="let group of pendingGroups" class="public-dashboard-group">
             <div class="public-dashboard-group-header">
-              <div>
-                <div class="public-dashboard-group-kicker">Programa</div>
-                <h2 class="public-dashboard-group-title mb-0">{{ categoryLabel(group.category) }}</h2>
+              <div class="public-dashboard-program-heading">
+                <div class="public-dashboard-program-logo" [class.has-logo]="group.category?.empresa?.logo_url">
+                  <img
+                    *ngIf="group.category?.empresa?.logo_url as logoUrl"
+                    [src]="logoUrl"
+                    [alt]="'Logo de ' + (group.category?.empresa?.name || 'la empresa')"
+                  />
+                  <span *ngIf="!group.category?.empresa?.logo_url" class="material-symbols-outlined">business</span>
+                </div>
+                <div>
+                  <div class="public-dashboard-group-kicker">Programa</div>
+                  <h2 class="public-dashboard-group-title mb-0">{{ categoryLabel(group.category) }}</h2>
+                </div>
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="public-dashboard-group-badge">{{ group.trainings.length }}</span>
@@ -154,9 +164,19 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
 
           <div *ngFor="let group of completedGroups" class="public-dashboard-group">
             <div class="public-dashboard-group-header">
-              <div>
-                <div class="public-dashboard-group-kicker">Programa</div>
-                <h2 class="public-dashboard-group-title mb-0">{{ categoryLabel(group.category) }}</h2>
+              <div class="public-dashboard-program-heading">
+                <div class="public-dashboard-program-logo" [class.has-logo]="group.category?.empresa?.logo_url">
+                  <img
+                    *ngIf="group.category?.empresa?.logo_url as logoUrl"
+                    [src]="logoUrl"
+                    [alt]="'Logo de ' + (group.category?.empresa?.name || 'la empresa')"
+                  />
+                  <span *ngIf="!group.category?.empresa?.logo_url" class="material-symbols-outlined">business</span>
+                </div>
+                <div>
+                  <div class="public-dashboard-group-kicker">Programa</div>
+                  <h2 class="public-dashboard-group-title mb-0">{{ categoryLabel(group.category) }}</h2>
+                </div>
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="public-dashboard-group-badge">{{ group.trainings.length }}</span>
@@ -488,6 +508,42 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
       gap: 1rem;
       padding: 1.2rem 1.25rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .public-dashboard-program-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      min-width: 0;
+    }
+
+    .public-dashboard-program-logo {
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: 1rem;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      flex: 0 0 auto;
+      color: #7dd3fc;
+      background: rgba(125, 211, 252, 0.1);
+      border: 1px solid rgba(125, 211, 252, 0.16);
+    }
+
+    .public-dashboard-program-logo.has-logo {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .public-dashboard-program-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 0.3rem;
+    }
+
+    .public-dashboard-program-logo .material-symbols-outlined {
+      font-size: 1.45rem;
     }
 
     .public-dashboard-group-title {
