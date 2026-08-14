@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TrainingAudioIndexation extends Model
@@ -25,5 +26,15 @@ class TrainingAudioIndexation extends Model
     public function training(): BelongsTo
     {
         return $this->belongsTo(Training::class);
+    }
+
+    public function questionAssignments(): HasMany
+    {
+        return $this->hasMany(TrainingAudioIndexationQuestion::class, 'training_audio_indexation_id');
+    }
+
+    public function themes(): HasMany
+    {
+        return $this->hasMany(TrainingAudioIndexationTheme::class, 'training_audio_indexation_id');
     }
 }

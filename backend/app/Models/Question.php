@@ -35,4 +35,9 @@ class Question extends Model
     {
         return $this->hasMany(UserAnswer::class);
     }
+
+    public function audioIndexationAssignments(): HasMany
+    {
+        return $this->hasMany(TrainingAudioIndexationQuestion::class);
+    }
 }

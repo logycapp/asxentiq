@@ -3,13 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>Certificado de Capacitacion</title>
+
     <style>
         @page {
-            size: A4 portrait;
-            margin: 5mm;
+            size: A4 landscape;
+            margin: 0;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
         }
@@ -19,365 +21,507 @@
         }
 
         body {
+            margin: 0;
+            padding: 0;
             font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
-            color: #0f172a;
             background: #ffffff;
+            color: #0f172a;
+            overflow: hidden;
         }
 
+        /*
+         * IMPORTANTE:
+         * A4 horizontal = 297mm x 210mm.
+         *
+         * Se usa 209mm de alto para evitar que Dompdf
+         * genere una segunda página por redondeo.
+         */
         .sheet {
             position: relative;
-            width: 100%;
-            min-height: 100vh;
+            width: 297mm;
+            height: 209mm;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+
+            page-break-before: avoid;
+            page-break-after: avoid;
+            page-break-inside: avoid;
         }
 
-        .frame {
+        .certificate-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 297mm;
+            height: 209mm;
+            object-fit: cover;
+            z-index: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .certificate-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            padding: 3mm;
+            overflow: hidden;
+        }
+
+        .certificate-card {
             position: relative;
-            width: 66%;
-            max-width: 176mm;
-            margin: 50px auto 0;
-            min-height: 260mm;
-            border: 1.5px solid #3b82f6;
-            padding: 5mm 7mm 6mm;
-            display: flex;
-            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 4mm 5mm;
+            overflow: hidden;
         }
 
-        .topbar {
+        .header {
             display: table;
             width: 100%;
-            margin-bottom: 4px;
             table-layout: fixed;
         }
 
-        .brand-block,
-        .qr-block {
+        .header-left,
+        .header-right {
             display: table-cell;
             vertical-align: top;
         }
 
-        .brand-block {
-            width: 70%;
+        .header-left {
+            width: 34%;
         }
 
-        .qr-block {
-            width: 30%;
-            text-align: right;
-        }
-
-        .brand-row {
-            display: table;
-            width: 100%;
-        }
-
-        .brand-logo,
-        .brand-copy {
-            display: table-cell;
-            vertical-align: middle;
+        .brand {
+            width: 48mm;
         }
 
         .brand-logo {
-            width: auto;
-            padding-right: 8px;
-        }
-
-        .brand-logo-box {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            background: transparent;
-            border: 0;
-        }
-
-        .brand-logo-box img {
-            display: block;
-            width: 118px;
-            max-width: 118px;
+            width: 32mm;
+            max-width: 32mm;
             height: auto;
+            display: block;
         }
 
-        .brand-kicker {
-            font-size: 8px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 1px;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .hero {
+            width: 100%;
+            text-align: center;
+            margin-top: 7mm;
         }
 
-        .brand-name {
-            font-size: 20px;
-            line-height: 1;
+        .hero-title {
             margin: 0;
-            color: #2563eb;
-            font-weight: 800;
-            letter-spacing: 0.04em;
+            font-size: 20.5pt;
+            line-height: 1;
+            color: #0f5ac3;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            padding-top:50px;
         }
 
-        .brand-subtitle {
-            font-size: 8px;
-            margin: 2px 0 0;
+        .recipient {
+            margin-top: 6mm;
+            text-align: center;
+        }
+
+        .recipient-name {
+            display: inline-block;
+            min-width: 118mm;
+            padding-bottom: 1.5mm;
+            font-size: 16pt;
+            line-height: 1.1;
+            font-weight: 900;
+            color: #12b5a8;
+            border-bottom: 1.25pt solid #15a0d8;
+            letter-spacing: -0.02em;
+        }
+
+        .recipient-document {
+            margin-top: 1.8mm;
+            font-size: 9pt;
+            line-height: 1.1;
+            color: #475569;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .body-copy {
+            margin-top: 6mm;
+            text-align: center;
+            font-size: 11pt;
+            line-height: 1.55;
             color: #475569;
         }
 
-        .qr-title {
-            font-size: 7px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
+        .body-copy .accent {
+            color: #0f5ac3;
+            font-weight: 800;
+        }
+
+        .training-pill {
+            width: 146mm;
+            max-width: 100%;
+            margin: 4mm auto 0;
+            padding: 3.5mm 7mm 3.5mm 6mm;
+            border-left: 2.8mm solid #18c7c0;
+            border-radius: 3mm;
+            background: rgba(233, 245, 255, 0.88);
+            text-align: center;
+        }
+
+        .training-pill-title {
+            margin: 0;
+            font-size: 15.5pt;
+            line-height: 1.15;
+            font-weight: 900;
+            color: #1d4ed8;
+            letter-spacing: -0.03em;
+        }
+
+        .details {
+            margin-top: 5mm;
+            text-align: center;
+            font-size: 10.6pt;
+            line-height: 1.45;
+            color: #475569;
+        }
+
+        .details .accent {
+            color: #18b5ab;
+            font-weight: 800;
+        }
+
+        .bottom-line {
+            position: absolute;
+            left: 50%;
+            bottom: 30mm;
+            width: 54mm;
+            transform: translateX(-50%);
+            border-top: 1.2pt solid #1d4ed8;
+        }
+
+        .signature {
+            position: absolute;
+            left: 50%;
+            bottom: 15mm;
+            width: 64mm;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .signature .role {
+            font-size: 8.8pt;
+            line-height: 1.1;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 0.02em;
+        }
+
+        .signature .subrole {
+            margin-top: 1mm;
+            font-size: 6.8pt;
+            line-height: 1.1;
             color: #64748b;
-            margin-bottom: 4px;
-            font-weight: 700;
+        }
+
+        .slogan {
+            position: absolute;
+            left: 50%;
+            bottom: 1mm;
+            width: 100%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 10.5pt;
+            line-height: 1;
+            font-style: italic;
+            font-weight: 900;
+            color: #14b8a6;
+            letter-spacing: -0.02em;
         }
 
         .qr-box {
-            display: inline-block;
-            width: 80px;
-            height: 80px;
-            padding: 3px;
-            border-radius: 14px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            background: #ffffff;
-            box-sizing: border-box;
+            position: absolute;
+            right: 20mm;
+            bottom: 15mm;
+            width: 28mm;
+            height: 35mm;
+            padding: 2.5mm 2.5mm 2.2mm;
+            border-radius: 2.5mm;
+            border: 0.7pt solid rgba(226, 232, 240, 0.9);
+            background: rgba(255, 255, 255, 0.72);
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .qr-box .title {
+            margin: 0 0 2.5mm;
+            font-size: 7pt;
+            line-height: 1;
+            font-weight: 800;
+            color: #cbd5e1;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
         }
 
         .qr-box img {
             width: 100%;
-            height: 100%;
+            height: 25mm;
+            object-fit: contain;
             display: block;
             margin: 0;
+            padding: 0;
         }
 
         .qr-fallback {
-            display: table;
             width: 100%;
-            height: 100%;
-            border: 2px dashed #93c5fd;
-            border-radius: 10px;
+            height: 25mm;
+            padding: 1.5mm;
+            border: 1px dashed #93c5fd;
+            border-radius: 2mm;
             color: #2563eb;
-            font-size: 8px;
+            font-size: 7pt;
             line-height: 1.3;
             text-align: center;
         }
-
-        .qr-fallback span {
-            display: table-cell;
-            vertical-align: middle;
-            padding: 6px;
-        }
-
-        .title-block {
-            text-align: center;
-            margin: 6px 0 8px;
-        }
-
-        .title-block .eyebrow {
-            display: inline-block;
-            font-size: 8px;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #64748b;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .title-block h1 {
-            margin: 0;
-            font-size: 26px;
-            color: #1d4ed8;
-            line-height: 1;
-            letter-spacing: -0.03em;
-        }
-
-        .title-block p {
-            margin: 4px 0 0;
-            font-size: 10px;
-            color: #475569;
-        }
-
-        .recipient,
-        .training-section,
-        .result-section {
-            text-align: center;
-        }
-
-        .label {
-            font-size: 8px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: #94a3b8;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .recipient-name {
-            font-size: 22px;
-            font-weight: 800;
-            color: #0f172a;
-            margin: 0;
-            letter-spacing: -0.03em;
-        }
-
-        .recipient-document {
-            font-size: 9px;
-            color: #475569;
-            margin: 4px 0 0;
-        }
-
-        .training-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #2563eb;
-            margin: 0;
-            line-height: 1.25;
-        }
-
-        .result-box {
-            display: inline-block;
-            margin: 10px auto 8px;
-            min-width: 200px;
-            padding: 12px 18px 10px;
-            border-radius: 16px;
-            border: 2px solid {{ $passed ? '#22c55e' : '#ef4444' }};
-            background: {{ $passed ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)' }};
-        }
-
-        .result-box .small-label {
-            font-size: 8px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 2px;
-            font-weight: 700;
-        }
-
-        .result-box .score {
-            font-size: 34px;
-            line-height: 1;
-            font-weight: 900;
-            color: {{ $passed ? '#16a34a' : '#dc2626' }};
-            margin: 0;
-        }
-
-        .result-box .status {
-            margin-top: 4px;
-            font-size: 13px;
-            font-weight: 800;
-            color: {{ $passed ? '#16a34a' : '#dc2626' }};
-            letter-spacing: 0.08em;
-        }
-
-        .meta {
-            margin-top: 5px;
-            font-size: 9px;
-            color: #475569;
-            line-height: 1.35;
-        }
-
-        .footer {
-            margin-top: auto;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 8px;
-            padding-top: 4px;
-        }
-
-        .footer .line {
-            width: 120px;
-            border-top: 1px solid #cbd5e1;
-            margin: 0 auto 4px;
-        }
-
-        .content {
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            flex: 1 1 auto;
-        }
     </style>
 </head>
+
 <body>
+
+    @php
+        $issuedDate = \Carbon\Carbon::parse($completed_at)->format('d/m/Y');
+
+        $durationLabel = $duration_hours !== null
+            ? $duration_hours . ' horas'
+            : 'N/D';
+    @endphp
+
     <div class="sheet">
-        <div class="frame">
-            <div class="content">
-                <div class="topbar">
-                <div class="brand-block">
-                    <div class="brand-row">
-                        <div class="brand-logo">
-                            <div class="brand-logo-box">
-                                @if(!empty($company_logo_data_url))
-                                    <img src="{{ $company_logo_data_url }}" alt="{{ $company_name ?? 'Logo' }}">
-                                @else
-                                    <svg width="100%" height="100%" viewBox="0 0 100 100" aria-hidden="true">
-                                        <rect x="2" y="2" width="96" height="96" rx="18" fill="#ffffff" stroke="#3b82f6" stroke-width="2"/>
-                                        <circle cx="50" cy="44" r="20" fill="#3b82f6"/>
-                                        <text x="50" y="50" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-size="19" font-weight="800" fill="#ffffff">{{ strtoupper(mb_substr($company_name ?? 'AS', 0, 2)) }}</text>
-                                        <text x="50" y="74" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-size="7" font-weight="700" fill="#334155">ASXENTIQ</text>
-                                    </svg>
-                                @endif
-                            </div>
+
+        {{-- Fondo del certificado --}}
+        @if(!empty($background_image_data_url))
+            <img
+                class="certificate-background"
+                src="{{ $background_image_data_url }}"
+                alt=""
+            >
+        @endif
+
+        <div class="certificate-overlay">
+
+            <div class="certificate-card">
+
+                {{-- Encabezado / Logo --}}
+                <div class="header">
+
+                    <div class="header-left">
+
+                        <div class="brand">
+
+                            @if(!empty($company_logo_data_url))
+
+                                <img
+                                    class="brand-logo"
+                                    src="{{ $company_logo_data_url }}"
+                                    alt="{{ $company_name ?? 'Asxentiq' }}"
+                                >
+
+                            @else
+
+                                <svg
+                                    class="brand-logo"
+                                    viewBox="0 0 240 100"
+                                    aria-hidden="true"
+                                >
+
+                                    <defs>
+                                        <linearGradient
+                                            id="brandGradient"
+                                            x1="0%"
+                                            y1="0%"
+                                            x2="100%"
+                                            y2="100%"
+                                        >
+                                            <stop
+                                                offset="0%"
+                                                stop-color="#0f5ac3"
+                                            />
+
+                                            <stop
+                                                offset="100%"
+                                                stop-color="#18c7c0"
+                                            />
+                                        </linearGradient>
+                                    </defs>
+
+                                    <rect
+                                        x="2"
+                                        y="2"
+                                        width="236"
+                                        height="96"
+                                        rx="18"
+                                        fill="#ffffff"
+                                        opacity="0"
+                                    />
+
+                                    <circle
+                                        cx="54"
+                                        cy="47"
+                                        r="26"
+                                        fill="url(#brandGradient)"
+                                    />
+
+                                    <text
+                                        x="54"
+                                        y="55"
+                                        text-anchor="middle"
+                                        font-family="DejaVu Sans, Arial, sans-serif"
+                                        font-size="24"
+                                        font-weight="800"
+                                        fill="#ffffff"
+                                    >
+                                        A
+                                    </text>
+
+                                    <text
+                                        x="90"
+                                        y="54"
+                                        font-family="DejaVu Sans, Arial, sans-serif"
+                                        font-size="20"
+                                        font-weight="800"
+                                        fill="#0f5ac3"
+                                    >
+                                        ASXENTIQ S.A.S.
+                                    </text>
+
+                                </svg>
+
+                            @endif
+
                         </div>
-                        <div class="brand-copy">
-                            <div class="brand-kicker">ASXENTIQ SAS</div>
-                            <h1 class="brand-name">Certificado</h1>
-                            <p class="brand-subtitle">Certificado de capacitacion emitido por el sistema</p>
-                        </div>
+
                     </div>
-                </div>
-                <div class="qr-block">
-                    <div class="qr-title">Validación</div>
-                    <div class="qr-box">
-                        @if(!empty($qr_image_data_url))
-                            <img src="{{ $qr_image_data_url }}" alt="QR de validación">
-                        @else
-                            <div class="qr-fallback">
-                                <span>Verificación electrónica<br>{{ $certificate_code }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
+
+                    <div class="header-right"></div>
+
                 </div>
 
-                <div class="title-block">
-                <div class="eyebrow">Certificado de capacitación</div>
-                <h1>ASXENTIQ</h1>
-                <p>Este documento valida que la formación fue completada y emitida desde el sistema.</p>
+                {{-- Título --}}
+                <div class="hero">
+                    <h1 class="hero-title">
+                        CERTIFICA QUE:
+                    </h1>
                 </div>
 
+                {{-- Persona --}}
                 <div class="recipient">
-                <div class="label">Otorgado a</div>
-                <div class="recipient-name">{{ $user_name }}</div>
-                <div class="recipient-document">Cédula: {{ $document_number }}</div>
+
+                    <div class="recipient-name">
+                        {{ $user_name }}
+                    </div>
+
+                    <div class="recipient-document">
+                        C.C. {{ $document_number }}
+                    </div>
+
                 </div>
 
-                <div class="training-section" style="margin-top: 10px;">
-                <div class="label">Por completar</div>
-                <div class="training-title">{{ $training_title }}</div>
+                {{-- Texto --}}
+                <div class="body-copy">
+
+                    <span class="accent">
+                        Participó satisfactoriamente
+                    </span>
+
+                    en la formación virtual de:
+
                 </div>
 
-                <div class="result-section">
-                <div class="result-box">
-                    <div class="small-label">Puntaje final</div>
-                    <div class="score">{{ number_format((float) $score, 2) }}%</div>
-                    <div class="status">{{ $passed ? 'APROBADO' : 'NO APROBADO' }}</div>
-                </div>
+                {{-- Curso --}}
+                <div class="training-pill">
+
+                    <p class="training-pill-title">
+                        {{ $training_title }}
+                    </p>
+
                 </div>
 
-                <div class="meta">
-                Fecha de finalización: {{ \Carbon\Carbon::parse($completed_at)->format('d/m/Y H:i') }}<br>
-                Puntaje mínimo requerido: {{ number_format((float) $passing_score, 2) }}%<br>
-                Código de validación: <strong>{{ $certificate_code }}</strong>
+                {{-- Duración y fecha --}}
+                <div class="details">
+
+                    Con una intensidad de:
+
+                    <span class="accent">
+                        {{ $durationLabel }}
+                    </span>
+
+                    el día
+
+                    <span class="accent">
+                        {{ $issuedDate }}
+                    </span>
+
                 </div>
+
+                {{-- Firma --}}
+                <div class="bottom-line"></div>
+
+                <div class="signature">
+
+                    <div class="role">
+                        DIRECCIÓN ACADÉMICA
+                    </div>
+
+                    <div class="subrole">
+                        Asxentiq Formación Virtual
+                    </div>
+
+                </div>
+
+                {{-- Slogan --}}
+                <div class="slogan">
+                    ¡Formando equipos para los desafíos del mañana!
+                </div>
+
+                {{-- QR --}}
+                <div class="qr-box">
+
+                    <div class="title">
+                        CÓDIGO QR
+                    </div>
+
+                    @if(!empty($qr_image_data_url))
+
+                        <img
+                            src="{{ $qr_image_data_url }}"
+                            alt="QR de validación"
+                        >
+
+                    @else
+
+                        <div class="qr-fallback">
+
+                            Verificación electrónica
+
+                            <br>
+
+                            {{ $certificate_code }}
+
+                        </div>
+
+                    @endif
+
+                </div>
+
             </div>
 
-            <div class="footer">
-                <div class="line"></div>
-                <div>Asxentiq - Sistema de Gestión de Capacitaciones · {{ $certificate_code }}</div>
-                <div>Certificado emitido electrónicamente con validación pública</div>
-            </div>
         </div>
+
     </div>
+
 </body>
 </html>

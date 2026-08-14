@@ -38,12 +38,28 @@ export interface VideoIndexAnalysisResponse {
     palabras_clave: string[];
     preguntas_posibles: string[];
   }>;
+  subtitle_cues?: Array<{
+    orden: number;
+    inicio: number;
+    fin: number;
+    texto: string;
+    segmento_orden?: number;
+    tema?: string | null;
+  }>;
+  question_assignments?: Array<{
+    theme_order: number;
+    question_ids: number[];
+  }>;
+  subtitle_url?: string | null;
 }
 
 export interface VideoIndexStoredResponse {
   training_id: number;
   audio_path: string | null;
   audio_url: string | null;
+  subtitle_url?: string | null;
+  subtitle_cues?: VideoIndexAnalysisResponse['subtitle_cues'];
+  question_assignments?: VideoIndexAnalysisResponse['question_assignments'];
   indexed_at: string | null;
   cached: boolean;
   result_data: VideoIndexAnalysisResponse | null;
@@ -72,6 +88,23 @@ export class VideoIndexActionService {
     return this.http.post<VideoIndexAnalysisResponse>(
       `${this.apiUrl}/trainings/${trainingId}/analyze-audio`,
       { audio_path: audioPath }
+    );
+  }
+
+  getQuestionAssignments(trainingId: number): Observable<{ training_id: number; question_assignments: NonNullable<VideoIndexAnalysisResponse['question_assignments']> }> {
+    return this.http.get<{ training_id: number; question_assignments: NonNullable<VideoIndexAnalysisResponse['question_assignments']> }>(
+      `${this.apiUrl}/trainings/${trainingId}/question-assignments`
+    );
+  }
+
+  saveQuestionAssignments(
+    trainingId: number,
+    themeOrder: number,
+    questionIds: number[]
+  ): Observable<{ message: string; question_assignments: NonNullable<VideoIndexAnalysisResponse['question_assignments']> }> {
+    return this.http.put<{ message: string; question_assignments: NonNullable<VideoIndexAnalysisResponse['question_assignments']> }>(
+      `${this.apiUrl}/trainings/${trainingId}/question-assignments/${themeOrder}`,
+      { question_ids: questionIds }
     );
   }
 }

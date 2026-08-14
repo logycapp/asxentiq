@@ -8,12 +8,16 @@ use Illuminate\Support\Facades\Storage;
 
 class GeminiAudioIndexService
 {
+    private ?string $lastError = null;
+
     public function analyzeFromAudio(string $audioPath): ?array
     {
+        $this->lastError = null;
         $apiKey = config('services.gemini.api_key');
         $model = config('services.gemini.audio_index_model');
 
         if (! $apiKey || ! $model) {
+            $this->lastError = 'Falta configurar la llave o el modelo de Gemini para indexacion de audio.';
             return null;
         }
 
@@ -53,6 +57,7 @@ class GeminiAudioIndexService
             ]);
 
         if (! $response->successful()) {
+            $this->lastError = 'Gemini rechazo la solicitud de analisis de audio (HTTP '.$response->status().').';
             Log::warning('No fue posible analizar el audio con Gemini.', [
                 'audioPath' => $audioPath,
                 'status' => $response->status(),
@@ -65,6 +70,7 @@ class GeminiAudioIndexService
         $structuredData = $this->extractStructuredJson($response->json());
 
         if (! $structuredData) {
+            $this->lastError = 'Gemini respondio, pero el JSON no pudo normalizarse para indexacion.';
             Log::warning('Gemini no devolvio un JSON valido para el indice de audio.', [
                 'audioPath' => $audioPath,
                 'response' => $response->json(),
@@ -149,10 +155,15 @@ class GeminiAudioIndexService
             return null;
         }
 
-        $temasDetectados = $this->normalizeTemas($payload['temas_detectados'] ?? null);
         $segmentos = $this->normalizeSegmentos($payload['segmentos'] ?? null);
+        $temasDetectados = $this->normalizeTemas($payload['temas_detectados'] ?? null);
+
+        if ($temasDetectados === null && $segmentos !== null) {
+            $temasDetectados = $this->buildTemasFromSegmentos($segmentos);
+        }
 
         if ($temasDetectados === null || $segmentos === null) {
+            $this->lastError = 'La estructura devuelta por Gemini no contiene temas o segmentos validos.';
             return null;
         }
 
@@ -163,6 +174,7 @@ class GeminiAudioIndexService
             'resumen_general' => $resumenGeneral,
             'temas_detectados' => $temasDetectados,
             'segmentos' => $segmentos,
+            'subtitle_cues' => $this->buildSubtitleCues($segmentos),
         ];
     }
 
@@ -206,6 +218,120 @@ class GeminiAudioIndexService
         return $normalized === [] ? null : $normalized;
     }
 
+    private function buildSubtitleCues(array $segments): array
+    {
+        $orderedSegments = $segments;
+        usort($orderedSegments, static function (array $left, array $right): int {
+            $leftStart = (float) ($left['inicio'] ?? 0);
+            $rightStart = (float) ($right['inicio'] ?? 0);
+
+            if ($leftStart !== $rightStart) {
+                return $leftStart <=> $rightStart;
+            }
+
+            $leftEnd = (float) ($left['fin'] ?? 0);
+            $rightEnd = (float) ($right['fin'] ?? 0);
+
+            if ($leftEnd !== $rightEnd) {
+                return $leftEnd <=> $rightEnd;
+            }
+
+            return (int) ($left['orden'] ?? 0) <=> (int) ($right['orden'] ?? 0);
+        });
+
+        $cues = [];
+        $cueOrder = 1;
+
+        foreach ($orderedSegments as $segment) {
+            $start = (float) ($segment['inicio'] ?? 0);
+            $end = (float) ($segment['fin'] ?? 0);
+            $text = $this->normalizeSubtitleText((string) ($segment['texto'] ?? ''));
+
+            if ($text === '') {
+                $text = $this->normalizeSubtitleText((string) ($segment['resumen'] ?? ''));
+            }
+
+            if ($text === '') {
+                continue;
+            }
+
+            $parts = $this->splitSubtitleText($text);
+            if ($parts === []) {
+                continue;
+            }
+
+            $duration = max(0.5, $end - $start);
+            $weights = array_map(
+                static fn (string $part): int => max(1, mb_strlen($part)),
+                $parts
+            );
+            $totalWeight = max(1, array_sum($weights));
+            $cursor = $start;
+
+            foreach ($parts as $index => $part) {
+                $share = $duration * ($weights[$index] / $totalWeight);
+                $cueStart = $cursor;
+                $cueEnd = $index === array_key_last($parts) ? $end : min($end, $cursor + $share);
+
+                if ($cueEnd <= $cueStart) {
+                    $cueEnd = min($end, $cueStart + max(0.5, $duration / max(1, count($parts))));
+                }
+
+                if ($cueEnd <= $cueStart) {
+                    $cueEnd = $cueStart + 0.5;
+                }
+
+                $cues[] = [
+                    'orden' => $cueOrder++,
+                    'inicio' => round($cueStart, 3),
+                    'fin' => round($cueEnd, 3),
+                    'texto' => $part,
+                    'segmento_orden' => (int) ($segment['orden'] ?? 0),
+                    'tema' => $this->normalizeString($segment['tema'] ?? ''),
+                ];
+
+                $cursor = $cueEnd;
+            }
+        }
+
+        return $cues;
+    }
+
+    private function buildTemasFromSegmentos(array $segmentos): ?array
+    {
+        $themes = [];
+
+        foreach ($segmentos as $segment) {
+            if (! is_array($segment)) {
+                continue;
+            }
+
+            $themeText = $this->normalizeString($segment['tema'] ?? null)
+                ?? $this->normalizeString($segment['subtema'] ?? null)
+                ?? $this->normalizeString($segment['resumen'] ?? null);
+
+            if ($themeText === null) {
+                continue;
+            }
+
+            $start = (int) round((float) ($segment['inicio'] ?? 0));
+            $end = (int) round((float) ($segment['fin'] ?? $start));
+
+            if ($end < $start) {
+                continue;
+            }
+
+            $themes[] = [
+                'orden' => count($themes) + 1,
+                'tema' => $themeText,
+                'inicio' => $start,
+                'fin' => $end,
+            ];
+        }
+
+        return $themes === [] ? null : $themes;
+    }
+
     private function normalizeSegmentos(mixed $items): ?array
     {
         if (! is_array($items) || $items === []) {
@@ -227,9 +353,8 @@ class GeminiAudioIndexService
             $resumen = $this->normalizeString($item['resumen'] ?? null);
             $texto = $this->normalizeString($item['texto'] ?? null);
             $palabrasClave = $this->normalizeStringList($item['palabras_clave'] ?? null);
-            $preguntasPosibles = $this->normalizeStringList($item['preguntas_posibles'] ?? null);
 
-            if (! is_numeric($orden) || ! is_numeric($inicio) || ! is_numeric($fin) || $tema === null || $resumen === null || $texto === null) {
+            if (! is_numeric($orden) || ! is_numeric($inicio) || ! is_numeric($fin) || $tema === null) {
                 return null;
             }
 
@@ -240,9 +365,8 @@ class GeminiAudioIndexService
                 return null;
             }
 
-            if ($palabrasClave === [] || $preguntasPosibles === []) {
-                return null;
-            }
+            $textoFinal = $texto ?? $resumen ?? $subtema ?? $tema;
+            $resumenFinal = $resumen ?? $textoFinal;
 
             $normalized[] = [
                 'orden' => (int) $orden,
@@ -250,10 +374,9 @@ class GeminiAudioIndexService
                 'fin' => $finSegundos,
                 'tema' => $tema,
                 'subtema' => $subtema ?? '',
-                'resumen' => $resumen,
-                'texto' => $texto,
+                'resumen' => $resumenFinal,
+                'texto' => $textoFinal,
                 'palabras_clave' => $palabrasClave,
-                'preguntas_posibles' => $preguntasPosibles,
             ];
         }
 
@@ -281,6 +404,71 @@ class GeminiAudioIndexService
         return array_values(array_unique($normalized));
     }
 
+    private function splitSubtitleText(string $text, int $maxChars = 72): array
+    {
+        $text = $this->normalizeSubtitleText($text);
+
+        if ($text === '') {
+            return [];
+        }
+
+        $sentences = preg_split('/(?<=[.!?])\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+        $sentences = is_array($sentences) && $sentences !== [] ? $sentences : [$text];
+
+        $chunks = [];
+
+        foreach ($sentences as $sentence) {
+            $sentence = trim((string) $sentence);
+
+            if ($sentence === '') {
+                continue;
+            }
+
+            if (mb_strlen($sentence) <= $maxChars) {
+                $chunks[] = $sentence;
+                continue;
+            }
+
+            $words = preg_split('/\s+/u', $sentence, -1, PREG_SPLIT_NO_EMPTY);
+            $buffer = '';
+
+            foreach ($words ?: [] as $word) {
+                $candidate = $buffer === '' ? $word : $buffer.' '.$word;
+
+                if (mb_strlen($candidate) <= $maxChars) {
+                    $buffer = $candidate;
+                    continue;
+                }
+
+                if ($buffer !== '') {
+                    $chunks[] = $buffer;
+                }
+
+                $buffer = $word;
+            }
+
+            if ($buffer !== '') {
+                $chunks[] = $buffer;
+            }
+        }
+
+        return array_values(array_filter($chunks, static fn (string $chunk): bool => trim($chunk) !== ''));
+    }
+
+    private function normalizeSubtitleText(string $text): string
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            return '';
+        }
+
+        $text = strip_tags($text);
+        $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+
+        return trim($text);
+    }
+
     private function normalizeString(mixed $value): ?string
     {
         if (! is_string($value) && ! is_numeric($value)) {
@@ -290,5 +478,10 @@ class GeminiAudioIndexService
         $text = trim((string) $value);
 
         return $text !== '' ? $text : null;
+    }
+
+    public function lastError(): ?string
+    {
+        return $this->lastError;
     }
 }

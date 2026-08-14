@@ -18,10 +18,10 @@ Reglas:
 - Divide el audio en segmentos por tema o subtema.
 - Cada segmento debe tener inicio y fin en segundos.
 - Cada segmento debe contener el texto hablado correspondiente.
+- Cada segmento debe contener un texto breve y natural, apto para subtitulos.
 - Cada segmento debe tener un tema corto y claro.
 - Cada segmento debe tener un resumen breve.
 - Cada segmento debe tener palabras clave utiles para busqueda.
-- Cada segmento debe tener posibles preguntas que un usuario podria hacer.
 - No inventes informacion que no este en el audio.
 - No mezcles temas diferentes dentro del mismo segmento si se pueden separar.
 - Si un mismo tema continua durante mas tiempo, puedes dividirlo en subsegmentos.
@@ -56,8 +56,7 @@ Estructura exacta de salida:
 "subtema": "",
 "resumen": "",
 "texto": "",
-"palabras_clave": [],
-"preguntas_posibles": []
+"palabras_clave": []
 }
 ]
 }

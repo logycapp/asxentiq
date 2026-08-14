@@ -258,7 +258,7 @@ start_frontend() {
   echo "Iniciando Angular en http://localhost:4200"
   (
     cd "$FRONTEND_DIR"
-    npm run start -- --host 127.0.0.1 --port 4200
+    npm run start
   ) &
   FRONTEND_PID=$!
 }

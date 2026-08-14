@@ -70,6 +70,7 @@ class CertificateController extends Controller
             $participant->empresa?->logo_path,
             $participant->empresa?->name ?? 'Asxentiq SAS'
         );
+        $backgroundImageDataUrl = $this->generateBackgroundImageDataUrl();
         $certificateCode = strtoupper(substr(hash_hmac(
             'sha256',
             $training->id . '|' . $participant->id . '|' . ($participant->completed_at?->toISOString() ?? '') . '|' . ($participant->score ?? '0'),
@@ -81,6 +82,7 @@ class CertificateController extends Controller
             'document_number' => $participant->document_number,
             'training_title' => $training->title,
             'training_category' => $training->category?->name,
+            'duration_hours' => $training->duration_hours,
             'company_name' => $participant->empresa?->name,
             'company_logo_data_url' => $companyLogoDataUrl,
             'score' => $participant->score,
@@ -91,9 +93,11 @@ class CertificateController extends Controller
             'certificate_code' => $certificateCode,
             'verification_url' => $verificationUrl,
             'qr_image_data_url' => $qrImageDataUrl,
+            'background_image_data_url' => $backgroundImageDataUrl,
         ];
 
         $pdf = Pdf::loadView('certificates.training', $data)
+            ->setPaper('a4', 'landscape')
             ->setOption([
                 'isRemoteEnabled' => false,
                 'isHtml5ParserEnabled' => true,
@@ -151,5 +155,23 @@ class CertificateController extends Controller
 SVG;
 
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
+    }
+
+    private function generateBackgroundImageDataUrl(): ?string
+    {
+        $backgroundPath = public_path('certificates/background_certificate.png');
+
+        if (! File::exists($backgroundPath)) {
+            return null;
+        }
+
+        try {
+            $mimeType = File::mimeType($backgroundPath) ?: 'image/png';
+            $contents = File::get($backgroundPath);
+
+            return 'data:' . $mimeType . ';base64,' . base64_encode($contents);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

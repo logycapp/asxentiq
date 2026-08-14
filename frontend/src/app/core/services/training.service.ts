@@ -29,6 +29,15 @@ export interface Training {
   materials?: TrainingMaterial[];
   latestMaterial?: TrainingMaterial | null;
   audioIndexation?: TrainingAudioIndexation | null;
+  audio_indexation?: TrainingAudioIndexation | null;
+  subtitle_url?: string | null;
+  subtitle_cues?: VideoIndexAnalysisResponse['subtitle_cues'];
+  themes?: Array<{
+    orden: number;
+    tema: string;
+    inicio: number;
+    fin: number;
+  }>;
   users?: any[];
   participants?: TrainingParticipant[];
   attempt_in_progress?: boolean;
@@ -39,8 +48,37 @@ export interface TrainingAudioIndexation {
   id: number;
   training_id: number;
   audio_path: string;
+  subtitle_url?: string | null;
+  themes?: TrainingAudioIndexationTheme[];
   result_data: VideoIndexAnalysisResponse;
+  question_assignments?: Array<{
+    id?: number;
+    training_audio_indexation_id: number;
+    question_id: number;
+    theme_order: number;
+    sort_order: number;
+    question?: Question;
+  }>;
+  questionAssignments?: Array<{
+    id: number;
+    training_audio_indexation_id: number;
+    question_id: number;
+    theme_order: number;
+    sort_order: number;
+    question?: Question;
+  }>;
   indexed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TrainingAudioIndexationTheme {
+  id: number;
+  training_audio_indexation_id: number;
+  theme_order: number;
+  theme_text: string;
+  start_seconds: number;
+  end_seconds: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -292,6 +330,18 @@ export interface VideoIndexAnalysisResponse {
     texto: string;
     palabras_clave: string[];
     preguntas_posibles: string[];
+  }>;
+  subtitle_cues?: Array<{
+    orden: number;
+    inicio: number;
+    fin: number;
+    texto: string;
+    segmento_orden?: number;
+    tema?: string | null;
+  }>;
+  question_assignments?: Array<{
+    theme_order: number;
+    question_ids: number[];
   }>;
 }
 

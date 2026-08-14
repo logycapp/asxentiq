@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/video-indexaction/trainings/{training}/indexation', [VideoIndexActionController::class, 'showIndexation']);
     Route::post('/video-indexaction/extract-audio', [VideoIndexActionController::class, 'extractAudio']);
     Route::post('/video-indexaction/trainings/{training}/analyze-audio', [VideoIndexActionController::class, 'analyzeAudio']);
+    Route::get('/video-indexaction/trainings/{training}/question-assignments', [VideoIndexActionController::class, 'indexationQuestions']);
+    Route::put('/video-indexaction/trainings/{training}/question-assignments/{themeOrder}', [VideoIndexActionController::class, 'updateIndexationQuestions']);
     Route::delete('/video-indexaction/trainings/{training}/indexation', [VideoIndexActionController::class, 'clearIndexation']);
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);

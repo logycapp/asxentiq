@@ -145,7 +145,11 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
                   [routerLink]="['/public/trainings', t.id, 'take']"
                   class="btn public-training-action"
                 >
-                  {{ isAttemptInProgress(t) ? 'Continuar' : (attemptsUsed(t) > 0 ? 'Volver a presentar' : 'Realizar') }}
+                  {{
+                    t.material_with_indexation
+                      ? (isAttemptInProgress(t) ? 'Continuar video guiado' : 'Abrir video guiado')
+                      : (isAttemptInProgress(t) ? 'Continuar' : (attemptsUsed(t) > 0 ? 'Volver a presentar' : 'Realizar'))
+                  }}
                 </a>
                 <span *ngIf="attemptsRemaining(t) <= 0 && !isAttemptInProgress(t)" class="public-training-locked-badge">
                   Intentos agotados
@@ -227,7 +231,11 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
                       [routerLink]="['/public/trainings', t.id, 'take']"
                       class="btn public-training-action"
                     >
-                      {{ isAttemptInProgress(t) ? 'Continuar' : 'Volver a presentar' }}
+                      {{
+                        t.material_with_indexation
+                          ? (isAttemptInProgress(t) ? 'Continuar video guiado' : 'Abrir video guiado')
+                          : (isAttemptInProgress(t) ? 'Continuar' : 'Volver a presentar')
+                      }}
                     </a>
                     <span *ngIf="!hasResult(t) && attemptsRemaining(t) <= 0 && !isAttemptInProgress(t)" class="public-training-locked-badge">
                       Intentos agotados
