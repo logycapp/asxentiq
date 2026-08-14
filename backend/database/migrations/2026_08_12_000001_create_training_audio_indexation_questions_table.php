@@ -14,8 +14,16 @@ return new class extends Migration
 
         Schema::create('training_audio_indexation_questions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('training_audio_indexation_id')->constrained('training_audio_indexations')->cascadeOnDelete();
-            $table->foreignId('question_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('training_audio_indexation_id');
+            $table->foreign('training_audio_indexation_id', 'taiq_indexation_fk')
+                ->references('id')
+                ->on('training_audio_indexations')
+                ->cascadeOnDelete();
+            $table->foreignId('question_id');
+            $table->foreign('question_id', 'taiq_question_fk')
+                ->references('id')
+                ->on('questions')
+                ->cascadeOnDelete();
             $table->unsignedInteger('theme_order');
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();

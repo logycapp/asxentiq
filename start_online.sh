@@ -215,6 +215,11 @@ ensure_database() {
   exit 1
 }
 
+run_database_migrations() {
+  echo "Ejecutando migraciones y seeders de Laravel..."
+  (cd "$BACKEND_DIR" && "$PHP_BIN" artisan migrate --seed --force)
+}
+
 install_backend_dependencies() {
   if [[ ! -f "$BACKEND_DIR/vendor/autoload.php" ]]; then
     echo "Instalando dependencias de Laravel..."
@@ -275,6 +280,7 @@ main() {
   install_backend_dependencies
   ensure_app_key
   ensure_database
+  run_database_migrations
   start_backend
   install_frontend_dependencies
   build_frontend

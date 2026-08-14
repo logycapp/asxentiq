@@ -15,7 +15,11 @@ return new class extends Migration
 
         Schema::create('training_audio_indexation_themes', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('training_audio_indexation_id')->constrained('training_audio_indexations')->cascadeOnDelete();
+            $table->foreignId('training_audio_indexation_id');
+            $table->foreign('training_audio_indexation_id', 'tait_indexation_fk')
+                ->references('id')
+                ->on('training_audio_indexations')
+                ->cascadeOnDelete();
             $table->unsignedInteger('theme_order');
             $table->text('theme_text');
             $table->unsignedInteger('start_seconds');
