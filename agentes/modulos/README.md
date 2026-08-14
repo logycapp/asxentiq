@@ -11,6 +11,7 @@ Este indice lista los modulos que aparecen de forma clara en el proyecto.
 - `test`
 - `dashboard`
 - `admin`
+- `powerbi`
 - `profile`
 - `trainings`
 - `empresas`

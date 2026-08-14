@@ -25,6 +25,10 @@ function resolveProtectedRoute(path?: string | null): string | null {
     return '/trainings';
   }
 
+  if (path.startsWith('powerbi')) {
+    return '/powerbi';
+  }
+
   if (path === 'admin') {
     return '/admin';
   }

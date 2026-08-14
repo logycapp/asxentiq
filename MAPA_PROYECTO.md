@@ -45,6 +45,7 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - Test
 - Dashboard
 - Admin
+- PowerBI
 - Trainings (Capacitaciones)
 
 ## Rutas Laravel detectadas
@@ -54,6 +55,9 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `POST /api/logout`
 - `GET /api/menu`
 - `POST /api/test`
+- `GET /api/powerbi/dashboard`
+- `POST /api/powerbi/preview`
+- `POST /api/powerbi/import`
 - `GET /api/profile`
 - `POST /api/profile`
 - `GET /api/roles`
@@ -93,6 +97,7 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `/empresas/create`
 - `/empresas/:id/edit`
 - `/test`
+- `/powerbi`
 - `/users`
 - `/users/create`
 - `/users/:id/edit`
@@ -116,6 +121,9 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `POST /api/logout`
 - `GET /api/menu`
 - `POST /api/test`
+- `GET /api/powerbi/dashboard`
+- `POST /api/powerbi/preview`
+- `POST /api/powerbi/import`
 - `GET /api/profile`
 - `POST /api/profile`
 - CRUD de roles en `/api/roles`
@@ -124,6 +132,9 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - endpoints de permisos de menu para roles y usuarios
 - CRUD de capacitaciones en `/api/trainings`
 - CRUD de preguntas en `/api/questions`
+- Dashboard de Power BI en `/api/powerbi/dashboard`
+- Analisis de Excel para graficas en `/api/powerbi/preview`
+- Persistencia de datos Excel en `/api/powerbi/import`
 - Rutas publicas en `/api/public/trainings/*` (acceso por cedula)
 - Descarga de certificados en `/api/public/trainings/{id}/certificate`
 
@@ -137,6 +148,8 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - Cualquier modulo, componente, formulario o estilo nuevo en Angular debe respetar exactamente la estetica, estructura y patrones visuales de `frontend/template`.
 - No se deben improvisar estilos nuevos fuera del template, salvo en `landing`.
 - El seeder crea roles base, un usuario administrador y items de menu iniciales.
+- Power BI se carga como modulo autenticado con dashboard sobre `powerbi_datas`, analisis de Excel y graficas en Angular.
+- La data del Excel `AT_GRAVES_3_ANIOS.xlsx` se persiste en la tabla `powerbi_datas`.
 - El menu principal ya no expone `Usuarios` ni `Roles`; esos accesos viven dentro de `Administracion`.
 - `Empresas` vive en el menu principal y se controla por permisos de rol.
 - La visibilidad interna de `Usuarios` y `Roles` se controla con permisos de rol y permisos puntuales sobre los items de menu.

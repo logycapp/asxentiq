@@ -34,6 +34,7 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
   - `/empresas/create`
   - `/empresas/:id/edit`
   - `/test`
+  - `/powerbi`
   - `/users`
   - `/users/create`
   - `/users/create/:empresaId`
@@ -59,6 +60,7 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - `UserFormComponent`
 - `UserMenuPermissionsComponent`
 - `TestFormComponent`
+- `PowerbiComponent`
 - `NotFoundComponent`
 
 ## Servicios
@@ -71,6 +73,7 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - `UserService`: CRUD de usuarios, activacion, desactivacion y permisos de menu.
 - Los usuarios incluyen `empresa_id` y pueden listarse filtrados por empresa.
 - `TestService`: envio de formulario con archivo.
+- `PowerbiService`: subida de Excel y lectura de hojas/columnas para graficas.
 - `LoadingService`: conteo de peticiones activas.
 
 ## Guards e interceptors
@@ -101,6 +104,9 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - CRUD de empresas contra `/api/empresas`.
 - CRUD de usuarios contra `/api/users`.
 - Formulario de prueba contra `POST /api/test`.
+- Analisis de Excel contra `POST /api/powerbi/preview`.
+- Persistencia de Excel contra `POST /api/powerbi/import`.
+- Dashboard de Power BI contra `GET /api/powerbi/dashboard`.
 
 ## Reglas para modificar frontend
 

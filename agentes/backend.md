@@ -22,6 +22,10 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
   - `GET /api/menu`
 - Test:
   - `POST /api/test`
+- Power BI:
+  - `GET /api/powerbi/dashboard`
+  - `POST /api/powerbi/preview`
+  - `POST /api/powerbi/import`
 - Profile:
   - `GET /api/profile`
   - `POST /api/profile`
@@ -58,6 +62,7 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
 - `EmpresaController`: CRUD de empresas.
 - `UserController`: CRUD de usuarios, activacion/inactivacion y permisos de menu por usuario.
 - `TestController`: recibe `dato1`, `dato2` y un archivo adjunto.
+- `PowerbiController`: expone dashboard, lee un Excel, devuelve hojas, columnas y filas para graficas y guarda datos.
 
 ## Modelos
 
@@ -75,6 +80,7 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
 - `menu_item_role`
 - `user_menu_item`
 - `empresas`
+- `powerbi_datas`
 - `personal_access_tokens`
 - migraciones de ajuste de `role` a `role_id`
 
@@ -87,6 +93,7 @@ El backend expone una API REST para autenticacion, usuarios, roles, menu y una r
 - `GET /api/me` devuelve el usuario autenticado con su rol relacionado.
 - La visibilidad de Usuarios y Roles se controla por permisos de menu del rol actual.
 - La visibilidad de Empresas se controla por permisos de menu del rol actual.
+- La data de Power BI se guarda en `powerbi_datas`.
 - Los usuarios pueden filtrar por empresa y cada usuario guarda `empresa_id`.
 - El perfil del usuario autenticado se actualiza por sus propias rutas de perfil.
 

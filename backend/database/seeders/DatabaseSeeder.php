@@ -114,6 +114,18 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $powerbiItem = MenuItem::query()->updateOrCreate(
+            ['route' => '/powerbi'],
+            [
+                'label' => 'Power BI',
+                'icon' => 'chart-column',
+                'sort_order' => 37,
+                'role_id' => null,
+                'enabled' => true,
+                'exact' => true,
+            ]
+        );
+
         $programsItem = MenuItem::query()->updateOrCreate(
             ['route' => '/trainings_programs'],
             [
@@ -134,6 +146,7 @@ class DatabaseSeeder extends Seeder
         $adminItem->roles()->sync([$adminRole->id]);
         $trainingsItem->roles()->sync([$adminRole->id]);
         $programsItem->roles()->sync([$adminRole->id]);
+        $powerbiItem->roles()->sync([$adminRole->id]);
 
         $defaultTrainingCategory = TrainingCategory::query()->updateOrCreate(
             ['name' => 'Capacitaciones de seguridad vial'],
@@ -146,5 +159,7 @@ class DatabaseSeeder extends Seeder
         Training::query()
             ->whereNull('training_category_id')
             ->update(['training_category_id' => $defaultTrainingCategory->id]);
+
+        $this->call(PowerbiDataSeeder::class);
     }
 }

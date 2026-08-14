@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\PowerbiController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\TrainingCategoryController;
@@ -142,6 +143,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
         // Question materials
         Route::post('/questions/{question}/materials', [QuestionController::class, 'uploadMaterial']);
         Route::delete('/questions/{question}/materials/{material}', [QuestionController::class, 'deleteMaterial']);
+    });
+
+    Route::middleware('menu.access:/powerbi')->group(function (): void {
+        Route::get('/powerbi/dashboard', [PowerbiController::class, 'dashboard']);
+        Route::post('/powerbi/preview', [PowerbiController::class, 'preview']);
+        Route::post('/powerbi/import', [PowerbiController::class, 'import']);
     });
 
 });

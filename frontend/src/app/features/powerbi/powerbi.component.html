@@ -1,0 +1,339 @@
+<section class="powerbi-shell">
+  <div class="powerbi-ambient powerbi-ambient-a"></div>
+  <div class="powerbi-ambient powerbi-ambient-b"></div>
+
+  <div class="container-fluid py-4 py-xl-5 position-relative">
+    <app-page-header
+      title="Dashboard de siniestros graves"
+      subtitle="Sube un Excel y explora la data guardada en `powerbi_datas` con filtros, indicadores y graficas."
+      [showDateFilter]="false"
+    >
+      <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">home</span>
+              Inicio
+            </a>
+          </li>
+          <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+            <span class="material-symbols-outlined text-[15px]">bar_chart</span>
+            Power BI
+          </li>
+        </ol>
+      </nav>
+    </app-page-header>
+
+    <app-swal-alert
+      *ngIf="errorMessage"
+      [message]="errorMessage"
+      type="danger"
+      (closed)="errorMessage = ''"
+    ></app-swal-alert>
+
+    <div class="card glass-card border-0 rounded-4 overflow-hidden mb-4 powerbi-panel-card powerbi-hero-card">
+      <div class="card-body p-4 p-xl-5">
+        <div class="row g-4 align-items-center">
+          <div class="col-12 col-xl-7">
+            <p class="powerbi-kicker mb-2">Carga de archivo</p>
+            <h2 class="h3 mb-3">Importa el Excel y refresca el tablero</h2>
+            <p class="text-on-surface-variant mb-3">
+              Al seleccionar un archivo, el sistema lo guarda en la tabla `powerbi_datas` y recarga automaticamente el dashboard.
+            </p>
+            <p class="text-on-surface-variant small mb-0" *ngIf="dashboard?.last_import?.source_file">
+              Ultima carga: <strong>{{ dashboard?.last_import?.source_file }}</strong>
+              <span class="mx-2">·</span>
+              Registros almacenados: <strong>{{ dashboard?.last_import?.rows || 0 }}</strong>
+            </p>
+          </div>
+
+          <div class="col-12 col-xl-5">
+            <div class="powerbi-upload-panel">
+              <label class="form-label text-on-surface mb-2" for="powerbiFile">Archivo Excel</label>
+              <input
+                id="powerbiFile"
+                type="file"
+                class="form-control"
+                accept=".xlsx,.xls"
+                (change)="onFileSelected($event)"
+              >
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-primary" type="button" [disabled]="loading || !selectedFile" (click)="saveAndRefresh()">
+                  {{ loading ? 'Guardando...' : 'Guardar archivo' }}
+                </button>
+                <button class="btn btn-outline-secondary" type="button" (click)="selectedFile = null; selectedFileName = ''; savedRowsCount = 0">
+                  Limpiar
+                </button>
+              </div>
+              <p class="text-on-surface-variant small mb-0 mt-3">
+                Archivo seleccionado: <strong>{{ selectedFileName || 'ninguno' }}</strong>
+              </p>
+              <p class="text-on-surface-variant small mb-0 mt-1" *ngIf="savedRowsCount > 0">
+                Filas guardadas en esta carga: <strong>{{ savedRowsCount }}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card glass-card border-0 rounded-4 overflow-hidden mb-4 powerbi-panel-card">
+      <div class="card-body p-4 p-xl-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+          <div>
+            <p class="powerbi-kicker mb-2">Filtros</p>
+            <h3 class="h5 mb-0">Segmenta el dashboard</h3>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" type="button" (click)="applyFilters()">Aplicar filtros</button>
+            <button class="btn btn-outline-secondary" type="button" (click)="resetFilters()">Limpiar filtros</button>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-xl-2">
+            <label class="form-label text-on-surface mb-2" for="dateFrom">Desde</label>
+            <input id="dateFrom" type="date" class="form-control" [(ngModel)]="filters.date_from" name="dateFrom">
+          </div>
+          <div class="col-12 col-md-6 col-xl-2">
+            <label class="form-label text-on-surface mb-2" for="dateTo">Hasta</label>
+            <input id="dateTo" type="date" class="form-control" [(ngModel)]="filters.date_to" name="dateTo">
+          </div>
+          <div class="col-12 col-md-6 col-xl-2">
+            <label class="form-label text-on-surface mb-2" for="department">Departamento</label>
+            <select id="department" class="form-select" [(ngModel)]="filters.department" name="department">
+              <option [ngValue]="null">Todos</option>
+              <option *ngFor="let item of availableDepartments" [ngValue]="item">{{ item }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6 col-xl-2">
+            <label class="form-label text-on-surface mb-2" for="municipality">Municipio</label>
+            <select id="municipality" class="form-select" [(ngModel)]="filters.municipality" name="municipality">
+              <option [ngValue]="null">Todos</option>
+              <option *ngFor="let item of availableMunicipalities" [ngValue]="item">{{ item }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6 col-xl-2">
+            <label class="form-label text-on-surface mb-2" for="causal">Causal</label>
+            <select id="causal" class="form-select" [(ngModel)]="filters.causal" name="causal">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let item of availableCausals" [ngValue]="item">{{ item }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6 col-xl-2">
+            <label class="form-label text-on-surface mb-2" for="mechanism">Mecanismo</label>
+            <select id="mechanism" class="form-select" [(ngModel)]="filters.mechanism" name="mechanism">
+              <option [ngValue]="null">Todos</option>
+              <option *ngFor="let item of availableMechanisms" [ngValue]="item">{{ item }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="dashboardLoading" class="card glass-card border-0 rounded-4 p-5 text-center mb-4 powerbi-panel-card">
+      <div class="powerbi-empty-chart mb-0">Cargando dashboard...</div>
+    </div>
+
+    <ng-container *ngIf="dashboard && !dashboardLoading">
+      <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-xxl-3 mb-4">
+        <div *ngFor="let card of summaryCards" class="col">
+          <div class="glass-card p-4 rounded-4 h-100 dashboard-kpi-card powerbi-summary-card powerbi-panel-card">
+            <p class="powerbi-kicker mb-3">{{ card.label }}</p>
+            <div class="powerbi-summary-value">{{ card.value }}</div>
+            <p class="text-on-surface-variant small mt-2 mb-0">{{ card.helper }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="dashboardEmpty" class="card glass-card border-0 rounded-4 p-5 text-center mb-4 powerbi-panel-card">
+        <div class="powerbi-empty-chart mb-0">
+          Aun no hay registros para mostrar. Sube un Excel para poblar `powerbi_datas`.
+        </div>
+      </div>
+
+      <div *ngIf="!dashboardEmpty" class="row g-4 mb-4">
+        <div class="col-12">
+          <div class="card glass-card border-0 rounded-4 powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Tendencia</p>
+                  <h3 class="h5 mb-0">Siniestros por mes</h3>
+                </div>
+                <span class="badge rounded-pill text-bg-dark">{{ dashboard!.charts.monthly.length }} meses</span>
+              </div>
+
+              <div *ngIf="dashboard!.charts.monthly.length > 0; else emptyMonthlyState" id="powerbiMonthlyChart" class="powerbi-highcharts"></div>
+
+              <ng-template #emptyMonthlyState>
+                <div class="powerbi-empty-chart">No hay datos suficientes para la tendencia mensual.</div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card glass-card border-0 rounded-4 h-100 powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Causales</p>
+                  <h3 class="h5 mb-0">Eventos por causal</h3>
+                </div>
+                <span class="badge rounded-pill text-bg-dark">{{ dashboard!.charts.causal.length }}</span>
+              </div>
+
+              <div *ngIf="dashboard!.charts.causal.length > 0; else emptyCausalState" id="powerbiCausalChart" class="powerbi-highcharts powerbi-highcharts--compact"></div>
+
+              <ng-template #emptyCausalState>
+                <div class="powerbi-empty-chart">No hay causales para mostrar.</div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card glass-card border-0 rounded-4 h-100 powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Departamentos</p>
+                  <h3 class="h5 mb-0">Casos por departamento</h3>
+                </div>
+                <span class="badge rounded-pill text-bg-dark">{{ dashboard!.charts.department.length }}</span>
+              </div>
+
+              <div *ngIf="dashboard!.charts.department.length > 0; else emptyDepartmentState" id="powerbiDepartmentChart" class="powerbi-highcharts powerbi-highcharts--compact"></div>
+
+              <ng-template #emptyDepartmentState>
+                <div class="powerbi-empty-chart">No hay departamentos para mostrar.</div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card glass-card border-0 rounded-4 h-100 powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Mecanismos</p>
+                  <h3 class="h5 mb-0">Casos por mecanismo</h3>
+                </div>
+                <span class="badge rounded-pill text-bg-dark">{{ dashboard!.charts.mechanism.length }}</span>
+              </div>
+
+              <div *ngIf="dashboard!.charts.mechanism.length > 0; else emptyMechanismState" id="powerbiMechanismChart" class="powerbi-highcharts powerbi-highcharts--compact"></div>
+
+              <ng-template #emptyMechanismState>
+                <div class="powerbi-empty-chart">No hay mecanismos para mostrar.</div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card glass-card border-0 rounded-4 h-100 powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Diagnosticos</p>
+                  <h3 class="h5 mb-0">CIE-10 y nombre del diagnostico</h3>
+                </div>
+                <span class="badge rounded-pill text-bg-dark">{{ dashboard!.charts.diagnosis.length }}</span>
+              </div>
+
+              <div *ngIf="dashboard!.charts.diagnosis.length > 0; else emptyDiagnosisState" id="powerbiDiagnosisChart" class="powerbi-highcharts powerbi-highcharts--compact"></div>
+
+              <ng-template #emptyDiagnosisState>
+                <div class="powerbi-empty-chart">No hay diagnosticos para mostrar.</div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-12 col-xxl-8">
+          <div class="card glass-card border-0 rounded-4 overflow-hidden powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Registros</p>
+                  <h3 class="h5 mb-0">Detalle de siniestros guardados</h3>
+                </div>
+                <span class="badge rounded-pill text-bg-dark">{{ records.length }} filas</span>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Departamento</th>
+                      <th>Municipio</th>
+                      <th>Causal</th>
+                      <th>Diagnostico</th>
+                      <th>Mecanismo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let record of records; trackBy: trackByRecordId" (click)="selectRecord(record)" class="cursor-pointer">
+                      <td>{{ record.fecha_siniestro ? (record.fecha_siniestro | date:'dd/MM/yyyy') : 'No determinado' }}</td>
+                      <td>{{ record.departamento_ocurrencia_siniestro || 'No determinado' }}</td>
+                      <td>{{ record.municipio_ocurrencia_siniestro || 'No determinado' }}</td>
+                      <td>{{ record.causal_evento_grave || 'No determinado' }}</td>
+                      <td>{{ record.nombre_dx_1 || record.cie_10_dx_1 || 'No determinado' }}</td>
+                      <td>{{ record.mecanismo || 'No determinado' }}</td>
+                    </tr>
+                    <tr *ngIf="records.length === 0">
+                      <td colspan="6" class="text-center text-on-surface-variant py-4">
+                        No hay registros guardados para mostrar.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xxl-4">
+          <div class="card glass-card border-0 rounded-4 h-100 powerbi-panel-card">
+            <div class="card-body p-4 p-xl-5">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                  <p class="powerbi-kicker mb-2">Detalle</p>
+                  <h3 class="h5 mb-0">Caso seleccionado</h3>
+                </div>
+              </div>
+
+              <ng-container *ngIf="selectedRecord; else emptySelectedRecord">
+                <div class="powerbi-detail-list">
+                  <div *ngFor="let detail of selectedRecordDetails" class="powerbi-detail-item">
+                    <span class="powerbi-detail-label">{{ detail.label }}</span>
+                    <span class="powerbi-detail-value">{{ detail.value }}</span>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <p class="powerbi-detail-label mb-2">Detalle narrativo</p>
+                <div class="powerbi-detail-text">
+                    {{ selectedRecord.detalle || 'No determinado' }}
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-template #emptySelectedRecord>
+                <div class="powerbi-empty-chart">
+                  Selecciona una fila de la tabla para ver el detalle completo.
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</section>

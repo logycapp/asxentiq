@@ -215,7 +215,8 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
       '/empresas': 'fa-solid fa-building',
       '/test': 'fa-solid fa-vial-circle-check',
       '/users': 'fa-solid fa-users',
-      '/trainings': 'fa-solid fa-graduation-cap'
+      '/trainings': 'fa-solid fa-graduation-cap',
+      '/powerbi': 'fa-solid fa-chart-simple'
     };
 
     const normalizedRoute = item.route.replace(/\/$/, '');
@@ -249,6 +250,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     if (normalizedLabel.includes('usuario')) return 'fa-solid fa-users';
     if (normalizedLabel.includes('capacit')) return 'fa-solid fa-graduation-cap';
     if (normalizedLabel.includes('prueba')) return 'fa-solid fa-vial-circle-check';
+    if (normalizedLabel.includes('powerbi') || normalizedLabel.includes('power bi') || normalizedLabel.includes('graf')) return 'fa-solid fa-chart-simple';
 
     return 'fa-regular fa-circle';
   }

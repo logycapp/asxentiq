@@ -15,6 +15,7 @@ return new class extends Migration
             '/users' => ['admin'],
             '/roles' => ['admin'],
             '/admin' => ['admin'],
+            '/powerbi' => ['admin'],
         ];
 
         foreach ($definitions as $route => $roleSlugs) {
@@ -54,8 +55,9 @@ return new class extends Migration
         $usersId = $menuItems['/users'] ?? null;
         $rolesId = $menuItems['/roles'] ?? null;
         $adminId = $menuItems['/admin'] ?? null;
+        $powerbiId = $menuItems['/powerbi'] ?? null;
 
-        $ids = array_filter([$dashboardId, $usersId, $rolesId, $adminId]);
+        $ids = array_filter([$dashboardId, $usersId, $rolesId, $adminId, $powerbiId]);
 
         if ($ids) {
             DB::table('menu_item_role')->whereIn('menu_item_id', $ids)->delete();

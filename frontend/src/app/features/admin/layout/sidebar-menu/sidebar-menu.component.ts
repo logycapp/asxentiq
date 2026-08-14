@@ -41,6 +41,7 @@ export class AdminSidebarComponent implements OnInit, OnChanges, OnDestroy {
     'calendar': 'calendar_month',
     'chat': 'chat',
     'mailbox': 'mail',
+    'chart-column': 'bar_chart',
     'monitoring': 'monitoring',
     'database': 'database',
     'description': 'description',
