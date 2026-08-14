@@ -32,6 +32,11 @@
                 "glob": "sitemap.xml",
                 "input": "src",
                 "output": "."
+              },
+              {
+                "glob": "verifyforzoho.html",
+                "input": "src/zohoverify",
+                "output": "zohoverify"
               }
             ],
             "styles": [

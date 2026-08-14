@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
-import Swal, { SweetAlertIcon, SweetAlertPosition } from 'sweetalert2';
+import Swal, { SweetAlertIcon, SweetAlertPosition } from 'sweetalert2/dist/sweetalert2.esm.all.js';
 
 type AlertTone = 'success' | 'danger' | 'warning' | 'info';
 

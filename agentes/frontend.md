@@ -84,6 +84,12 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - `environment.ts` apunta a `http://localhost:8000/api`.
 - No determinado: otros entornos o configuraciones no visibles en el arbol revisado.
 
+## Archivos publicos
+
+- Los archivos que deban servirse directamente deben ubicarse dentro de `frontend/src/`.
+- Cada archivo debe declararse en la lista `assets` de `frontend/angular.json` con la carpeta de salida requerida.
+- Por ejemplo, `output: "zohoverify"` publica el archivo como `/zohoverify/nombre-del-archivo`.
+
 ## Consumo de API
 
 - Login contra `POST /api/login`.
