@@ -1046,6 +1046,8 @@ export class PublicDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.lockLightTheme();
+
     const stored = localStorage.getItem('public_user');
     if (stored) {
       this.user = JSON.parse(stored);
@@ -1055,6 +1057,12 @@ export class PublicDashboardComponent implements OnInit {
 
     this.loadPending();
     this.loadCompleted();
+  }
+
+  private lockLightTheme(): void {
+    const html = document.documentElement;
+    html.classList.remove('dark');
+    html.classList.add('light');
   }
 
   loadPending(): void {

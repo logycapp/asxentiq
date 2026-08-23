@@ -68,7 +68,7 @@
             right: 0;
             bottom: 0;
             z-index: 1;
-            padding: 3mm;
+            padding: 4mm;
             overflow: hidden;
         }
 
@@ -76,7 +76,7 @@
             position: relative;
             width: 100%;
             height: 100%;
-            padding: 4mm 5mm;
+            padding: 6mm 7mm;
             overflow: hidden;
         }
 
@@ -93,11 +93,17 @@
         }
 
         .header-left {
-            width: 34%;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header-right {
+            display: none;
         }
 
         .brand {
             width: 48mm;
+            display: inline-block;
         }
 
         .brand-logo {
@@ -115,24 +121,24 @@
 
         .hero-title {
             margin: 0;
-            font-size: 20.5pt;
-            line-height: 1;
+            font-size: 28pt;
+            line-height: 1.2;
             color: #0f5ac3;
             font-weight: 900;
-            letter-spacing: -0.04em;
-            padding-top:50px;
+            letter-spacing: -0.03em;
+            padding-top: 2px;
         }
 
         .recipient {
-            margin-top: 6mm;
+            margin-top: 7mm;
             text-align: center;
         }
 
         .recipient-name {
             display: inline-block;
             min-width: 118mm;
-            padding-bottom: 1.5mm;
-            font-size: 16pt;
+            padding-bottom: 2mm;
+            font-size: 24pt;
             line-height: 1.1;
             font-weight: 900;
             color: #12b5a8;
@@ -141,8 +147,8 @@
         }
 
         .recipient-document {
-            margin-top: 1.8mm;
-            font-size: 9pt;
+            margin-top: 2mm;
+            font-size: 12pt;
             line-height: 1.1;
             color: #475569;
             font-weight: 700;
@@ -150,10 +156,10 @@
         }
 
         .body-copy {
-            margin-top: 6mm;
+            margin-top: 7mm;
             text-align: center;
-            font-size: 11pt;
-            line-height: 1.55;
+            font-size: 16pt;
+            line-height: 1.5;
             color: #475569;
         }
 
@@ -165,8 +171,8 @@
         .training-pill {
             width: 146mm;
             max-width: 100%;
-            margin: 4mm auto 0;
-            padding: 3.5mm 7mm 3.5mm 6mm;
+            margin: 5mm auto 0;
+            padding: 5mm 10mm 5mm 9mm;
             border-left: 2.8mm solid #18c7c0;
             border-radius: 3mm;
             background: rgba(233, 245, 255, 0.88);
@@ -175,18 +181,18 @@
 
         .training-pill-title {
             margin: 0;
-            font-size: 15.5pt;
-            line-height: 1.15;
+            font-size: 22pt;
+            line-height: 1.2;
             font-weight: 900;
             color: #1d4ed8;
             letter-spacing: -0.03em;
         }
 
         .details {
-            margin-top: 5mm;
+            margin-top: 6mm;
             text-align: center;
-            font-size: 10.6pt;
-            line-height: 1.45;
+            font-size: 14pt;
+            line-height: 1.5;
             color: #475569;
         }
 
@@ -198,7 +204,7 @@
         .bottom-line {
             position: absolute;
             left: 50%;
-            bottom: 30mm;
+            bottom: 50mm;
             width: 54mm;
             transform: translateX(-50%);
             border-top: 1.2pt solid #1d4ed8;
@@ -207,14 +213,14 @@
         .signature {
             position: absolute;
             left: 50%;
-            bottom: 15mm;
+            bottom: 38mm;
             width: 64mm;
             transform: translateX(-50%);
             text-align: center;
         }
 
         .signature .role {
-            font-size: 8.8pt;
+            font-size: 12pt;
             line-height: 1.1;
             font-weight: 800;
             color: #0f172a;
@@ -222,8 +228,8 @@
         }
 
         .signature .subrole {
-            margin-top: 1mm;
-            font-size: 6.8pt;
+            margin-top: 1.5mm;
+            font-size: 10pt;
             line-height: 1.1;
             color: #64748b;
         }
@@ -231,11 +237,11 @@
         .slogan {
             position: absolute;
             left: 50%;
-            bottom: 1mm;
+            bottom: 3mm;
             width: 100%;
             transform: translateX(-50%);
             text-align: center;
-            font-size: 10.5pt;
+            font-size: 12pt;
             line-height: 1;
             font-style: italic;
             font-weight: 900;
@@ -258,8 +264,8 @@
         }
 
         .qr-box .title {
-            margin: 0 0 2.5mm;
-            font-size: 7pt;
+            margin: 0 0 2mm;
+            font-size: 10pt;
             line-height: 1;
             font-weight: 800;
             color: #cbd5e1;
@@ -283,7 +289,7 @@
             border: 1px dashed #93c5fd;
             border-radius: 2mm;
             color: #2563eb;
-            font-size: 7pt;
+            font-size: 9pt;
             line-height: 1.3;
             text-align: center;
         }
@@ -421,7 +427,7 @@
                 <div class="recipient">
 
                     <div class="recipient-name">
-                        {{ $user_name }}
+                        {{ strtoupper($user_name) }}
                     </div>
 
                     <div class="recipient-document">

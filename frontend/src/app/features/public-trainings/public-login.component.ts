@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -490,7 +490,7 @@ import { TrainingService } from '../../core/services/training.service';
     }
   `]
 })
-export class PublicLoginComponent {
+export class PublicLoginComponent implements OnInit {
   private readonly trainingService = inject(TrainingService);
   private readonly loadingService = inject(LoadingService);
   private readonly router = inject(Router);
@@ -498,6 +498,17 @@ export class PublicLoginComponent {
   documentNumber = '';
   loading = false;
   errorMessage = '';
+
+  ngOnInit(): void {
+    this.lockLightTheme();
+  }
+
+  private lockLightTheme(): void {
+    const html = document.documentElement;
+    html.classList.remove('dark');
+    html.classList.add('light');
+    localStorage.setItem('asxentiq_theme', 'light');
+  }
 
   login(): void {
     if (!this.documentNumber.trim()) return;

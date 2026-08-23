@@ -435,9 +435,9 @@ interface GuidedQuestionAssignment {
                   </div>
                 </div>
 
-                <button type="button" class="btn public-exam-secondary-btn w-100 public-exam-guided-play-btn" (click)="playGuidedVideo()">
-                  <span class="material-symbols-outlined text-[16px]">play_arrow</span>
-                  Reproducir video
+                <button type="button" class="btn public-exam-secondary-btn w-100 public-exam-guided-play-btn" (click)="toggleGuidedVideo()">
+                  <span class="material-symbols-outlined text-[16px]">{{ isGuidedVideoPlaying ? 'pause' : 'play_arrow' }}</span>
+                  {{ isGuidedVideoPlaying ? 'Pausar video' : 'Reproducir video' }}
                 </button>
 
                 <button type="button" class="btn public-exam-secondary-btn w-100 public-exam-guided-fullscreen-btn" (click)="toggleFullscreen(guidedStage)">
@@ -1552,6 +1552,7 @@ export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {
   step: 'material' | 'exam' = 'material';
   answers: Record<number, any> = {};
   submitting = false;
+  isGuidedVideoPlaying = false;
   resultMessage = '';
   currentQuestionIndex = 0;
   currentVideoTime = 0;
@@ -1567,6 +1568,10 @@ export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {
   private guidedThemeAnswered = new Set<number>();
 
   ngOnInit(): void {
+    const html = document.documentElement;
+    html.classList.remove('dark');
+    html.classList.add('light');
+
     const id = +(this.route.snapshot.paramMap.get('id') ?? 0);
     this.loadExam(id);
   }
@@ -2026,10 +2031,12 @@ export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onGuidedVideoPlay(): void {
     this.guidedPlaybackStarted = true;
+    this.isGuidedVideoPlaying = true;
     this.startGuidedPlaybackMonitor();
   }
 
   onGuidedVideoPause(): void {
+    this.isGuidedVideoPlaying = false;
     this.stopGuidedPlaybackMonitor();
   }
 
@@ -2071,6 +2078,7 @@ export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onGuidedVideoEnded(): void {
+    this.isGuidedVideoPlaying = false;
     this.stopGuidedPlaybackMonitor();
 
     if (this.isGuidedIndexationMode()) {
@@ -2117,7 +2125,7 @@ export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.playGuidedVideo();
+    this.toggleGuidedVideo();
   }
 
   private syncGuidedVideoState(currentTime: number, duration: number): void {
@@ -2206,15 +2214,19 @@ export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  playGuidedVideo(): void {
+  toggleGuidedVideo(): void {
     const video = this.guidedVideo?.nativeElement;
     if (!video) {
       return;
     }
 
-    video.play().catch(() => {
-      // La reproduccion puede ser bloqueada por el navegador.
-    });
+    if (this.isGuidedVideoPlaying) {
+      video.pause();
+    } else {
+      video.play().catch(() => {
+        // La reproduccion puede ser bloqueada por el navegador.
+      });
+    }
   }
 
   private pauseGuidedVideo(): void {
