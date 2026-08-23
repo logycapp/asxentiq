@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { ImageFallbackDirective } from '../../../../core/directives/image-fallback.directive';
+
 @Component({
   selector: 'app-profile-panel',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ImageFallbackDirective],
   templateUrl: './profile-panel.component.html',
   styleUrl: './profile-panel.component.css'
 })

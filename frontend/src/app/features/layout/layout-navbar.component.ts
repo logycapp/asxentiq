@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+import { ImageFallbackDirective } from '../../core/directives/image-fallback.directive';
 import { MenuItem } from '../../core/services/menu.service';
 
 @Component({
   selector: 'app-layout-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, ImageFallbackDirective],
   templateUrl: './layout-navbar.component.html',
   styleUrls: []
 })

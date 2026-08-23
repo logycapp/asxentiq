@@ -10,16 +10,34 @@
   --profile-panel-text-muted: rgba(226, 232, 240, 0.72);
 }
 
+:host-context(.light) {
+  --profile-panel-bg: linear-gradient(180deg, #ffffff 0%, #f7faff 42%, #eef4ff 100%);
+  --profile-panel-border: rgba(15, 23, 42, 0.08);
+  --profile-panel-surface: rgba(255, 255, 255, 0.68);
+  --profile-panel-surface-strong: rgba(255, 255, 255, 0.94);
+  --profile-panel-text-muted: #64748b;
+}
+
 .profile-panel-surface {
   background: var(--profile-panel-bg);
   border-left-color: var(--profile-panel-border);
   box-shadow: -18px 0 40px rgba(2, 8, 23, 0.32);
 }
 
+:host-context(.light) .profile-panel-surface {
+  box-shadow: -18px 0 40px rgba(15, 23, 42, 0.14);
+}
+
 .profile-panel-header {
   background:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 28%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+}
+
+:host-context(.light) .profile-panel-header {
+  background:
+    radial-gradient(circle at top right, rgba(4, 87, 191, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4));
 }
 
 .profile-panel-kicker {
@@ -57,6 +75,14 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 18px 30px rgba(2, 8, 23, 0.16);
+}
+
+:host-context(.light) .profile-identity-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 255, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 14px 26px rgba(15, 23, 42, 0.08);
 }
 
 .profile-identity-top {
@@ -254,6 +280,12 @@
     rgba(255, 255, 255, 0.02);
 }
 
+:host-context(.light) .profile-panel-footer {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(247, 250, 255, 0.6)),
+    rgba(255, 255, 255, 0.3);
+}
+
 .profile-logout-btn {
   position: relative;
   overflow: hidden;
@@ -341,8 +373,41 @@
     0 10px 24px rgba(244, 63, 94, 0.1);
 }
 
+:host-context(.light) .profile-panel-kicker {
+  color: #64748b;
+}
+
+:host-context(.light) .profile-panel-close-btn {
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+:host-context(.light) .profile-panel-close-btn:hover,
+:host-context(.light) .profile-panel-close-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(4, 87, 191, 0.3);
+}
+
+:host-context(.light) .profile-company-logo-frame {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+:host-context(.light) .profile-company-logo-icon {
+  color: #64748b;
+}
+
+:host-context(.light) .profile-avatar-ring {
+  border-color: rgba(4, 87, 191, 0.3);
+  background: linear-gradient(180deg, rgba(4, 87, 191, 0.08), rgba(255, 255, 255, 0.6));
+}
+
+:host-context(.light) .profile-status-dot {
+  border-color: #ffffff;
+}
+
 :host-context(.light) .profile-user-name {
-  color: #d5e1ff !important;
+  color: #0f172a !important;
   text-shadow: none;
 }
 
@@ -350,13 +415,34 @@
   color: #64748b;
 }
 
+:host-context(.light) .profile-meta-chip__icon {
+  color: #0457bf;
+}
+
+:host-context(.light) .profile-meta-chip__label {
+  color: #64748b;
+}
+
 :host-context(.light) .profile-meta-chip__value {
-  color: #d5e1ff !important;
+  color: #0f172a !important;
   text-shadow: none;
 }
 
 :host-context(.light) .profile-meta-chip__value--role {
-  color: #d5e1ff !important;
+  color: #0f172a !important;
+}
+
+:host-context(.light) .profile-link-item {
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:host-context(.light) .profile-link-item:hover,
+:host-context(.light) .profile-link-item:focus-visible {
+  border-color: rgba(4, 87, 191, 0.3);
+}
+
+:host-context(.light) .profile-link-icon {
+  color: #0457bf;
 }
 
 @media (max-width: 767.98px) {

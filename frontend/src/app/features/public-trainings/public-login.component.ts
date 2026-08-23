@@ -362,6 +362,102 @@ import { TrainingService } from '../../core/services/training.service';
       color: #fee2e2;
     }
 
+    :host-context(.light) .public-login-shell {
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.14), transparent 26%),
+        linear-gradient(135deg, #eef4ff 0%, #f8fafc 42%, #f4f7fb 100%);
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-login-shell::before {
+      background-image:
+        linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+      opacity: 0.5;
+    }
+
+    :host-context(.light) .public-login-backdrop {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.12), transparent 70%);
+    }
+
+    :host-context(.light) .public-login-orb-a {
+      background: radial-gradient(circle, rgba(96, 165, 250, 0.16), transparent 68%);
+    }
+
+    :host-context(.light) .public-login-orb-b {
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.12), transparent 68%);
+    }
+
+    :host-context(.light) .public-login-hero,
+    :host-context(.light) .public-login-card {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+    }
+
+    :host-context(.light) .public-login-kicker {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-login-title,
+    :host-context(.light) .public-login-card-title {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-login-copy {
+      color: #334155;
+    }
+
+    :host-context(.light) .public-login-point {
+      background: rgba(15, 23, 42, 0.035);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: #334155;
+    }
+
+    :host-context(.light) .public-login-point .material-symbols-outlined,
+    :host-context(.light) .public-login-input-icon {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-login-badge {
+      background: rgba(4, 87, 191, 0.08);
+      border: 1px solid rgba(4, 87, 191, 0.2);
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-login-card-subtitle {
+      color: #64748b;
+    }
+
+    :host-context(.light) .public-login-label {
+      color: #334155;
+    }
+
+    :host-context(.light) .public-login-input {
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      background: rgba(255, 255, 255, 0.92);
+      color: #0f172a;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    :host-context(.light) .public-login-input::placeholder {
+      color: #94a3b8;
+    }
+
+    :host-context(.light) .public-login-input:focus {
+      border-color: #0457bf;
+      box-shadow: 0 0 0 0.22rem rgba(4, 87, 191, 0.15);
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-login-alert {
+      border: 1px solid rgba(244, 63, 94, 0.24);
+      background: rgba(254, 242, 242, 0.9);
+      color: #9f1239;
+    }
+
     @media (max-width: 991.98px) {
       .public-login-container {
         padding-top: 1.25rem;

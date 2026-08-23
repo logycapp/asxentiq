@@ -19,10 +19,16 @@
     <div class="col-lg-4">
       <div class="glass-card p-4 h-100">
         <div class="profile-media-card profile-media-card--main mb-3 mx-auto">
-          <img *ngIf="displayOriginalUrl; else avatarPlaceholder" [src]="displayOriginalUrl"
-            [alt]="form.controls.name.value || 'Foto original'">
+          <img
+            *ngIf="displayOriginalUrl; else avatarPlaceholder"
+            [src]="displayOriginalUrl"
+            [alt]="form.controls.name.value || 'Foto original'"
+            appImageFallback="assets/img/defaults/default-avatar.svg"
+          >
           <ng-template #avatarPlaceholder>
-            <div class="profile-media-placeholder">{{ (form.controls.name.value || 'U').charAt(0).toUpperCase() }}</div>
+            <div class="profile-media-placeholder">
+              <img class="profile-media-default-img" src="assets/img/defaults/default-avatar.svg" alt="Foto por defecto">
+            </div>
           </ng-template>
         </div>
         <p class="muted mb-1">Fotografia original</p>
@@ -52,9 +58,12 @@
             <p class="muted mb-2">Original</p>
             <div class="profile-media-card profile-media-card--compact">
               <img class="profile-media-image profile-media-image--original" *ngIf="displayOriginalUrl; else originalFallback" [src]="displayOriginalUrl"
-                [alt]="form.controls.name.value || 'Foto original'">
+                [alt]="form.controls.name.value || 'Foto original'"
+                appImageFallback="assets/img/defaults/default-avatar.svg">
               <ng-template #originalFallback>
-                <div class="profile-media-placeholder">U</div>
+                <div class="profile-media-placeholder">
+                  <img class="profile-media-default-img" src="assets/img/defaults/default-avatar.svg" alt="Foto por defecto">
+                </div>
               </ng-template>
             </div>
           </div>
@@ -63,7 +72,8 @@
             <p class="muted mb-2">Avatar</p>
             <div class="profile-media-card profile-media-card--compact">
               <img class="profile-media-image profile-media-image--face" *ngIf="displayAvatarUrl; else avatarFallback" [src]="displayAvatarUrl"
-                [alt]="form.controls.name.value || 'Avatar generado'">
+                [alt]="form.controls.name.value || 'Avatar generado'"
+                appImageFallback="assets/img/defaults/default-avatar.svg">
               <ng-template #avatarFallback>
                 <div class="profile-media-placeholder">
                   <span>Sin avatar generado</span>

@@ -1299,6 +1299,242 @@ interface GuidedQuestionAssignment {
         box-shadow: 0 18px 32px rgba(15, 23, 42, 0.16);
       }
     }
+
+    :host-context(.light) .public-exam-shell {
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.12), transparent 28%),
+        linear-gradient(135deg, #eef4ff 0%, #f8fafc 45%, #f4f7fb 100%);
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-exam-shell::before {
+      background-image:
+        linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+      opacity: 0.4;
+    }
+
+    :host-context(.light) .public-exam-backdrop {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%);
+    }
+
+    :host-context(.light) .public-exam-orb-a {
+      background: radial-gradient(circle, rgba(103, 232, 249, 0.14), transparent 68%);
+    }
+
+    :host-context(.light) .public-exam-orb-b {
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12), transparent 68%);
+    }
+
+    :host-context(.light) .public-exam-card {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light) .public-exam-loading {
+      color: #475569;
+    }
+
+    :host-context(.light) .public-exam-hero {
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      background:
+        linear-gradient(135deg, rgba(4, 87, 191, 0.06), rgba(4, 87, 191, 0.02));
+    }
+
+    :host-context(.light) .public-exam-kicker {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-exam-title {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-exam-subtitle {
+      color: #334155;
+    }
+
+    :host-context(.light) .public-exam-stat {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light) .public-exam-stat .material-symbols-outlined {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-exam-stat-label,
+    :host-context(.light) .public-exam-question-kicker,
+    :host-context(.light) .public-exam-section-label,
+    :host-context(.light) .public-exam-material-kicker,
+    :host-context(.light) .public-exam-material-type {
+      color: #64748b;
+    }
+
+    :host-context(.light) .public-exam-stat-value {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-exam-material-card,
+    :host-context(.light) .public-exam-question-card,
+    :host-context(.light) .public-exam-question-material-card,
+    :host-context(.light) .public-exam-guided-question,
+    :host-context(.light) .public-exam-guided-video-card,
+    :host-context(.light) .public-exam-guided-panel,
+    :host-context(.light) .public-exam-guided-help {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light) .public-exam-material-title,
+    :host-context(.light) .public-exam-question-title,
+    :host-context(.light) .public-exam-question-material-name {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-exam-material-badge,
+    :host-context(.light) .public-exam-question-badge {
+      background: rgba(4, 87, 191, 0.08);
+      border: 1px solid rgba(4, 87, 191, 0.16);
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-exam-fallback {
+      background: rgba(15, 23, 42, 0.04);
+      color: #334155;
+    }
+
+    :host-context(.light) .public-exam-fallback .material-symbols-outlined {
+      color: #0457bf;
+      background: rgba(4, 87, 191, 0.08);
+    }
+
+    :host-context(.light) .public-exam-secondary-btn {
+      color: #0457bf;
+      background: rgba(4, 87, 191, 0.08);
+      border-color: rgba(4, 87, 191, 0.18);
+    }
+
+    :host-context(.light) .public-exam-nav-btn {
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.65);
+      border-color: rgba(15, 23, 42, 0.12);
+    }
+
+    :host-context(.light) .public-exam-outline-btn {
+      color: #0457bf;
+      border-color: rgba(4, 87, 191, 0.18);
+    }
+
+    :host-context(.light) .public-exam-question-materials,
+    :host-context(.light) .public-exam-answer-block,
+    :host-context(.light) .public-exam-actions {
+      border-top: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    :host-context(.light) .public-exam-question-material-icon {
+      color: #0457bf;
+      background: rgba(4, 87, 191, 0.08);
+    }
+
+    :host-context(.light) .public-exam-textarea {
+      background: rgba(255, 255, 255, 0.92);
+      color: #0f172a;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+    }
+
+    :host-context(.light) .public-exam-textarea:focus {
+      border-color: #0457bf;
+      box-shadow: 0 0 0 0.22rem rgba(4, 87, 191, 0.12);
+    }
+
+    :host-context(.light) .public-exam-option {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: #1e293b;
+    }
+
+    :host-context(.light) .public-exam-counter {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: #334155;
+    }
+
+    :host-context(.light) .public-exam-progress-pill {
+      background: rgba(4, 87, 191, 0.08);
+      border: 1px solid rgba(4, 87, 191, 0.16);
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-exam-progress-pill-soft {
+      background: rgba(15, 23, 42, 0.04);
+      border-color: rgba(15, 23, 42, 0.08);
+      color: #475569;
+    }
+
+    :host-context(.light) .public-exam-empty-state {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: #334155;
+    }
+
+    :host-context(.light) .public-exam-empty-state .material-symbols-outlined {
+      background: rgba(4, 87, 191, 0.08);
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-exam-alert {
+      border: 1px solid rgba(244, 63, 94, 0.24);
+      background: rgba(254, 242, 242, 0.9);
+      color: #9f1239;
+    }
+
+    :host-context(.light) .public-exam-modal-backdrop {
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    :host-context(.light) .public-exam-modal-card {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: #ffffff;
+      box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+    }
+
+    :host-context(.light) .public-exam-modal-header {
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    :host-context(.light) .public-exam-modal-footer {
+      border-top: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    :host-context(.light) .public-exam-guided-state {
+      background: rgba(4, 87, 191, 0.08);
+      border: 1px solid rgba(4, 87, 191, 0.16);
+    }
+
+    :host-context(.light) .public-exam-guided-theme-question-item {
+      background: rgba(15, 23, 42, 0.03);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    :host-context(.light) .public-exam-guided-theme-question-index {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-exam-guided-theme-question-text {
+      color: #334155;
+    }
+
+    :host-context(.light) .public-exam-guided-theme-monitor {
+      background: rgba(4, 87, 191, 0.08);
+      border: 1px solid rgba(4, 87, 191, 0.16);
+    }
+
+    :host-context(.light) .public-exam-guided-theme-value .material-symbols-outlined,
+    :host-context(.light) .public-exam-guided-help .material-symbols-outlined {
+      color: #0457bf;
+    }
   `]
 })
 export class PublicExamComponent implements OnInit, AfterViewInit, OnDestroy {

@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { ImageFallbackDirective } from '../../core/directives/image-fallback.directive';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingService } from '../../core/services/loading.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -12,7 +13,7 @@ import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent, ImageFallbackDirective],
   templateUrl: './profile.component.html',
   styles: [`
     .profile-media-card {
@@ -64,6 +65,13 @@ import { SwalAlertComponent } from '../../core/components/swal-alert.component';
       justify-content: center;
       color: rgba(100, 116, 139, 0.9);
       font-weight: 700;
+    }
+
+    .profile-media-default-img {
+      width: 50%;
+      height: 50%;
+      object-fit: contain;
+      border-radius: 999px;
     }
 
     .profile-avatar-grid {

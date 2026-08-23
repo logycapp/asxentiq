@@ -19,15 +19,16 @@
     <div class="relative mb-lg">
       <div class="w-24 h-24 rounded-full border-2 border-primary/30 p-1 glow-accent-cyan relative">
         <img
-          alt="Shaun Park"
+          [alt]="userName || 'Usuario'"
           class="w-full h-full rounded-full object-cover"
-          [src]="userPhotoUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDXXpP7CN_DohNV4M-jSm4rVi_X5bvwyt5wcewq4ozXOCgCFua0WWDIVtiOqG6c7pgeLmdkZME7U0R7oSU8MseLxMTc4gJ_YRbxwViI_OeN_s7lkvOaXsuKQr-m3D3H65Rn3v8m-761ZGXoCXCryvMdLMci4xsaJE0pMNisediP1OZNgQqWt9t2v4YWGSmzOyAfzMQsTShoxZSLSdQnQshLLwZAzHldAwChRh2N7h7lXn-cuC_q5wgTeJGMplhdH5dIzfi6PnC5LNE'"
+          [src]="userPhotoUrl || 'assets/img/defaults/default-avatar.svg'"
+          appImageFallback="assets/img/defaults/default-avatar.svg"
         />
         <div class="absolute bottom-0 right-0 w-6 h-6 bg-chart-green border-4 border-surface-container rounded-full status-pulse"></div>
       </div>
     </div>
-    <h3 class="font-headline-md text-on-surface font-bold tracking-tight">{{ userName || 'Shaun Park' }}</h3>
-    <p class="text-on-surface-variant text-body-sm font-mono opacity-70">{{ userEmail || 'shaun@mail.com' }}</p>
+    <h3 class="font-headline-md text-on-surface font-bold tracking-tight">{{ userName || 'Usuario' }}</h3>
+    <p class="text-on-surface-variant text-body-sm font-mono opacity-70">{{ userEmail || 'Cuenta activa' }}</p>
     <div class="flex items-center gap-2 mt-lg bg-white/5 px-4 py-2 rounded-full border border-white/5">
       <div class="flex -space-x-2">
         <div class="w-6 h-6 rounded-full bg-chart-cyan/20 flex items-center justify-center text-[10px] font-bold text-chart-cyan border border-white/10">SP</div>

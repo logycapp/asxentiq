@@ -5,13 +5,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
+import { ImageFallbackDirective } from '../../core/directives/image-fallback.directive';
 import { EmpresaService } from '../../core/services/empresa.service';
 import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-empresa-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SwalAlertComponent, ImageFallbackDirective],
   templateUrl: './empresa-form.component.html',
   styles: []
 })

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, HostBinding, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, finalize, Subscription, tap } from 'rxjs';
+import { filter, finalize, Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
@@ -136,11 +136,11 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get userPhotoUrl(): string {
     const user = this.authService.getCurrentUser();
-    return user?.avatar_photo_url ?? user?.profile_photo_url ?? '';
+    return user?.avatar_photo_url ?? user?.profile_photo_url ?? 'assets/img/defaults/default-avatar.svg';
   }
 
   get companyLogoUrl(): string {
-    return this.authService.getCurrentUser()?.empresa_relation?.logo_url ?? '';
+    return this.authService.getCurrentUser()?.empresa_relation?.logo_url ?? 'assets/img/defaults/default-company.svg';
   }
 
   get companyName(): string {
@@ -430,29 +430,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleTheme(): void {
-    if (typeof document === 'undefined') return;
-
-    const htmlElement = document.documentElement;
-    const isDark = htmlElement.classList.toggle('dark');
-    htmlElement.classList.toggle('light', !isDark);
-    this.themeToggleIcon = isDark ? 'light_mode' : 'dark_mode';
-    localStorage.setItem(this.themeStorageKey, isDark ? 'dark' : 'light');
-    this.sidebarBrandLogo = isDark
-      ? 'assets/template/logos/logo_principal/logo_dark.png'
-      : 'assets/template/logos/logo_principal/logo_light.png';
-
-    // Save theme preference to backend
-    const mode = isDark ? 'dark' : 'light';
-    this.authService.me().pipe(
-      tap((response) => {
-        if (response.user) {
-          response.user.theme_mode = mode;
-          localStorage.setItem('asxentiq_user', JSON.stringify(response.user));
-        }
-      })
-    ).subscribe();
-
-    this.http.post(`${this.apiUrl}/theme`, { theme_mode: mode }).subscribe();
+    this.applySavedTheme();
   }
 
   private applySavedSidebarState(): void {
@@ -471,20 +449,12 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private applySavedTheme(): void {
     if (typeof document === 'undefined') return;
 
-    const user = this.authService.getCurrentUser();
-    const storedTheme = localStorage.getItem(this.themeStorageKey);
-    const preferredMode = storedTheme === 'dark' || storedTheme === 'light'
-      ? storedTheme
-      : user?.theme_mode || 'dark';
     const htmlElement = document.documentElement;
-
-    htmlElement.classList.toggle('dark', preferredMode === 'dark');
-    htmlElement.classList.toggle('light', preferredMode === 'light');
-    this.themeToggleIcon = preferredMode === 'dark' ? 'light_mode' : 'dark_mode';
-    localStorage.setItem(this.themeStorageKey, preferredMode);
-    this.sidebarBrandLogo = preferredMode === 'dark'
-      ? 'assets/template/logos/logo_principal/logo_dark.png'
-      : 'assets/template/logos/logo_principal/logo_light.png';
+    htmlElement.classList.remove('dark');
+    htmlElement.classList.add('light');
+    this.themeToggleIcon = 'dark_mode';
+    localStorage.setItem(this.themeStorageKey, 'light');
+    this.sidebarBrandLogo = 'assets/template/logos/logo_principal/logo_light.png';
   }
 
   private loadServerClock(): void {

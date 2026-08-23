@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { ImageFallbackDirective } from '../../../../core/directives/image-fallback.directive';
+
 @Component({
   selector: 'app-dashboard-right-menu',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ImageFallbackDirective],
   templateUrl: './dashboard-right-menu.component.html',
   styleUrl: './dashboard-right-menu.component.css'
 })

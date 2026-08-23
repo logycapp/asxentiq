@@ -23,10 +23,7 @@
       [class.collapse]="isCollapsed">
       <div class="mobile-drawer-profile d-lg-none">
         <div class="mobile-drawer-profile__avatar">
-          <img *ngIf="userPhotoUrl; else drawerInitialAvatar" class="avatar-photo avatar-photo--drawer" [src]="userPhotoUrl" [alt]="userName">
-          <ng-template #drawerInitialAvatar>
-            <span class="avatar-dot avatar-dot--drawer">{{ userInitial }}</span>
-          </ng-template>
+          <img class="avatar-photo avatar-photo--drawer" [src]="userPhotoUrl || 'assets/img/defaults/default-avatar.svg'" [alt]="userName" appImageFallback="assets/img/defaults/default-avatar.svg">
         </div>
         <div class="mobile-drawer-profile__copy">
           <div class="fw-semibold">{{ userName }}</div>
@@ -92,10 +89,7 @@
       <div *ngIf="showProfile" class="navbar-actions">
         <div class="dropdown profile-dropdown">
           <button type="button" class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 profile-trigger" data-bs-toggle="dropdown" aria-expanded="false">
-            <img *ngIf="userPhotoUrl; else initialAvatar" class="avatar-photo" [src]="userPhotoUrl" [alt]="userName">
-            <ng-template #initialAvatar>
-              <span class="avatar-dot">{{ userInitial }}</span>
-            </ng-template>
+            <img class="avatar-photo" [src]="userPhotoUrl || 'assets/img/defaults/default-avatar.svg'" [alt]="userName" appImageFallback="assets/img/defaults/default-avatar.svg">
             <span class="d-none d-md-inline">Perfil</span>
           </button>
           <ul class="dropdown-menu dropdown-menu-end shadow border-0">
@@ -122,10 +116,7 @@
     <div *ngIf="!showMenu" class="navbar-actions">
       <div class="dropdown profile-dropdown">
         <button type="button" class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 profile-trigger" data-bs-toggle="dropdown" aria-expanded="false">
-          <img *ngIf="userPhotoUrl; else soloInitialAvatar" class="avatar-photo" [src]="userPhotoUrl" [alt]="userName">
-          <ng-template #soloInitialAvatar>
-            <span class="avatar-dot">{{ userInitial }}</span>
-          </ng-template>
+          <img class="avatar-photo" [src]="userPhotoUrl || 'assets/img/defaults/default-avatar.svg'" [alt]="userName" appImageFallback="assets/img/defaults/default-avatar.svg">
           <span class="d-none d-md-inline">Perfil</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow border-0">

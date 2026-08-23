@@ -102,13 +102,11 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
           <div *ngFor="let group of pendingGroups" class="public-dashboard-group">
             <div class="public-dashboard-group-header">
               <div class="public-dashboard-program-heading">
-                <div class="public-dashboard-program-logo" [class.has-logo]="group.category?.empresa?.logo_url">
+                <div class="public-dashboard-program-logo">
                   <img
-                    *ngIf="group.category?.empresa?.logo_url as logoUrl"
-                    [src]="logoUrl"
+                    [src]="group.category?.empresa?.logo_url || 'assets/img/defaults/default-company.svg'"
                     [alt]="'Logo de ' + (group.category?.empresa?.name || 'la empresa')"
                   />
-                  <span *ngIf="!group.category?.empresa?.logo_url" class="material-symbols-outlined">business</span>
                 </div>
                 <div>
                   <div class="public-dashboard-group-kicker">Programa</div>
@@ -169,13 +167,11 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
           <div *ngFor="let group of completedGroups" class="public-dashboard-group">
             <div class="public-dashboard-group-header">
               <div class="public-dashboard-program-heading">
-                <div class="public-dashboard-program-logo" [class.has-logo]="group.category?.empresa?.logo_url">
+                <div class="public-dashboard-program-logo">
                   <img
-                    *ngIf="group.category?.empresa?.logo_url as logoUrl"
-                    [src]="logoUrl"
+                    [src]="group.category?.empresa?.logo_url || 'assets/img/defaults/default-company.svg'"
                     [alt]="'Logo de ' + (group.category?.empresa?.name || 'la empresa')"
                   />
-                  <span *ngIf="!group.category?.empresa?.logo_url" class="material-symbols-outlined">business</span>
                 </div>
                 <div>
                   <div class="public-dashboard-group-kicker">Programa</div>
@@ -757,6 +753,222 @@ import { PrivacyConsentModalComponent } from '../../core/components/privacy-cons
       max-width: 42rem;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    :host-context(.light) .public-dashboard-shell {
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.12), transparent 28%),
+        linear-gradient(135deg, #eef4ff 0%, #f8fafc 45%, #f4f7fb 100%);
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-shell::before {
+      background-image:
+        linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+      opacity: 0.4;
+    }
+
+    :host-context(.light) .public-dashboard-backdrop {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%);
+    }
+
+    :host-context(.light) .public-dashboard-orb-a {
+      background: radial-gradient(circle, rgba(103, 232, 249, 0.14), transparent 68%);
+    }
+
+    :host-context(.light) .public-dashboard-orb-b {
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12), transparent 68%);
+    }
+
+    :host-context(.light) .public-dashboard-hero,
+    :host-context(.light) .public-dashboard-group,
+    :host-context(.light) .public-dashboard-stat,
+    :host-context(.light) .public-dashboard-tabs,
+    :host-context(.light) .public-dashboard-empty {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light) .public-dashboard-kicker,
+    :host-context(.light) .public-dashboard-group-kicker,
+    :host-context(.light) .public-dashboard-stat-label,
+    :host-context(.light) .public-dashboard-identity-label {
+      color: #64748b;
+    }
+
+    :host-context(.light) .public-dashboard-title {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-subtitle {
+      color: #334155;
+    }
+
+    :host-context(.light) .public-dashboard-logout-btn {
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+    }
+
+    :host-context(.light) .public-dashboard-logout-btn:hover {
+      background: #ffffff;
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-dashboard-identity {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light) .public-dashboard-identity .material-symbols-outlined {
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-dashboard-identity-value {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-stat-value {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-tab {
+      color: #475569;
+    }
+
+    :host-context(.light) .public-dashboard-tab:hover {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-tab.is-active {
+      background: linear-gradient(135deg, rgba(4, 87, 191, 0.1), rgba(4, 87, 191, 0.06));
+      color: #0457bf;
+      box-shadow: inset 0 0 0 1px rgba(4, 87, 191, 0.16);
+    }
+
+    :host-context(.light) .public-dashboard-tab-badge,
+    :host-context(.light) .public-dashboard-group-badge {
+      background: rgba(15, 23, 42, 0.06);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-group-header {
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    :host-context(.light) .public-dashboard-program-logo {
+      color: #0457bf;
+      background: rgba(4, 87, 191, 0.08);
+      border: 1px solid rgba(4, 87, 191, 0.12);
+    }
+
+    :host-context(.light) .public-dashboard-program-logo.has-logo {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(15, 23, 42, 0.1);
+    }
+
+    :host-context(.light) .public-dashboard-group-title {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-dashboard-group-toggle {
+      color: #0457bf;
+      border: 1px solid rgba(4, 87, 191, 0.18);
+      background: rgba(4, 87, 191, 0.06);
+    }
+
+    :host-context(.light) .public-dashboard-group-toggle:hover {
+      color: #ffffff;
+      background: #0457bf;
+    }
+
+    :host-context(.light) .public-training-item {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    :host-context(.light) .public-training-item:hover {
+      background: #ffffff;
+    }
+
+    :host-context(.light) .public-training-item-icon {
+      color: #0457bf;
+      background: rgba(4, 87, 191, 0.08);
+    }
+
+    :host-context(.light) .public-training-item-icon-completed {
+      color: #059669;
+      background: rgba(5, 150, 105, 0.1);
+    }
+
+    :host-context(.light) .public-training-item-title {
+      color: #0f172a;
+    }
+
+    :host-context(.light) .public-training-item-meta {
+      color: #64748b;
+    }
+
+    :host-context(.light) .public-training-meta-dot {
+      background: rgba(15, 23, 42, 0.25);
+    }
+
+    :host-context(.light) .public-training-action {
+      color: #06213f;
+      background: linear-gradient(135deg, #7dd3fc 0%, #93c5fd 45%, #c4b5fd 100%);
+    }
+
+    :host-context(.light) .public-training-score-badge.is-approved {
+      background: rgba(5, 150, 105, 0.12);
+      color: #047857;
+      border: 1px solid rgba(5, 150, 105, 0.2);
+    }
+
+    :host-context(.light) .public-training-score-badge.is-rejected {
+      background: rgba(244, 63, 94, 0.1);
+      color: #be123c;
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    :host-context(.light) .public-training-score-badge.is-pending {
+      background: rgba(217, 119, 6, 0.12);
+      color: #b45309;
+      border: 1px solid rgba(217, 119, 6, 0.2);
+    }
+
+    :host-context(.light) .public-training-result-btn {
+      border: 1px solid rgba(4, 87, 191, 0.2);
+      background: rgba(4, 87, 191, 0.06);
+      color: #0457bf;
+    }
+
+    :host-context(.light) .public-training-result-btn:hover {
+      color: #ffffff;
+      background: #0457bf;
+      border-color: #0457bf;
+    }
+
+    :host-context(.light) .public-training-locked-badge {
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      background: rgba(254, 242, 242, 0.8);
+      color: #be123c;
+    }
+
+    :host-context(.light) .public-dashboard-empty {
+      color: #334155;
+    }
+
+    :host-context(.light) .public-dashboard-empty .material-symbols-outlined {
+      color: #0457bf;
+      background: rgba(4, 87, 191, 0.08);
+    }
+
+    :host-context(.light) .public-dashboard-empty h3 {
+      color: #0f172a;
     }
 
     @media (max-width: 991.98px) {

@@ -6,12 +6,13 @@ import { catchError, finalize, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { ImageFallbackDirective } from '../../core/directives/image-fallback.directive';
 import { EmpresaService } from '../../core/services/empresa.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ModalShellComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ModalShellComponent, ImageFallbackDirective],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })

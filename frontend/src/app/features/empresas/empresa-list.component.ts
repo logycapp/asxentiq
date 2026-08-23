@@ -9,12 +9,13 @@ import { LoadingService } from '../../core/services/loading.service';
 import { Empresa, EmpresaService } from '../../core/services/empresa.service';
 import { SwalAlertComponent } from '../../core/components/swal-alert.component';
 import { ModalShellComponent } from '../../core/components/modal-shell.component';
+import { ImageFallbackDirective } from '../../core/directives/image-fallback.directive';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 @Component({
   selector: 'app-empresa-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent, ModalShellComponent, SwalAlertComponent, ImageFallbackDirective],
   templateUrl: './empresa-list.component.html',
   styleUrls: [],
   styles: [`

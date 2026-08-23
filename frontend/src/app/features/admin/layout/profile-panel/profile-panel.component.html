@@ -21,24 +21,16 @@
     <div class="profile-identity-card">
       <div class="profile-identity-top d-flex align-items-center justify-content-center gap-3">
         <div class="profile-company-logo-frame profile-company-logo-frame--elevated">
-          <img *ngIf="companyLogoUrl; else companyLogoFallback" [src]="companyLogoUrl" alt="Logo de la empresa" class="profile-company-logo-img" />
-          <ng-template #companyLogoFallback>
-            <span class="material-symbols-outlined profile-company-logo-icon">domain</span>
-          </ng-template>
+          <img [src]="companyLogoUrl || 'assets/img/defaults/default-company.svg'" alt="Logo de la empresa" class="profile-company-logo-img" appImageFallback="assets/img/defaults/default-company.svg" />
         </div>
         <div class="profile-avatar-frame">
           <div class="profile-avatar-ring">
-            <img
-              *ngIf="userPhotoUrl; else avatarFallback"
-              [src]="userPhotoUrl"
-              [alt]="userName"
-              class="profile-avatar-img"
-            />
-            <ng-template #avatarFallback>
-              <div class="profile-avatar-fallback">
-                <span class="profile-avatar-initial">{{ userInitial }}</span>
-              </div>
-            </ng-template>
+              <img
+                [src]="userPhotoUrl || 'assets/img/defaults/default-avatar.svg'"
+                [alt]="userName"
+                class="profile-avatar-img"
+                appImageFallback="assets/img/defaults/default-avatar.svg"
+              />
             <div class="profile-status-dot"></div>
           </div>
         </div>

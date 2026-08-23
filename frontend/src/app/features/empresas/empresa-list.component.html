@@ -103,9 +103,9 @@
                 class="empresa-logo-thumb d-flex align-items-center justify-content-center rounded-2 border border-white/10 overflow-hidden bg-transparent"
                 style="width: 36px; height: 36px; min-width: 36px;"
               >
-                <img *ngIf="hasLogo(empresa); else noLogo" [src]="logoUrl(empresa)" alt="Logo de {{ empresa.name }}" style="width: 100%; height: 100%; object-fit: cover;" />
+                <img *ngIf="hasLogo(empresa); else noLogo" [src]="logoUrl(empresa)" alt="Logo de {{ empresa.name }}" style="width: 100%; height: 100%; object-fit: cover;" appImageFallback="assets/img/defaults/default-company.svg" />
                 <ng-template #noLogo>
-                  <span class="text-on-surface-variant small">--</span>
+                  <img src="assets/img/defaults/default-company.svg" alt="Logo por defecto" style="width: 100%; height: 100%; object-fit: cover;" />
                 </ng-template>
               </div>
             </div>
@@ -224,9 +224,9 @@
                 class="d-flex align-items-center justify-content-center rounded-3 overflow-hidden border border-white/10 bg-transparent"
                 style="width: 96px; height: 96px;"
               >
-                <img *ngIf="displayLogoUrl; else logoPlaceholder" [src]="displayLogoUrl" alt="Logo de empresa" style="width: 100%; height: 100%; object-fit: contain;" />
+                <img *ngIf="displayLogoUrl; else logoPlaceholder" [src]="displayLogoUrl" alt="Logo de empresa" style="width: 100%; height: 100%; object-fit: contain;" appImageFallback="assets/img/defaults/default-company.svg" />
                 <ng-template #logoPlaceholder>
-                  <span class="text-on-surface-variant small text-center px-2">Sin logo</span>
+                  <img src="assets/img/defaults/default-company.svg" alt="Logo por defecto" style="width: 100%; height: 100%; object-fit: contain;" />
                 </ng-template>
               </div>
             </div>
