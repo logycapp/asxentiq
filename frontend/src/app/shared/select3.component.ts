@@ -38,6 +38,18 @@ export interface Select3Option {
         <span class="searchable-select-label" [class.text-on-surface-variant]="!displayLabel">
           {{ displayLabel || placeholder }}
         </span>
+        <span
+          *ngIf="clearable && displayLabel"
+          class="searchable-select-clear material-symbols-outlined"
+          role="button"
+          tabindex="0"
+          aria-label="Limpiar selección"
+          (click)="clearSelection($event)"
+          (keydown.enter)="clearSelection($event)"
+          (keydown.space)="clearSelection($event)"
+        >
+          close
+        </span>
         <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
       </button>
       <div
@@ -115,8 +127,24 @@ export interface Select3Option {
       transition: transform 0.2s ease;
     }
 
+    .searchable-select-trigger .searchable-select-clear {
+      right: 2.25rem;
+      font-size: 1rem;
+      color: var(--bs-secondary-color, #64748b);
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+    .searchable-select-trigger .searchable-select-clear:hover {
+      color: var(--bs-danger, #dc3545);
+    }
+
     .searchable-select.open .searchable-select-trigger .material-symbols-outlined {
       transform: translateY(-50%) rotate(180deg);
+    }
+
+    .searchable-select.open .searchable-select-trigger .searchable-select-clear {
+      transform: translateY(-50%);
     }
 
     .searchable-select-panel {
@@ -202,6 +230,7 @@ export class Select3Component implements ControlValueAccessor {
   @Input() placeholder = 'Seleccionar...';
   @Input() requiredMessage = 'Este campo es obligatorio.';
   @Input() disabled = false;
+  @Input() clearable = false;
 
   private _options: Select3Option[] = [];
   @Input() set options(value: Select3Option[]) {
@@ -269,6 +298,20 @@ export class Select3Component implements ControlValueAccessor {
     this.searchQuery = '';
     this.isInvalid = false;
     this.onChange(this.value);
+    this.onTouched();
+  }
+
+  clearSelection(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.disabled) {
+      return;
+    }
+
+    this.value = null;
+    this.displayLabel = '';
+    this.onChange(null);
     this.onTouched();
   }
 

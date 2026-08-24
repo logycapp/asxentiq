@@ -55,9 +55,25 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `POST /api/logout`
 - `GET /api/menu`
 - `POST /api/test`
-- `GET /api/powerbi/dashboard`
-- `POST /api/powerbi/preview`
-- `POST /api/powerbi/import`
+- `GET /api/powerbi/transformers`
+- `GET /api/powerbi/projects`
+- `POST /api/powerbi/projects`
+- `GET /api/powerbi/projects/{project}`
+- `PUT /api/powerbi/projects/{project}`
+- `DELETE /api/powerbi/projects/{project}`
+- `POST /api/powerbi/projects/{project}/publish`
+- `POST /api/powerbi/projects/{project}/unpublish`
+- `POST /api/powerbi/projects/{project}/regenerate-token`
+- `POST /api/powerbi/projects/{project}/datasets/preview`
+- `POST /api/powerbi/projects/{project}/datasets`
+- `GET /api/powerbi/projects/{project}/datasets`
+- `DELETE /api/powerbi/datasets/{dataset}`
+- `GET /api/powerbi/projects/{project}/visualizations`
+- `POST /api/powerbi/projects/{project}/visualizations`
+- `PUT /api/powerbi/visualizations/{visualization}`
+- `DELETE /api/powerbi/visualizations/{visualization}`
+- `GET /api/powerbi/projects/{project}/dashboard`
+- `GET /api/public/powerbi/{token}`
 - `GET /api/profile`
 - `POST /api/profile`
 - `GET /api/roles`
@@ -98,6 +114,9 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `/empresas/:id/edit`
 - `/test`
 - `/powerbi`
+- `/powerbi/create`
+- `/powerbi/:id/edit`
+- `/powerbi/:id`
 - `/users`
 - `/users/create`
 - `/users/:id/edit`
@@ -121,9 +140,25 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - `POST /api/logout`
 - `GET /api/menu`
 - `POST /api/test`
-- `GET /api/powerbi/dashboard`
-- `POST /api/powerbi/preview`
-- `POST /api/powerbi/import`
+- `GET /api/powerbi/transformers`
+- `GET /api/powerbi/projects`
+- `POST /api/powerbi/projects`
+- `GET /api/powerbi/projects/{project}`
+- `PUT /api/powerbi/projects/{project}`
+- `DELETE /api/powerbi/projects/{project}`
+- `POST /api/powerbi/projects/{project}/publish`
+- `POST /api/powerbi/projects/{project}/unpublish`
+- `POST /api/powerbi/projects/{project}/regenerate-token`
+- `POST /api/powerbi/projects/{project}/datasets/preview`
+- `POST /api/powerbi/projects/{project}/datasets`
+- `GET /api/powerbi/projects/{project}/datasets`
+- `DELETE /api/powerbi/datasets/{dataset}`
+- `GET /api/powerbi/projects/{project}/visualizations`
+- `POST /api/powerbi/projects/{project}/visualizations`
+- `PUT /api/powerbi/visualizations/{visualization}`
+- `DELETE /api/powerbi/visualizations/{visualization}`
+- `GET /api/powerbi/projects/{project}/dashboard`
+- `GET /api/public/powerbi/{token}`
 - `GET /api/profile`
 - `POST /api/profile`
 - CRUD de roles en `/api/roles`
@@ -132,9 +167,11 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - endpoints de permisos de menu para roles y usuarios
 - CRUD de capacitaciones en `/api/trainings`
 - CRUD de preguntas en `/api/questions`
-- Dashboard de Power BI en `/api/powerbi/dashboard`
-- Analisis de Excel para graficas en `/api/powerbi/preview`
-- Persistencia de datos Excel en `/api/powerbi/import`
+- Proyectos de Power BI (CRUD, datasets, visualizaciones y dashboard) en `/api/powerbi/projects/*`
+- Preview de CSV en `/api/powerbi/projects/{project}/datasets/preview`
+- Import de CSV en `/api/powerbi/projects/{project}/datasets`
+- Publicar/despublicar/regenerar token en `/api/powerbi/projects/{project}/publish|unpublish|regenerate-token`
+- Panel publico en `/api/public/powerbi/{token}` (sin login)
 - Rutas publicas en `/api/public/trainings/*` (acceso por cedula)
 - Descarga de certificados en `/api/public/trainings/{id}/certificate`
 
@@ -148,8 +185,8 @@ Esa carpeta es una referencia visual independiente y no tiene relacion directa c
 - Cualquier modulo, componente, formulario o estilo nuevo en Angular debe respetar exactamente la estetica, estructura y patrones visuales de `frontend/template`.
 - No se deben improvisar estilos nuevos fuera del template, salvo en `landing`.
 - El seeder crea roles base, un usuario administrador y items de menu iniciales.
-- Power BI se carga como modulo autenticado con dashboard sobre `powerbi_datas`, analisis de Excel y graficas en Angular.
-- La data del Excel `AT_GRAVES_3_ANIOS.xlsx` se persiste en la tabla `powerbi_datas`.
+- Power BI se carga como modulo autenticado con proyectos por empresa, datasets CSV y visualizaciones en Angular, con URL publica de solo lectura.
+- La migracion `2026_08_22_000005_migrate_powerbi_datas_to_projects` traslado la data de `powerbi_datas` al proyecto por defecto `Siniestros Graves` y elimino la tabla.
 - El menu principal ya no expone `Usuarios` ni `Roles`; esos accesos viven dentro de `Administracion`.
 - `Empresas` vive en el menu principal y se controla por permisos de rol.
 - La visibilidad interna de `Usuarios` y `Roles` se controla con permisos de rol y permisos puntuales sobre los items de menu.

@@ -35,6 +35,9 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
   - `/empresas/:id/edit`
   - `/test`
   - `/powerbi`
+  - `/powerbi/create`
+  - `/powerbi/:id/edit`
+  - `/powerbi/:id`
   - `/users`
   - `/users/create`
   - `/users/create/:empresaId`
@@ -104,9 +107,13 @@ Esa carpeta no tiene relacion directa con Angular: sus estilos, clases, componen
 - CRUD de empresas contra `/api/empresas`.
 - CRUD de usuarios contra `/api/users`.
 - Formulario de prueba contra `POST /api/test`.
-- Analisis de Excel contra `POST /api/powerbi/preview`.
-- Persistencia de Excel contra `POST /api/powerbi/import`.
-- Dashboard de Power BI contra `GET /api/powerbi/dashboard`.
+- CRUD de proyectos de Power BI contra `/api/powerbi/projects`.
+- Preview de CSV contra `POST /api/powerbi/projects/{project}/datasets/preview`.
+- Import de CSV contra `POST /api/powerbi/projects/{project}/datasets`.
+- Dashboard con filtros contra `GET /api/powerbi/projects/{project}/dashboard`.
+- CRUD de visualizaciones contra `/api/powerbi/projects/{project}/visualizations`.
+- Publicar/despublicar y regenerar token contra `/api/powerbi/projects/{project}/publish|unpublish|regenerate-token`.
+- Panel publico (sin login) contra `GET /api/public/powerbi/{token}`.
 
 ## Reglas para modificar frontend
 

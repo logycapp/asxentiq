@@ -1,0 +1,226 @@
+<app-page-header
+  title="Proyectos de visualización"
+  subtitle="Gestiona proyectos por empresa, importa datos CSV y genera dashboards con URL pública."
+  [showDateFilter]="false"
+  [showActions]="true"
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">monitoring</span>
+        Power BI
+      </li>
+    </ol>
+  </nav>
+
+  <button
+    header-actions
+    type="button"
+    class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold"
+    (click)="openCreateModal()"
+  >
+    <span class="material-symbols-outlined text-[18px]">add</span>
+    Nuevo proyecto
+  </button>
+</app-page-header>
+
+<app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+<app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
+
+<div *ngIf="loading" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">Cargando proyectos...</div>
+</div>
+
+<div *ngIf="!loading" class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 dashboard-table">
+      <thead class="empresa-table-head">
+        <tr class="border-bottom border-white/10">
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase">Proyecto</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Empresa</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Transformador</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Datasets</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Visualizaciones</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Estado</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Actualizado</th>
+          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let project of projects; trackBy: trackById">
+          <td class="ps-4 py-3">
+            <div class="powerbi-project-name">{{ project.name }}</div>
+            <div class="powerbi-project-description">{{ project.description || 'Sin descripción' }}</div>
+          </td>
+          <td class="py-3 text-on-surface-variant">{{ project.empresa?.name || 'Sin empresa' }}</td>
+          <td class="py-3 text-on-surface-variant">{{ handlerLabel(project) }}</td>
+          <td class="py-3 text-on-surface">{{ project.datasets_count ?? 0 }}</td>
+          <td class="py-3 text-on-surface">{{ project.visualizations_count ?? 0 }}</td>
+          <td class="py-3">
+            <span
+              [class]="project.status === 'published'
+                ? 'badge rounded-pill powerbi-status-badge powerbi-status-published'
+                : 'badge rounded-pill powerbi-status-badge powerbi-status-draft'"
+            >
+              {{ project.status === 'published' ? 'Publicado' : 'Borrador' }}
+            </span>
+          </td>
+          <td class="py-3 text-on-surface-variant">{{ updatedAtLabel(project) }}</td>
+          <td class="pe-4 py-3 text-end">
+            <div class="dashboard-action-group">
+              <a
+                class="btn btn-sm btn-outline-primary fw-semibold d-inline-flex align-items-center gap-1"
+                [routerLink]="['/powerbi', project.id]"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Abrir proyecto"
+                aria-label="Abrir proyecto"
+              >
+                <span class="material-symbols-outlined">open_in_new</span>
+              </a>
+              <button
+                *ngIf="project.status !== 'published'"
+                type="button"
+                class="btn btn-sm btn-success fw-semibold d-inline-flex align-items-center gap-1"
+                (click)="publishProject(project)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Publicar proyecto"
+                aria-label="Publicar proyecto"
+              >
+                <span class="material-symbols-outlined">publish</span>
+              </button>
+              <button
+                *ngIf="project.status === 'published'"
+                type="button"
+                class="btn btn-sm btn-outline-secondary fw-semibold d-inline-flex align-items-center gap-1"
+                (click)="unpublishProject(project)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Despublicar proyecto"
+                aria-label="Despublicar proyecto"
+              >
+                <span class="material-symbols-outlined">unpublish</span>
+              </button>
+              <a
+                *ngIf="project.status === 'published' && project.public_token"
+                class="btn btn-sm btn-outline-primary fw-semibold d-inline-flex align-items-center gap-1"
+                [href]="publicUrl(project)"
+                target="_blank"
+                rel="noopener"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Abrir panel público"
+                aria-label="Abrir panel público"
+              >
+                <span class="material-symbols-outlined">link</span>
+              </a>
+              <button
+                type="button"
+                class="btn btn-sm btn-warning-light fw-semibold d-inline-flex align-items-center gap-1"
+                (click)="openEditModal(project)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Editar proyecto"
+                aria-label="Editar proyecto"
+              >
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1"
+                (click)="deleteProject(project)"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Eliminar proyecto"
+                aria-label="Eliminar proyecto"
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="!loading && projects.length === 0" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">No se encontraron proyectos.</div>
+</div>
+
+<app-modal-shell
+  *ngIf="modalMode"
+  kicker="Power BI"
+  [title]="modalTitle"
+  [subtitle]="modalSubtitle"
+  [headerVariant]="isEditMode ? 'warning' : 'info'"
+  [footerVariant]="isEditMode ? 'warning' : 'info'"
+  size="lg"
+  [showHeaderClose]="true"
+  [showFooterClose]="false"
+  [showPrimaryButton]="true"
+  [showSecondaryButton]="true"
+  [primaryLabel]="isEditMode ? 'Actualizar proyecto' : 'Crear proyecto'"
+  secondaryLabel="Cancelar"
+  [primaryDisabled]="modalSaving || modalLoading"
+  [primaryLoading]="modalSaving"
+  (secondaryRequested)="closeModal()"
+  (primaryRequested)="saveModal()"
+  (closeRequested)="closeModal()"
+>
+  <div modal-body>
+    <app-swal-alert
+      *ngIf="modalErrorMessage"
+      [message]="modalErrorMessage"
+      type="danger"
+      (closed)="modalErrorMessage = ''"
+    ></app-swal-alert>
+
+    <div *ngIf="modalLoading" class="text-center py-5">
+      <div class="text-on-surface-variant font-body-md">Cargando proyecto...</div>
+    </div>
+
+    <form *ngIf="!modalLoading" [formGroup]="projectForm" novalidate>
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <label class="form-label" for="powerbi-name">Nombre</label>
+          <input id="powerbi-name" class="form-control" type="text" formControlName="name">
+          <div class="invalid-feedback d-block" *ngIf="projectForm.controls.name.touched && projectForm.controls.name.invalid">
+            El nombre es obligatorio.
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <label class="form-label" for="powerbi-empresa">Empresa</label>
+          <select id="powerbi-empresa" class="form-select" formControlName="empresa_id">
+            <option value="">Sin empresa</option>
+            <option *ngFor="let empresa of empresas" [value]="empresa.id">{{ empresa.name }}</option>
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="powerbi-description">Descripción</label>
+          <textarea id="powerbi-description" class="form-control" rows="3" formControlName="description"></textarea>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="powerbi-handler">Procesamiento personalizado</label>
+          <select id="powerbi-handler" class="form-select" formControlName="handler">
+            <option value="">Ninguno (parseo genérico)</option>
+            <option *ngFor="let handler of transformers" [value]="handler">{{ handlerDisplayLabel(handler) }}</option>
+          </select>
+          <div class="text-secondary small mt-2">
+            Define cómo se post-procesan las columnas y filas al importar un CSV. Si la lógica cambia, el dataset debe re-importarse.
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</app-modal-shell>

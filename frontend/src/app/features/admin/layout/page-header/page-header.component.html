@@ -1,6 +1,10 @@
 <div class="page-header-card glass-card border-0 rounded-4 p-3 p-xl-4 mb-4 dashboard-hero-row">
   <div class="row g-3 align-items-center justify-content-between">
-    <div class="col-12" [class.col-xl-8]="showDateFilter">
+    <div
+      class="col-12"
+      [class.col-xl-8]="showDateFilter"
+      [class.col-md-8]="showActions && !showDateFilter"
+    >
       <div class="page-header-copy d-flex flex-column gap-1">
         <div class="page-header-breadcrumbs">
           <ng-content select="[header-breadcrumbs]"></ng-content>
@@ -12,7 +16,12 @@
         </p>
       </div>
     </div>
-    <div class="col-12 col-xl-4 d-flex justify-content-xl-end" *ngIf="showDateFilter || showActions">
+    <div
+      class="col-12 col-xl-4 d-flex justify-content-xl-end"
+      [class.col-md-4]="showActions && !showDateFilter"
+      [class.justify-content-md-end]="showActions && !showDateFilter"
+      *ngIf="showDateFilter || showActions"
+    >
       <div class="d-flex flex-wrap justify-content-xl-end align-items-center gap-2 w-100">
         <ng-content select="[header-actions]"></ng-content>
         <div *ngIf="showDateFilter" class="dashboard-date-filter d-inline-flex align-items-center bg-card-navy border border-white/10 rounded-pill px-3 py-2 gap-2 cursor-pointer hover:bg-card-navy/80 transition-colors">

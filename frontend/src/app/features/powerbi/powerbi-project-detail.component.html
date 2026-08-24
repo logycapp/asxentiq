@@ -1,0 +1,526 @@
+<app-page-header
+  title="Proyecto de visualización"
+  subtitle="Importa datos CSV, configura visualizaciones y comparte el resultado con una URL pública."
+  [showDateFilter]="false"
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a routerLink="/powerbi" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">monitoring</span>
+          Power BI
+        </a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        <span class="material-symbols-outlined text-[15px]">folder_open</span>
+        {{ project?.name }}
+      </li>
+    </ol>
+  </nav>
+
+</app-page-header>
+
+<app-swal-alert *ngIf="message" [message]="message" type="success" (closed)="message = ''"></app-swal-alert>
+<app-swal-alert *ngIf="errorMessage" [message]="errorMessage" type="danger" (closed)="errorMessage = ''"></app-swal-alert>
+
+<div *ngIf="loading" class="text-center py-5">
+  <div class="text-on-surface-variant font-body-md">Cargando proyecto...</div>
+</div>
+
+<ng-container *ngIf="!loading && project">
+  <div class="card glass-card border-0 rounded-4 p-2 mb-4">
+    <div class="d-flex flex-wrap gap-1">
+      <button type="button" class="powerbi-tab-btn" [class.is-active]="activeTab === 'datos'" (click)="activeTab = 'datos'">
+        <span class="material-symbols-outlined text-[18px]">table_rows</span>
+        Datos
+      </button>
+      <button type="button" class="powerbi-tab-btn" [class.is-active]="activeTab === 'visualizaciones'" (click)="activeTab = 'visualizaciones'">
+        <span class="material-symbols-outlined text-[18px]">monitoring</span>
+        Visualizaciones
+      </button>
+      <button type="button" class="powerbi-tab-btn" [class.is-active]="activeTab === 'compartir'" (click)="activeTab = 'compartir'">
+        <span class="material-symbols-outlined text-[18px]">share</span>
+        Compartir
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== DATOS ===== -->
+  <div *ngIf="activeTab === 'datos'" class="mb-4">
+    <div class="card glass-card border-0 rounded-4 p-4 mb-4">
+      <h3 class="h6 fw-bold text-on-surface mb-3">Subir archivo CSV</h3>
+      <app-swal-alert *ngIf="uploadError" [message]="uploadError" type="danger" (closed)="uploadError = ''"></app-swal-alert>
+
+      <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+        <label class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold mb-0" for="powerbi-csv-file">
+          <span class="material-symbols-outlined text-[18px]">upload_file</span>
+          Seleccionar CSV
+        </label>
+        <input id="powerbi-csv-file" class="d-none" type="file" accept=".csv,.txt,text/csv,text/plain" (change)="onFileSelected($event)">
+        <span class="text-on-surface-variant font-body-md">
+          Un archivo CSV = un dataset. Máximo 20 MB.
+        </span>
+      </div>
+
+      <div *ngIf="previewLoading" class="text-center py-4">
+        <div class="text-on-surface-variant font-body-md">Procesando archivo...</div>
+      </div>
+    </div>
+
+    <div class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden">
+      <div class="card-header bg-transparent border-white/10 py-3 px-4">
+        <h3 class="h6 fw-bold text-on-surface mb-0">Datasets ({{ project.datasets?.length ?? 0 }})</h3>
+      </div>
+
+      <div *ngIf="(project.datasets?.length ?? 0) === 0" class="text-center py-5">
+        <div class="text-on-surface-variant font-body-md">Este proyecto aún no tiene datasets cargados.</div>
+      </div>
+
+      <div *ngIf="(project.datasets?.length ?? 0) > 0" class="table-responsive">
+        <table class="table table-hover align-middle mb-0 dashboard-table">
+          <thead>
+            <tr class="border-bottom border-white/10">
+              <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase">Archivo</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Filas</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Importado</th>
+              <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Columnas</th>
+              <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dataset of project.datasets; trackBy: trackByDatasetId">
+              <td class="ps-4 py-3">
+                <span class="text-on-surface fw-semibold">{{ dataset.source_file }}</span>
+              </td>
+              <td class="py-3 text-on-surface">{{ dataset.row_count }}</td>
+              <td class="py-3 text-on-surface-variant">{{ datasetImportedLabel(dataset) }}</td>
+              <td class="py-3">
+                <div class="d-flex flex-wrap gap-1">
+                  <span *ngFor="let column of dataset.columns" class="powerbi-column-chip">
+                    <span class="material-symbols-outlined">
+                      {{ column.type === 'date' ? 'calendar_month' : (column.type === 'numeric' ? 'pin' : 'text_fields') }}
+                    </span>
+                    {{ column.label }}
+                  </span>
+                </div>
+              </td>
+              <td class="pe-4 py-3 text-end">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1"
+                  (click)="deleteDataset(dataset)"
+                >
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== VISUALIZACIONES ===== -->
+  <div *ngIf="activeTab === 'visualizaciones'" class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div class="d-flex flex-wrap gap-1">
+        <button
+          *ngFor="let dataset of dashboard?.datasets ?? []; trackBy: trackByDatasetId"
+          type="button"
+          class="powerbi-tab-btn"
+          [class.is-active]="activeDatasetId === dataset.id"
+          (click)="selectDataset(dataset.id)"
+        >
+          <span class="material-symbols-outlined text-[18px]">table_view</span>
+          {{ dataset.source_file }}
+          <span class="badge rounded-pill text-bg-light">{{ dataset.row_count }}</span>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold"
+        (click)="openCreateVizModal()"
+      >
+        <span class="material-symbols-outlined text-[18px]">add_chart</span>
+        Nueva visualización
+      </button>
+    </div>
+
+    <div class="row g-4">
+      <div *ngIf="dashboard?.dataset" class="col-12 col-lg-3">
+        <div class="card glass-card border-0 rounded-4 p-3 p-xl-4 h-100 powerbi-filter-card">
+          <div class="powerbi-filter-header">
+            <div class="d-flex align-items-center gap-2">
+              <span class="powerbi-filter-icon material-symbols-outlined">tune</span>
+              <div>
+                <h3 class="h6 fw-bold text-on-surface mb-1">Filtros</h3>
+                <span class="text-on-surface-variant small">Refina los resultados</span>
+              </div>
+            </div>
+            <span class="powerbi-filter-count">
+              {{ activeFilterCount }} activos
+            </span>
+          </div>
+
+          <div class="powerbi-filter-summary">
+            <span class="material-symbols-outlined">analytics</span>
+            <span>{{ dashboard?.row_count }} registros coinciden</span>
+          </div>
+
+          <div class="d-flex flex-column gap-3 align-items-stretch mt-4 powerbi-filter-fields">
+          <ng-container *ngFor="let entry of filterOptions; trackBy: trackByFilterKey">
+            <div *ngIf="entry.option.type === 'string'" class="d-flex flex-column gap-1 powerbi-filter-field">
+              <label class="font-label-sm text-on-surface-variant text-uppercase">{{ entry.option.label }}</label>
+              <app-select3
+                [options]="stringFilterOptionsFor(entry.key)"
+                [(ngModel)]="filterModels[entry.key]"
+                (ngModelChange)="onFilterModelChange(entry.key, $event)"
+                placeholder="Todos"
+                [clearable]="true"
+                [disabled]="(entry.option.values?.length ?? 0) === 0"
+              ></app-select3>
+            </div>
+
+            <div *ngIf="entry.option.type === 'date'" class="d-flex flex-column gap-1 powerbi-filter-field">
+              <label class="font-label-sm text-on-surface-variant text-uppercase">{{ entry.option.label }}</label>
+              <div class="d-flex flex-wrap align-items-end gap-2">
+                <div class="d-flex flex-column gap-1">
+                  <span class="small text-on-surface-variant">Desde</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="date"
+                    [min]="entry.option.min"
+                    [max]="entry.option.max"
+                    [value]="filterDateValue(entry.key, 'from')"
+                    (change)="setDateFilter(entry.key, 'from', $event)"
+                    title="Fecha inicial"
+                  >
+                </div>
+                <div class="d-flex flex-column gap-1">
+                  <span class="small text-on-surface-variant">Hasta</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="date"
+                    [min]="entry.option.min"
+                    [max]="entry.option.max"
+                    [value]="filterDateValue(entry.key, 'to')"
+                    (change)="setDateFilter(entry.key, 'to', $event)"
+                    title="Fecha final"
+                  >
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+            <div class="powerbi-filter-actions">
+              <button type="button" class="btn btn-primary btn-sm fw-semibold" (click)="applyFilters()">
+                <span class="material-symbols-outlined text-[16px]">filter_alt</span>
+                Aplicar filtros
+              </button>
+              <button type="button" class="btn btn-light btn-sm fw-semibold" (click)="resetFilters()">
+                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-9">
+        <div *ngIf="(dashboard?.visualizations?.length ?? 0) === 0" class="text-center py-5">
+          <div class="text-on-surface-variant font-body-md">No hay visualizaciones para este dataset.</div>
+        </div>
+
+        <div class="row g-3">
+          <div
+            *ngFor="let visualization of dashboard?.visualizations ?? []; trackBy: trackByVizId"
+            class="col-12 col-xl-6"
+          >
+            <div class="powerbi-viz-card position-relative">
+              <div class="position-absolute top-0 end-0 p-2 d-flex gap-1" style="z-index: 2;">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-light fw-semibold d-inline-flex align-items-center gap-1"
+                  (click)="openEditVizModal(visualization)"
+                  title="Editar visualización"
+                >
+                  <span class="material-symbols-outlined text-[16px]">edit</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-light fw-semibold d-inline-flex align-items-center gap-1"
+                  (click)="deleteVisualization(visualization)"
+                  title="Eliminar visualización"
+                >
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </div>
+              <app-powerbi-chart
+                [title]="visualization.title"
+                [chartType]="visualization.chart_type"
+                [points]="visualization.points"
+                [kpi]="visualization.kpi"
+              ></app-powerbi-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPARTIR ===== -->
+  <div *ngIf="activeTab === 'compartir'" class="mb-4">
+    <div class="card glass-card border-0 rounded-4 p-4 mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+        <div>
+          <h3 class="h5 fw-bold text-on-surface mb-1">URL pública</h3>
+          <p class="text-on-surface-variant mb-0">
+            Cualquier persona con el enlace puede ver las visualizaciones sin iniciar sesión. Solo lectura, sin filtros.
+          </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+          <button
+            *ngIf="!isPublished"
+            type="button"
+            class="btn btn-success d-inline-flex align-items-center gap-2 fw-semibold"
+            (click)="publishProject()"
+          >
+            <span class="material-symbols-outlined text-[18px]">publish</span>
+            Publicar proyecto
+          </button>
+          <button
+            *ngIf="isPublished"
+            type="button"
+            class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 fw-semibold"
+            (click)="unpublishProject()"
+          >
+            <span class="material-symbols-outlined text-[18px]">unpublish</span>
+            Despublicar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isPublished && publicUrl" class="card glass-card border-0 rounded-4 p-4 mb-4">
+      <h3 class="h6 fw-bold text-on-surface mb-3">Enlace compartible</h3>
+      <div class="d-flex flex-column flex-md-row gap-2 align-items-md-stretch">
+        <input class="form-control font-mono" type="text" [value]="publicUrl" readonly (focus)="selectPublicUrl($event)">
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold"
+          (click)="copyPublicUrl()"
+        >
+          <span class="material-symbols-outlined text-[18px]">content_copy</span>
+          Copiar
+        </button>
+        <a
+          [href]="publicUrl"
+          target="_blank"
+          rel="noopener"
+          class="btn btn-outline-primary d-inline-flex align-items-center gap-2 fw-semibold"
+        >
+          <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+          Abrir
+        </a>
+      </div>
+      <div class="mt-3 d-flex justify-content-end">
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2 fw-semibold"
+          (click)="regenerateToken()"
+        >
+          <span class="material-symbols-outlined text-[16px]">autorenew</span>
+          Regenerar token (invalida la URL anterior)
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!isPublished" class="text-center py-5">
+      <div class="text-on-surface-variant font-body-md">
+        Publica el proyecto para generar un enlace compartible.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: preview CSV ===== -->
+  <app-modal-shell
+    *ngIf="preview"
+    kicker="Importación"
+    title="Vista previa del CSV"
+    subtitle="Revisa las columnas detectadas y confirma la importación."
+    headerVariant="info"
+    footerVariant="info"
+    size="lg"
+    [showHeaderClose]="true"
+    [showFooterClose]="false"
+    [showPrimaryButton]="true"
+    [showSecondaryButton]="true"
+    primaryLabel="Importar dataset"
+    secondaryLabel="Cancelar"
+    [primaryDisabled]="importing"
+    [primaryLoading]="importing"
+    (secondaryRequested)="cancelPreview()"
+    (primaryRequested)="confirmImport()"
+    (closeRequested)="cancelPreview()"
+  >
+    <div modal-body>
+      <div class="d-flex flex-wrap gap-3 mb-3">
+        <div>
+          <span class="font-label-sm text-on-surface-variant text-uppercase">Archivo</span>
+          <div class="text-on-surface fw-semibold">{{ preview.file.original_name }}</div>
+        </div>
+        <div>
+          <span class="font-label-sm text-on-surface-variant text-uppercase">Delimitador</span>
+          <div class="text-on-surface fw-semibold">{{ preview.delimiter === '\t' ? 'Tabulación' : preview.delimiter }}</div>
+        </div>
+        <div>
+          <span class="font-label-sm text-on-surface-variant text-uppercase">Codificación</span>
+          <div class="text-on-surface fw-semibold">{{ preview.encoding }}</div>
+        </div>
+        <div>
+          <span class="font-label-sm text-on-surface-variant text-uppercase">Filas</span>
+          <div class="text-on-surface fw-semibold">{{ preview.row_count }}</div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-1 mb-3">
+        <span *ngFor="let column of preview.columns" class="powerbi-column-chip">
+          <span class="material-symbols-outlined">
+            {{ column.type === 'date' ? 'calendar_month' : (column.type === 'numeric' ? 'pin' : 'text_fields') }}
+          </span>
+          {{ column.label }}
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0 dashboard-table">
+          <thead>
+            <tr class="border-bottom border-white/10">
+              <th class="py-2 font-label-sm text-on-surface-variant text-uppercase">#</th>
+              <th *ngFor="let column of preview.columns" class="py-2 font-label-sm text-on-surface-variant text-uppercase">
+                {{ column.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of preview.preview_rows; let i = index">
+              <td class="py-2 font-mono text-on-surface-variant">{{ i + 1 }}</td>
+              <td *ngFor="let column of preview.columns" class="py-2 text-on-surface">{{ row[column.key] ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </app-modal-shell>
+
+  <!-- ===== MODAL: visualización ===== -->
+  <app-modal-shell
+    *ngIf="vizModalMode"
+    kicker="Visualizaciones"
+    [title]="vizModalMode === 'edit' ? 'Editar visualización' : 'Nueva visualización'"
+    subtitle="Configura la gráfica sobre el dataset seleccionado."
+    [headerVariant]="vizModalMode === 'edit' ? 'warning' : 'info'"
+    [footerVariant]="vizModalMode === 'edit' ? 'warning' : 'info'"
+    size="lg"
+    [showHeaderClose]="true"
+    [showFooterClose]="false"
+    [showPrimaryButton]="true"
+    [showSecondaryButton]="true"
+    [primaryLabel]="vizModalMode === 'edit' ? 'Actualizar visualización' : 'Crear visualización'"
+    secondaryLabel="Cancelar"
+    [primaryDisabled]="vizModalSaving"
+    [primaryLoading]="vizModalSaving"
+    (secondaryRequested)="closeVizModal()"
+    (primaryRequested)="saveVizModal()"
+    (closeRequested)="closeVizModal()"
+  >
+    <div modal-body>
+      <app-swal-alert
+        *ngIf="vizModalError"
+        [message]="vizModalError"
+        type="danger"
+        (closed)="vizModalError = ''"
+      ></app-swal-alert>
+
+      <form [formGroup]="vizForm" novalidate>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <label class="form-label" for="viz-dataset">Dataset</label>
+            <app-select3
+              id="viz-dataset"
+              [options]="vizDatasetOptions()"
+              formControlName="dataset_id"
+              placeholder="Selecciona un dataset"
+            ></app-select3>
+          </div>
+
+          <div class="col-lg-6">
+            <label class="form-label" for="viz-type">Tipo de gráfica</label>
+            <app-select3
+              id="viz-type"
+              [options]="vizChartTypeOptions()"
+              formControlName="chart_type"
+              placeholder="Selecciona un tipo"
+            ></app-select3>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="viz-title">Título</label>
+            <input id="viz-title" class="form-control" type="text" formControlName="title">
+            <div class="invalid-feedback d-block" *ngIf="vizForm.controls.title.touched && vizForm.controls.title.invalid">
+              El título es obligatorio.
+            </div>
+          </div>
+
+          <div *ngIf="!isKpiType" class="col-lg-6">
+            <label class="form-label" for="viz-label">Columna etiqueta</label>
+            <app-select3
+              id="viz-label"
+              [options]="vizLabelColumnSelect3Options()"
+              formControlName="label_column"
+              placeholder="Selecciona..."
+            ></app-select3>
+          </div>
+
+          <div class="col-lg-6">
+            <label class="form-label" for="viz-value">Columna valor (opcional)</label>
+            <app-select3
+              id="viz-value"
+              [options]="vizValueColumnSelect3Options()"
+              formControlName="value_column"
+              placeholder="— Conteo —"
+            ></app-select3>
+          </div>
+
+          <div class="col-lg-6">
+            <label class="form-label" for="viz-agg">Agregación</label>
+            <app-select3
+              id="viz-agg"
+              [options]="vizAggregationOptions()"
+              formControlName="aggregation"
+              placeholder="Selecciona una agregación"
+            ></app-select3>
+          </div>
+
+          <div *ngIf="vizLabelColumnType === 'date'" class="col-lg-6">
+            <label class="form-label" for="viz-group">Agrupar por</label>
+            <app-select3
+              id="viz-group"
+              [options]="vizDateGroupingOptions()"
+              formControlName="date_grouping"
+              placeholder="Sin agrupar"
+            ></app-select3>
+          </div>
+        </div>
+      </form>
+    </div>
+  </app-modal-shell>
+</ng-container>

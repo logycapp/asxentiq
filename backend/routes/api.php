@@ -1,18 +1,23 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\PowerbiController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PublicPowerbiController;
+use App\Http\Controllers\Api\PublicTrainingController;
 use App\Http\Controllers\Api\QuestionController;
-use App\Http\Controllers\Api\TrainingCategoryController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\TestController;
-use App\Http\Controllers\Api\VideoIndexActionController;
+use App\Http\Controllers\Api\ThemeController;
+use App\Http\Controllers\Api\TrainingCategoryController;
 use App\Http\Controllers\Api\TrainingController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\VideoIndexActionController;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -28,7 +33,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/privacy-consent', [AuthController::class, 'acceptPrivacyConsent']);
-    Route::get('/time', function (): \Illuminate\Http\JsonResponse {
+    Route::get('/time', function (): JsonResponse {
         $serverNow = now(config('app.timezone'));
 
         return response()->json([
@@ -50,7 +55,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar/generate', [ProfileController::class, 'generateAvatar']);
-    Route::post('/theme', [\App\Http\Controllers\Api\ThemeController::class, 'update']);
+    Route::post('/theme', [ThemeController::class, 'update']);
     Route::get('/dashboard/trainings/stats', [TrainingController::class, 'dashboardStats']);
 
     Route::middleware('menu.access:/roles')->group(function (): void {
@@ -146,22 +151,39 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::middleware('menu.access:/powerbi')->group(function (): void {
-        Route::get('/powerbi/dashboard', [PowerbiController::class, 'dashboard']);
-        Route::post('/powerbi/preview', [PowerbiController::class, 'preview']);
-        Route::post('/powerbi/import', [PowerbiController::class, 'import']);
+        Route::get('/powerbi/transformers', [PowerbiController::class, 'transformers']);
+        Route::get('/powerbi/projects', [PowerbiController::class, 'index']);
+        Route::post('/powerbi/projects', [PowerbiController::class, 'store']);
+        Route::get('/powerbi/projects/{project}', [PowerbiController::class, 'show']);
+        Route::put('/powerbi/projects/{project}', [PowerbiController::class, 'update']);
+        Route::delete('/powerbi/projects/{project}', [PowerbiController::class, 'destroy']);
+        Route::post('/powerbi/projects/{project}/publish', [PowerbiController::class, 'publish']);
+        Route::post('/powerbi/projects/{project}/unpublish', [PowerbiController::class, 'unpublish']);
+        Route::post('/powerbi/projects/{project}/regenerate-token', [PowerbiController::class, 'regenerateToken']);
+        Route::post('/powerbi/projects/{project}/datasets/preview', [PowerbiController::class, 'previewDataset']);
+        Route::post('/powerbi/projects/{project}/datasets', [PowerbiController::class, 'importDataset']);
+        Route::get('/powerbi/projects/{project}/datasets', [PowerbiController::class, 'datasets']);
+        Route::delete('/powerbi/datasets/{dataset}', [PowerbiController::class, 'destroyDataset']);
+        Route::get('/powerbi/projects/{project}/visualizations', [PowerbiController::class, 'visualizations']);
+        Route::post('/powerbi/projects/{project}/visualizations', [PowerbiController::class, 'storeVisualization']);
+        Route::put('/powerbi/visualizations/{visualization}', [PowerbiController::class, 'updateVisualization']);
+        Route::delete('/powerbi/visualizations/{visualization}', [PowerbiController::class, 'destroyVisualization']);
+        Route::get('/powerbi/projects/{project}/dashboard', [PowerbiController::class, 'dashboard']);
     });
 
 });
 
+Route::get('/public/powerbi/{token}', [PublicPowerbiController::class, 'show']);
+
 // Public training routes (no auth:sanctum - uses participant token in Authorization header)
-Route::post('/public/trainings/login', [\App\Http\Controllers\Api\PublicTrainingController::class, 'login']);
+Route::post('/public/trainings/login', [PublicTrainingController::class, 'login']);
 Route::middleware('auth.participant')->group(function (): void {
-    Route::post('/public/trainings/privacy-consent', [\App\Http\Controllers\Api\PublicTrainingController::class, 'acceptPrivacyConsent']);
-    Route::get('/public/trainings/pending', [\App\Http\Controllers\Api\PublicTrainingController::class, 'pending']);
-    Route::get('/public/trainings/completed', [\App\Http\Controllers\Api\PublicTrainingController::class, 'completed']);
-    Route::post('/public/trainings/{training}/begin', [\App\Http\Controllers\Api\PublicTrainingController::class, 'begin']);
-    Route::get('/public/trainings/{training}/take', [\App\Http\Controllers\Api\PublicTrainingController::class, 'take']);
-    Route::post('/public/trainings/{training}/submit', [\App\Http\Controllers\Api\PublicTrainingController::class, 'submit']);
-    Route::get('/public/trainings/{training}/result', [\App\Http\Controllers\Api\PublicTrainingController::class, 'result']);
-    Route::get('/public/trainings/{training}/certificate', [\App\Http\Controllers\Api\CertificateController::class, 'download']);
+    Route::post('/public/trainings/privacy-consent', [PublicTrainingController::class, 'acceptPrivacyConsent']);
+    Route::get('/public/trainings/pending', [PublicTrainingController::class, 'pending']);
+    Route::get('/public/trainings/completed', [PublicTrainingController::class, 'completed']);
+    Route::post('/public/trainings/{training}/begin', [PublicTrainingController::class, 'begin']);
+    Route::get('/public/trainings/{training}/take', [PublicTrainingController::class, 'take']);
+    Route::post('/public/trainings/{training}/submit', [PublicTrainingController::class, 'submit']);
+    Route::get('/public/trainings/{training}/result', [PublicTrainingController::class, 'result']);
+    Route::get('/public/trainings/{training}/certificate', [CertificateController::class, 'download']);
 });

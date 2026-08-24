@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\MenuItem;
+use App\Models\Role;
 use App\Models\Training;
 use App\Models\TrainingCategory;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -159,7 +159,5 @@ class DatabaseSeeder extends Seeder
         Training::query()
             ->whereNull('training_category_id')
             ->update(['training_category_id' => $defaultTrainingCategory->id]);
-
-        $this->call(PowerbiDataSeeder::class);
     }
 }
