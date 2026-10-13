@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, OnInit, QueryList, ViewChildren, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { jsPDF } from 'jspdf';
 
@@ -15,7 +15,21 @@ const PUBLIC_FILTER_KEYS = [
   'fecha_siniestro',
   'municipio_ocurrencia_siniestro',
   'departamento_ocurrencia_siniestro',
-  'mecanismo'
+  'mecanismo',
+  'column_4',
+  'column_8',
+  'column_9',
+  'column_10',
+  'column_28',
+  'column_30',
+  'column_31',
+  'column_32',
+  'column_34',
+  'column_35',
+  'column_36',
+  'column_37',
+  'column_39',
+  'column_41'
 ];
 
 @Component({
@@ -89,9 +103,25 @@ const PUBLIC_FILTER_KEYS = [
               (click)="selectDataset(dataset.id)"
             >
               <span class="material-symbols-outlined">table_view</span>
-              <span>{{ dataset.source_file }}</span>
+              <span>{{ datasetLabel(dataset) }}</span>
               <span class="public-pbi-tab-badge">{{ dataset.row_count }}</span>
             </button>
+          </div>
+
+          <div class="row g-2 mb-4" *ngIf="activeKpis.length > 0">
+            <div *ngFor="let visualization of activeKpis; trackBy: trackByVizId" class="col-6 col-sm-4 col-lg-2">
+              <div class="public-pbi-card public-pbi-kpi-card">
+                <app-powerbi-chart
+                  [title]="visualization.title"
+                  [chartType]="visualization.chart_type"
+                  [points]="visualization.points"
+                  [kpi]="visualization.kpi"
+                  [compact]="true"
+                  [icon]="kpiIcon(visualization.title)"
+                  [iconColor]="kpiIconColor(visualization.title)"
+                ></app-powerbi-chart>
+              </div>
+            </div>
           </div>
 
           <div class="row g-4">
@@ -171,7 +201,7 @@ const PUBLIC_FILTER_KEYS = [
             <div class="col-12 col-lg-9">
               <div class="row g-3">
                 <div
-                  *ngFor="let visualization of activeVisualizations; trackBy: trackByVizId"
+                  *ngFor="let visualization of activeCharts; trackBy: trackByVizId"
                   class="col-12 col-xl-6"
                 >
                   <div class="public-pbi-card">
@@ -185,7 +215,7 @@ const PUBLIC_FILTER_KEYS = [
                 </div>
               </div>
 
-              <div *ngIf="activeVisualizations.length === 0" class="text-center py-5">
+              <div *ngIf="activeCharts.length === 0 && activeKpis.length === 0" class="text-center py-5">
                 <div class="public-pbi-muted">No hay visualizaciones para este dataset.</div>
               </div>
             </div>
@@ -418,6 +448,11 @@ const PUBLIC_FILTER_KEYS = [
       overflow: hidden;
     }
 
+    .public-pbi-kpi-card {
+      height: 5.25rem;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    }
+
     .public-pbi-filter-card {
       height: 100%;
       padding: 1.15rem;
@@ -550,6 +585,7 @@ export class PublicPowerbiComponent implements OnInit {
   private readonly powerbiService = inject(PowerbiService);
   private readonly loadingService = inject(LoadingService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   @ViewChildren(PowerbiChartComponent) chartComponents!: QueryList<PowerbiChartComponent>;
 
@@ -571,6 +607,45 @@ export class PublicPowerbiComponent implements OnInit {
     return dataset?.visualizations ?? [];
   }
 
+  get activeKpis() {
+    return this.activeVisualizations.filter((visualization) => visualization.chart_type === 'kpi');
+  }
+
+  get activeCharts() {
+    return this.activeVisualizations.filter((visualization) => visualization.chart_type !== 'kpi');
+  }
+
+  kpiIcon(title: string): string {
+    const value = title.toLocaleLowerCase();
+    if (value.includes('frecuencia')) return 'query_stats';
+    if (value.includes('mortal')) return 'emergency';
+    if (value.includes('prevalencia') || value.includes('incidencia')) return 'medical_services';
+    if (value.includes('ausentismo') || value.includes('ausencia')) return 'event_busy';
+    if (value.includes('grave')) return 'health_and_safety';
+    if (value.includes('municipio')) return 'location_city';
+    if (value.includes('antigüedad') || value.includes('antiguedad')) return 'speed';
+    if (value.includes('objetado')) return 'gavel';
+    if (value.includes('leve')) return 'ambulance';
+    if (value.includes('año')) return 'calendar_month';
+    return 'monitoring';
+  }
+
+  kpiIconColor(title: string): string {
+    const value = title.toLocaleLowerCase();
+    if (value.includes('frecuencia')) return '#2563eb';
+    if (value.includes('mortal')) return '#dc2626';
+    if (value.includes('prevalencia')) return '#0891b2';
+    if (value.includes('incidencia')) return '#7c3aed';
+    if (value.includes('ausentismo') || value.includes('ausencia')) return '#ea580c';
+    if (value.includes('grave')) return '#059669';
+    if (value.includes('municipio')) return '#7c3aed';
+    if (value.includes('antigüedad') || value.includes('antiguedad')) return '#0d9488';
+    if (value.includes('objetado')) return '#c026d3';
+    if (value.includes('leve')) return '#e11d48';
+    if (value.includes('año')) return '#4f46e5';
+    return '#2563eb';
+  }
+
   get filterOptions(): Array<{ key: string; option: PowerbiFilterOption }> {
     return PUBLIC_FILTER_KEYS
       .filter((key) => this.response?.filter_options?.[key])
@@ -585,6 +660,8 @@ export class PublicPowerbiComponent implements OnInit {
     this.lockLightTheme();
 
     const token = this.route.snapshot.paramMap.get('token') ?? '';
+    const requestedDatasetId = Number(this.route.snapshot.queryParamMap.get('dataset_id'));
+    this.activeDatasetId = Number.isInteger(requestedDatasetId) && requestedDatasetId > 0 ? requestedDatasetId : null;
 
     if (!token) {
       this.errorMessage = 'El enlace no es válido.';
@@ -619,7 +696,11 @@ export class PublicPowerbiComponent implements OnInit {
       .subscribe({
       next: (response) => {
         this.response = response;
-        this.activeDatasetId = this.activeDatasetId ?? response.datasets[0]?.id ?? null;
+        if (this.activeDatasetId === null && response.datasets.length > 0) {
+          this.activeDatasetId = response.datasets[response.datasets.length - 1].id;
+          this.loadPublic(token, false);
+          return;
+        }
         this.syncFilterModels();
       },
       error: (error) => {
@@ -632,6 +713,12 @@ export class PublicPowerbiComponent implements OnInit {
     this.activeDatasetId = datasetId;
     this.filters = {};
     this.filterModels = {};
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { dataset_id: datasetId },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
     const token = this.route.snapshot.paramMap.get('token') ?? '';
     this.loadPublic(token);
   }
@@ -743,6 +830,11 @@ export class PublicPowerbiComponent implements OnInit {
 
   trackByDatasetId(_: number, dataset: { id: number }): number {
     return dataset.id;
+  }
+
+  datasetLabel(dataset: PowerbiPublicDataset): string {
+    const latestDataset = this.response?.datasets[this.response.datasets.length - 1];
+    return dataset.id === latestDataset?.id ? this.response?.project.name ?? dataset.source_file : dataset.source_file;
   }
 
   trackByVizId(_: number, visualization: { id: number }): number {

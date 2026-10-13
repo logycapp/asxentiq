@@ -23,8 +23,9 @@ const TOOLTIP_TEXT = '#132238';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="pbi-chart">
+    <div class="pbi-chart" [class.pbi-chart-compact]="compact">
       <div class="pbi-chart-header">
+        <span *ngIf="compact && chartType === 'kpi'" class="material-symbols-outlined pbi-chart-kpi-icon" [style.color]="iconColor">{{ icon }}</span>
         <h3 class="pbi-chart-title">{{ title }}</h3>
       </div>
 
@@ -95,6 +96,39 @@ const TOOLTIP_TEXT = '#132238';
       color: #0457bf;
     }
 
+    .pbi-chart-compact .pbi-chart-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.35rem;
+      padding: 0.3rem 0.45rem 0;
+    }
+
+    .pbi-chart-kpi-icon {
+      flex: 0 0 auto;
+      font-size: 2.8rem;
+      line-height: 1;
+      padding: 0.12rem;
+      border-radius: 0.5rem;
+      background: rgba(37, 99, 235, 0.07);
+    }
+
+    .pbi-chart-compact .pbi-chart-title {
+      flex: 1 1 auto;
+      font-size: 0.68rem;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .pbi-chart-compact .pbi-chart-kpi {
+      flex: 1 1 0;
+      min-height: 0;
+      padding: 0 0.25rem 0.15rem;
+    }
+
+    .pbi-chart-compact .pbi-chart-kpi-value {
+      font-size: 1.25rem;
+    }
+
     .pbi-chart-table-wrap {
       flex: 1 1 auto;
       overflow: auto;
@@ -137,6 +171,9 @@ export class PowerbiChartComponent implements AfterViewInit, OnChanges, OnDestro
   @Input() chartType: string = 'bar';
   @Input() points: PowerbiChartPoint[] = [];
   @Input() kpi: number | null = null;
+  @Input() compact = false;
+  @Input() icon = 'monitoring';
+  @Input() iconColor = '#2563eb';
 
   readonly containerId = `pbi-chart-${Math.random().toString(36).slice(2, 10)}`;
   private chartInstance: echarts.ECharts | null = null;
