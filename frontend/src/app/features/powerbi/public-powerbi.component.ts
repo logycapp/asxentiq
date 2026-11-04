@@ -6,7 +6,7 @@ import { finalize } from 'rxjs';
 import { jsPDF } from 'jspdf';
 
 import { LoadingService } from '../../core/services/loading.service';
-import { PowerbiFilterOption, PowerbiFilters, PowerbiPublicDataset, PowerbiPublicResponse, PowerbiService } from '../../core/services/powerbi.service';
+import { PowerbiChartPoint, PowerbiFilterOption, PowerbiFilters, PowerbiPublicDataset, PowerbiPublicResponse, PowerbiService } from '../../core/services/powerbi.service';
 import { PowerbiChartComponent } from './powerbi-chart.component';
 import { Select3Component, Select3Option } from '../../shared/select3.component';
 
@@ -94,6 +94,76 @@ const PUBLIC_FILTER_KEYS = [
           <div *ngIf="response.datasets.length === 0" class="text-center py-5">
             <div class="public-pbi-muted">Este panel aún no tiene datos publicados.</div>
           </div>
+
+          <section *ngIf="response.sst_indicators as sst" class="mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mb-3">
+              <div>
+                <h2 class="h5 fw-bold mb-1">Indicadores SG-SST</h2>
+                <p class="public-pbi-muted small mb-0">Datos mensuales derivados de Trabajadores y Accidentalidad.</p>
+              </div>
+              <span class="badge rounded-pill text-bg-warning">Valores estimados</span>
+            </div>
+            <div *ngIf="sst.medical_absenteeism as medical" class="public-pbi-card sst-medical-card mb-3">
+              <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 p-3 p-md-4">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="material-symbols-outlined text-info" style="font-size: 2.5rem;">medical_services</span>
+                  <div><h3 class="h6 fw-bold mb-1">Ausentismo por causa médica</h3><div class="public-pbi-muted small">Días de ausencia por incapacidad ÷ días programados</div></div>
+                </div>
+                <div class="text-md-end">
+                  <div class="sst-medical-value">{{ medical.percentage | number:'1.2-2' }}%</div>
+                  <div class="public-pbi-muted small mt-1">{{ medical.absence_days | number:'1.0-0' }} días / {{ medical.scheduled_days_estimated | number:'1.0-0' }} días programados</div>
+                </div>
+              </div>
+              <div class="public-pbi-muted small px-3 px-md-4 pb-3">{{ sst.notes['medical_absenteeism'] }}</div>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-xl-6"><div class="public-pbi-card sst-monthly-chart">
+                <h3 class="sst-chart-title">Trabajadores por mes</h3>
+                <div *ngFor="let item of sst.monthly" class="sst-bar-row">
+                  <span class="sst-bar-month">{{ item.month }}</span><div class="sst-bar-track"><div class="sst-bar-fill" [style.width.%]="sstMaxWorkers ? item.workers / sstMaxWorkers * 100 : 0"></div></div>
+                  <span class="sst-bar-value">{{ item.workers | number:'1.0-0' }}</span>
+                </div>
+              </div></div>
+              <div class="col-12 col-xl-6"><div class="public-pbi-card sst-monthly-chart">
+                <h3 class="sst-chart-title">Días de trabajo programados por mes (estimado)</h3>
+                <div *ngFor="let item of sst.monthly" class="sst-bar-row">
+                  <span class="sst-bar-month">{{ item.month }}</span><div class="sst-bar-track"><div class="sst-bar-fill days" [style.width.%]="sstMaxScheduledDays ? item.scheduled_days_estimated / sstMaxScheduledDays * 100 : 0"></div></div>
+                  <span class="sst-bar-value">{{ item.scheduled_days_estimated | number:'1.0-0' }}</span>
+                </div>
+              </div></div>
+              <div class="col-12 col-xl-6"><div class="public-pbi-card sst-monthly-chart">
+                <h3 class="sst-chart-title">Días de incapacidad registrados por mes</h3>
+                <div *ngFor="let item of sst.monthly" class="sst-bar-row">
+                  <span class="sst-bar-month">{{ item.month }}</span><div class="sst-bar-track"><div class="sst-bar-fill incapacity" [style.width.%]="sstMaxIncapacityDays ? item.incapacity_days_recorded / sstMaxIncapacityDays * 100 : 0"></div></div>
+                  <span class="sst-bar-value">{{ item.incapacity_days_recorded | number:'1.0-0' }}</span>
+                </div>
+              </div></div>
+              <div class="col-12 col-xl-6"><div class="public-pbi-card">
+                <ng-container *ngIf="sst.fatal_accidents_identified; else publicFatalNotClassified">
+                  <app-powerbi-chart title="Accidentes mortales por mes" chartType="bar" [points]="sstFatalPoints" [kpi]="null"></app-powerbi-chart>
+                </ng-container>
+                <ng-template #publicFatalNotClassified>
+                  <div class="p-4"><h3 class="h6 fw-bold">Accidentes mortales</h3><p class="public-pbi-muted mb-0">{{ sst.notes['fatal_accidents'] }}</p></div>
+                </ng-template>
+              </div></div>
+            </div>
+            <div class="public-pbi-card p-3 mt-3">
+              <h3 class="h6 fw-bold">Detalle mensual</h3>
+              <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                  <thead><tr><th>Mes</th><th class="text-end">Trabajadores</th><th class="text-end">Días programados*</th><th class="text-end">Accidentes</th><th class="text-end">Días incapacidad</th><th class="text-end">Días ausencia médica</th><th class="text-end">Ausentismo médico</th><th class="text-end">Mortales</th></tr></thead>
+                  <tbody><tr *ngFor="let item of sst.monthly">
+                    <td>{{ item.month }}</td><td class="text-end">{{ item.workers }}</td>
+                    <td class="text-end">{{ item.scheduled_days_estimated | number:'1.0-0' }}</td>
+                    <td class="text-end">{{ item.accidents }}</td><td class="text-end">{{ item.incapacity_days_recorded | number:'1.0-0' }}</td>
+                    <td class="text-end">{{ item.medical_absence_days | number:'1.0-0' }}</td><td class="text-end">{{ item.medical_absenteeism_percentage | number:'1.2-2' }}%</td>
+                    <td class="text-end">{{ item.fatal_accidents }}</td>
+                  </tr></tbody>
+                </table>
+              </div>
+            </div>
+            <p class="public-pbi-muted small mt-2 mb-0">{{ sst.notes['workers'] }} {{ sst.notes['scheduled_days'] }} {{ sst.notes['incapacity_days'] }}</p>
+          </section>
 
           <div *ngIf="response.datasets.length > 1" class="public-pbi-tabs mb-4">
             <button
@@ -448,6 +518,18 @@ const PUBLIC_FILTER_KEYS = [
       overflow: hidden;
     }
 
+    .sst-monthly-chart { padding: 1rem 1.25rem 1.25rem; }
+    .sst-chart-title { margin: 0 0 1rem; font-size: 0.95rem; font-weight: 800; color: #132238; }
+    .sst-bar-row { display: grid; grid-template-columns: 4.5rem minmax(4rem, 1fr) 4rem; align-items: center; gap: 0.65rem; margin-bottom: 0.6rem; font-size: 0.78rem; }
+    .sst-bar-month { color: #64748b; }
+    .sst-bar-value { color: #132238; text-align: right; font-weight: 700; }
+    .sst-bar-track { height: 0.7rem; background: #e9eff8; border-radius: 999px; overflow: hidden; }
+    .sst-bar-fill { height: 100%; min-width: 2px; border-radius: inherit; background: #2563eb; }
+    .sst-bar-fill.days { background: #06b6d4; }
+    .sst-bar-fill.incapacity { background: #f97316; }
+    .sst-medical-card { border: 1px solid rgba(14, 165, 233, 0.18); background: linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(236, 254, 255, 0.94)); }
+    .sst-medical-value { color: #075985; font-size: 2rem; line-height: 1; font-weight: 800; }
+
     .public-pbi-kpi-card {
       height: 5.25rem;
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
@@ -613,6 +695,34 @@ export class PublicPowerbiComponent implements OnInit {
 
   get activeCharts() {
     return this.activeVisualizations.filter((visualization) => visualization.chart_type !== 'kpi');
+  }
+
+  get sstWorkersPoints(): PowerbiChartPoint[] {
+    return this.response?.sst_indicators?.monthly.map((item) => ({ label: item.month, value: item.workers })) ?? [];
+  }
+
+  get sstScheduledDaysPoints(): PowerbiChartPoint[] {
+    return this.response?.sst_indicators?.monthly.map((item) => ({ label: item.month, value: item.scheduled_days_estimated })) ?? [];
+  }
+
+  get sstIncapacityPoints(): PowerbiChartPoint[] {
+    return this.response?.sst_indicators?.monthly.map((item) => ({ label: item.month, value: item.incapacity_days_recorded })) ?? [];
+  }
+
+  get sstFatalPoints(): PowerbiChartPoint[] {
+    return this.response?.sst_indicators?.fatal_accidents_by_month ?? [];
+  }
+
+  get sstMaxWorkers(): number {
+    return Math.max(0, ...(this.response?.sst_indicators?.monthly.map((item) => item.workers) ?? []));
+  }
+
+  get sstMaxScheduledDays(): number {
+    return Math.max(0, ...(this.response?.sst_indicators?.monthly.map((item) => item.scheduled_days_estimated) ?? []));
+  }
+
+  get sstMaxIncapacityDays(): number {
+    return Math.max(0, ...(this.response?.sst_indicators?.monthly.map((item) => item.incapacity_days_recorded) ?? []));
   }
 
   kpiIcon(title: string): string {

@@ -54,17 +54,17 @@
   <!-- ===== DATOS ===== -->
   <div *ngIf="activeTab === 'datos'" class="mb-4">
     <div class="card glass-card border-0 rounded-4 p-4 mb-4">
-      <h3 class="h6 fw-bold text-on-surface mb-3">Subir archivo CSV</h3>
+      <h3 class="h6 fw-bold text-on-surface mb-3">Subir archivo CSV o Excel</h3>
       <app-swal-alert *ngIf="uploadError" [message]="uploadError" type="danger" (closed)="uploadError = ''"></app-swal-alert>
 
       <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
-        <label class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold mb-0" for="powerbi-csv-file">
+        <label class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold mb-0" for="powerbi-data-file">
           <span class="material-symbols-outlined text-[18px]">upload_file</span>
-          Seleccionar CSV
+          Seleccionar archivo
         </label>
-        <input id="powerbi-csv-file" class="d-none" type="file" accept=".csv,.txt,text/csv,text/plain" (change)="onFileSelected($event)">
+        <input id="powerbi-data-file" class="d-none" type="file" accept=".csv,.txt,.xlsx,.xls,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" (change)="onFileSelected($event)">
         <span class="text-on-surface-variant font-body-md">
-          Un archivo CSV = un dataset. Máximo 20 MB.
+          CSV, XLSX o XLS. Cada pestaña del Excel se importará como un dataset. Máximo 20 MB.
         </span>
       </div>
 
@@ -152,6 +152,114 @@
         Nueva visualización
       </button>
     </div>
+
+    <section *ngIf="dashboard?.sst_indicators as sst" class="mb-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mb-3">
+        <div>
+          <h2 class="h5 fw-bold text-on-surface mb-1">Indicadores SG-SST</h2>
+          <p class="text-on-surface-variant small mb-0">Cálculos derivados de las pestañas Trabajadores y Accidentalidad.</p>
+        </div>
+        <span class="badge rounded-pill text-bg-warning">Trabajadores y días programados estimados</span>
+      </div>
+
+      <div *ngIf="sst.medical_absenteeism as medical" class="card glass-card sst-medical-card border-0 rounded-4 p-3 p-md-4 mb-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <span class="material-symbols-outlined text-info" style="font-size: 2.5rem;">medical_services</span>
+            <div>
+              <h3 class="h6 fw-bold text-on-surface mb-1">Ausentismo por causa médica</h3>
+              <div class="text-on-surface-variant small">Días de ausencia por incapacidad ÷ días programados</div>
+            </div>
+          </div>
+          <div class="text-md-end">
+            <div class="sst-medical-value">{{ medical.percentage | number:'1.2-2' }}%</div>
+            <div class="text-on-surface-variant small mt-1">
+              {{ medical.absence_days | number:'1.0-0' }} días / {{ medical.scheduled_days_estimated | number:'1.0-0' }} días programados
+            </div>
+          </div>
+        </div>
+        <div class="text-on-surface-variant small mt-2">{{ sst.notes['medical_absenteeism'] }}</div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-xl-6">
+          <div class="powerbi-viz-card h-100 sst-monthly-chart">
+            <h3 class="sst-chart-title">Trabajadores por mes</h3>
+            <div *ngFor="let item of sst.monthly" class="sst-bar-row">
+              <span class="sst-bar-month">{{ item.month }}</span>
+              <div class="sst-bar-track"><div class="sst-bar-fill" [style.width.%]="sstMaxWorkers ? item.workers / sstMaxWorkers * 100 : 0"></div></div>
+              <span class="sst-bar-value">{{ item.workers | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-6">
+          <div class="powerbi-viz-card h-100 sst-monthly-chart">
+            <h3 class="sst-chart-title">Días de trabajo programados por mes (estimado)</h3>
+            <div *ngFor="let item of sst.monthly" class="sst-bar-row">
+              <span class="sst-bar-month">{{ item.month }}</span>
+              <div class="sst-bar-track"><div class="sst-bar-fill days" [style.width.%]="sstMaxScheduledDays ? item.scheduled_days_estimated / sstMaxScheduledDays * 100 : 0"></div></div>
+              <span class="sst-bar-value">{{ item.scheduled_days_estimated | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-6">
+          <div class="powerbi-viz-card h-100 sst-monthly-chart">
+            <h3 class="sst-chart-title">Días de incapacidad registrados por mes</h3>
+            <div *ngFor="let item of sst.monthly" class="sst-bar-row">
+              <span class="sst-bar-month">{{ item.month }}</span>
+              <div class="sst-bar-track"><div class="sst-bar-fill incapacity" [style.width.%]="sstMaxIncapacityDays ? item.incapacity_days_recorded / sstMaxIncapacityDays * 100 : 0"></div></div>
+              <span class="sst-bar-value">{{ item.incapacity_days_recorded | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-6">
+          <div class="powerbi-viz-card h-100">
+            <ng-container *ngIf="sst.fatal_accidents_identified; else fatalNotClassified">
+              <app-powerbi-chart
+                title="Accidentes mortales por mes"
+                chartType="bar"
+                [points]="sstFatalPoints"
+                [kpi]="null"
+              ></app-powerbi-chart>
+            </ng-container>
+            <ng-template #fatalNotClassified>
+              <div class="p-4">
+                <h3 class="h6 fw-bold text-on-surface">Accidentes mortales</h3>
+                <p class="text-on-surface-variant mb-0">{{ sst.notes['fatal_accidents'] }}</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass-card border-0 rounded-4 p-3 mb-3">
+        <h3 class="h6 fw-bold text-on-surface">Detalle mensual</h3>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0 dashboard-table">
+            <thead><tr>
+              <th>Mes</th><th class="text-end">Trabajadores</th><th class="text-end">Días programados*</th>
+              <th class="text-end">Accidentes</th><th class="text-end">Días incapacidad</th><th class="text-end">Días ausencia médica</th><th class="text-end">Ausentismo médico</th><th class="text-end">Mortales</th>
+            </tr></thead>
+            <tbody>
+              <tr *ngFor="let item of sst.monthly">
+                <td>{{ item.month }}</td><td class="text-end">{{ item.workers }}</td>
+                <td class="text-end">{{ item.scheduled_days_estimated | number:'1.0-0' }}</td>
+                <td class="text-end">{{ item.accidents }}</td>
+                <td class="text-end">{{ item.incapacity_days_recorded | number:'1.0-0' }}</td>
+                <td class="text-end">{{ item.medical_absence_days | number:'1.0-0' }}</td>
+                <td class="text-end">{{ item.medical_absenteeism_percentage | number:'1.2-2' }}%</td>
+                <td class="text-end">{{ item.fatal_accidents }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="small text-on-surface-variant">
+        * {{ sst.notes['workers'] }} {{ sst.notes['scheduled_days'] }}
+        {{ sst.notes['incapacity_days'] }}
+      </div>
+    </section>
 
     <div class="row g-4">
       <div *ngIf="dashboard?.dataset" class="col-12 col-lg-3">
@@ -350,12 +458,12 @@
     </div>
   </div>
 
-  <!-- ===== MODAL: preview CSV ===== -->
+  <!-- ===== MODAL: preview CSV / Excel ===== -->
   <app-modal-shell
     *ngIf="preview"
     kicker="Importación"
-    title="Vista previa del CSV"
-    subtitle="Revisa las columnas detectadas y confirma la importación."
+    [title]="preview.format === 'excel' ? 'Vista previa del Excel' : 'Vista previa del CSV'"
+    subtitle="Revisa las pestañas y columnas detectadas antes de confirmar la importación."
     headerVariant="info"
     footerVariant="info"
     size="lg"
@@ -363,7 +471,7 @@
     [showFooterClose]="false"
     [showPrimaryButton]="true"
     [showSecondaryButton]="true"
-    primaryLabel="Importar dataset"
+    [primaryLabel]="preview.format === 'excel' ? 'Importar pestañas' : 'Importar dataset'"
     secondaryLabel="Cancelar"
     [primaryDisabled]="importing"
     [primaryLoading]="importing"
@@ -377,22 +485,39 @@
           <span class="font-label-sm text-on-surface-variant text-uppercase">Archivo</span>
           <div class="text-on-surface fw-semibold">{{ preview.file.original_name }}</div>
         </div>
-        <div>
+        <div *ngIf="preview.format !== 'excel'">
           <span class="font-label-sm text-on-surface-variant text-uppercase">Delimitador</span>
           <div class="text-on-surface fw-semibold">{{ preview.delimiter === '\t' ? 'Tabulación' : preview.delimiter }}</div>
         </div>
-        <div>
+        <div *ngIf="preview.format !== 'excel'">
           <span class="font-label-sm text-on-surface-variant text-uppercase">Codificación</span>
           <div class="text-on-surface fw-semibold">{{ preview.encoding }}</div>
         </div>
         <div>
-          <span class="font-label-sm text-on-surface-variant text-uppercase">Filas</span>
+          <span class="font-label-sm text-on-surface-variant text-uppercase">{{ preview.format === 'excel' ? 'Total filas' : 'Filas' }}</span>
           <div class="text-on-surface fw-semibold">{{ preview.row_count }}</div>
         </div>
       </div>
 
+      <div *ngIf="(preview.sheets?.length ?? 0) > 1" class="d-flex flex-wrap gap-2 mb-3">
+        <button
+          *ngFor="let sheet of preview.sheets; let i = index"
+          type="button"
+          class="btn btn-sm"
+          [class.btn-primary]="previewSheetIndex === i"
+          [class.btn-outline-primary]="previewSheetIndex !== i"
+          (click)="selectPreviewSheet(i)"
+        >
+          {{ sheet.name }} <span class="badge rounded-pill text-bg-light ms-1">{{ sheet.row_count }}</span>
+        </button>
+      </div>
+
+      <div *ngIf="activePreviewSheet" class="mb-2 text-on-surface fw-semibold">
+        {{ activePreviewSheet.name || 'Dataset' }} · {{ activePreviewRowCount }} filas · {{ activePreviewColumns.length }} columnas
+      </div>
+
       <div class="d-flex flex-wrap gap-1 mb-3">
-        <span *ngFor="let column of preview.columns" class="powerbi-column-chip">
+        <span *ngFor="let column of activePreviewColumns" class="powerbi-column-chip">
           <span class="material-symbols-outlined">
             {{ column.type === 'date' ? 'calendar_month' : (column.type === 'numeric' ? 'pin' : 'text_fields') }}
           </span>
@@ -405,15 +530,15 @@
           <thead>
             <tr class="border-bottom border-white/10">
               <th class="py-2 font-label-sm text-on-surface-variant text-uppercase">#</th>
-              <th *ngFor="let column of preview.columns" class="py-2 font-label-sm text-on-surface-variant text-uppercase">
+              <th *ngFor="let column of activePreviewColumns" class="py-2 font-label-sm text-on-surface-variant text-uppercase">
                 {{ column.label }}
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of preview.preview_rows; let i = index">
+            <tr *ngFor="let row of activePreviewRows; let i = index">
               <td class="py-2 font-mono text-on-surface-variant">{{ i + 1 }}</td>
-              <td *ngFor="let column of preview.columns" class="py-2 text-on-surface">{{ row[column.key] ?? '—' }}</td>
+              <td *ngFor="let column of activePreviewColumns" class="py-2 text-on-surface">{{ row[column.key] ?? '—' }}</td>
             </tr>
           </tbody>
         </table>

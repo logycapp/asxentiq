@@ -5,6 +5,9 @@ import { guestGuard } from './core/guards/guest.guard';
 import { LoginComponent } from './features/auth/login.component';
 import { AdminPanelComponent } from './features/admin/admin-panel.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { TalentHumanComponent } from './features/talent-human/talent-human.component';
+import { SstComponent } from './features/sst/sst.component';
+import { SarlaftComponent } from './features/sarlaft/sarlaft.component';
 import { LandingComponent } from './features/landing/landing.component';
 import { LayoutComponent } from './features/layout/layout.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
@@ -61,6 +64,9 @@ export const appRoutes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', component: DashboardComponent, data: { pageTitle: 'Dashboard' } },
+      { path: 'talento-humano', component: TalentHumanComponent, data: { pageTitle: 'Talento humano' } },
+      { path: 'sst', component: SstComponent, data: { pageTitle: 'SST' } },
+      { path: 'sarlaft', component: SarlaftComponent, data: { pageTitle: 'SARLAFT' } },
       { path: 'admin', component: AdminPanelComponent, data: { pageTitle: 'Administracion' } },
       { path: 'profile', component: ProfileComponent, data: { pageTitle: 'Perfil' } },
       { path: 'powerbi', component: PowerbiProjectListComponent, data: { pageTitle: 'Power BI' } },

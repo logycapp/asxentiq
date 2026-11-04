@@ -99,7 +99,7 @@ class PowerbiController extends Controller
     public function previewDataset(Request $request, PowerbiProject $project): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:'.config('powerbi.max_file_size_kb', 20480)],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:'.config('powerbi.max_file_size_kb', 20480)],
         ]);
 
         $file = $request->file('file');
@@ -113,15 +113,16 @@ class PowerbiController extends Controller
         try {
             $preview = $this->projectService->previewDataset($file);
         } catch (Throwable $throwable) {
-            $message = $throwable->getMessage() ?: 'No fue posible procesar el archivo CSV.';
+            $message = $throwable->getMessage() ?: 'No fue posible procesar el archivo enviado.';
 
             return response()->json([
-                'message' => $message,
+            'message' => $message,
             ], 422);
         }
 
         return response()->json([
-            'message' => 'Archivo CSV procesado correctamente.',
+            'message' => $preview['format'] === 'excel' ? 'Libro de Excel procesado correctamente.' : 'Archivo CSV procesado correctamente.',
+            'format' => $preview['format'],
             'file' => [
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
@@ -132,13 +133,14 @@ class PowerbiController extends Controller
             'columns' => $preview['columns'],
             'row_count' => $preview['row_count'],
             'preview_rows' => $preview['preview_rows'],
+            'sheets' => $preview['sheets'],
         ]);
     }
 
     public function importDataset(Request $request, PowerbiProject $project): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:'.config('powerbi.max_file_size_kb', 20480)],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:'.config('powerbi.max_file_size_kb', 20480)],
         ]);
 
         $file = $request->file('file');
@@ -152,7 +154,7 @@ class PowerbiController extends Controller
         try {
             $result = $this->projectService->importDataset($project, $file);
         } catch (Throwable $throwable) {
-            $message = $throwable->getMessage() ?: 'No fue posible guardar la información del CSV.';
+            $message = $throwable->getMessage() ?: 'No fue posible guardar la información del archivo.';
 
             return response()->json([
                 'message' => $message,
@@ -160,10 +162,13 @@ class PowerbiController extends Controller
         }
 
         return response()->json([
-            'message' => 'Datos del CSV importados correctamente.',
+            'message' => count($result['datasets']) > 1
+                ? 'Libro importado correctamente: se crearon '.count($result['datasets']).' datasets.'
+                : 'Datos importados correctamente.',
             'rows_inserted' => $result['rows_inserted'],
             'source_file' => $result['source_file'],
             'dataset' => $result['dataset'],
+            'datasets' => $result['datasets'],
             'columns' => $result['columns'],
             'preview_rows' => $result['preview_rows'],
             'delimiter' => $result['delimiter'],

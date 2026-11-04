@@ -10,6 +10,8 @@ use App\Models\PowerbiVisualization;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use RuntimeException;
 
 class PowerbiProjectService
@@ -111,7 +113,24 @@ class PowerbiProjectService
      */
     public function previewDataset(UploadedFile $file): array
     {
-        return $this->csvService->parse($this->readFile($file));
+        $sheets = $this->parseUpload($file);
+        $first = $sheets[0]['parsed'];
+
+        return [
+            'format' => in_array(strtolower($file->getClientOriginalExtension()), ['xlsx', 'xls'], true) ? 'excel' : 'csv',
+            'columns' => $first['columns'],
+            'rows' => [],
+            'row_count' => array_sum(array_map(fn (array $sheet): int => $sheet['parsed']['row_count'], $sheets)),
+            'preview_rows' => $first['preview_rows'],
+            'delimiter' => $first['delimiter'],
+            'encoding' => $first['encoding'],
+            'sheets' => array_map(fn (array $sheet): array => [
+                'name' => $sheet['name'],
+                'columns' => $sheet['parsed']['columns'],
+                'row_count' => $sheet['parsed']['row_count'],
+                'preview_rows' => $sheet['parsed']['preview_rows'],
+            ], $sheets),
+        ];
     }
 
     /**
@@ -127,59 +146,150 @@ class PowerbiProjectService
      */
     public function importDataset(PowerbiProject $project, UploadedFile $file): array
     {
-        $parsed = $this->csvService->parse($this->readFile($file));
-        $columns = $parsed['columns'];
-        $rows = $parsed['rows'];
-
+        $sheets = $this->parseUpload($file);
         $transformer = $this->resolveTransformer($project->handler);
-
-        if ($transformer !== null) {
-            $columns = $transformer->transformColumns($columns);
-            $rows = array_map(fn (array $row): array => $transformer->transformRow($row), $rows);
-        }
-
-        $dataset = null;
+        $isWorkbook = in_array(strtolower($file->getClientOriginalExtension()), ['xlsx', 'xls'], true);
+        $datasets = [];
         $inserted = 0;
 
-        DB::transaction(function () use ($project, $file, $columns, $rows, $parsed, &$dataset, &$inserted): void {
-            $dataset = PowerbiDataset::query()->create([
-                'project_id' => $project->id,
-                'source_file' => $file->getClientOriginalName(),
-                'row_count' => count($rows),
-                'columns' => $columns,
-                'delimiter' => $parsed['delimiter'],
-                'encoding' => $parsed['encoding'],
-                'imported_at' => now(),
-            ]);
+        DB::transaction(function () use ($project, $file, $sheets, $transformer, $isWorkbook, &$datasets, &$inserted): void {
+            foreach ($sheets as $sheet) {
+                $parsed = $sheet['parsed'];
+                $columns = $parsed['columns'];
+                $rows = $parsed['rows'];
 
-            $inserts = [];
+                if ($transformer !== null) {
+                    $columns = $transformer->transformColumns($columns);
+                    $rows = array_map(fn (array $row): array => $transformer->transformRow($row), $rows);
+                }
 
-            foreach ($rows as $index => $row) {
-                $inserts[] = [
-                    'dataset_id' => $dataset->id,
-                    'source_row_number' => $index + 2,
-                    'data' => json_encode($row),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                $dataset = PowerbiDataset::query()->create([
+                    'project_id' => $project->id,
+                    'source_file' => $isWorkbook
+                        ? $file->getClientOriginalName().' — '.$sheet['name']
+                        : $file->getClientOriginalName(),
+                    'row_count' => count($rows),
+                    'columns' => $columns,
+                    'delimiter' => $parsed['delimiter'],
+                    'encoding' => $parsed['encoding'],
+                    'imported_at' => now(),
+                ]);
+
+                $inserts = [];
+
+                foreach ($rows as $index => $row) {
+                    $inserts[] = [
+                        'dataset_id' => $dataset->id,
+                        'source_row_number' => $index + 2,
+                        'data' => json_encode($row),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+
+                foreach (array_chunk($inserts, 500) as $chunk) {
+                    PowerbiRow::query()->insert($chunk);
+                }
+
+                $inserted += count($inserts);
+                $datasets[] = $dataset;
             }
-
-            foreach (array_chunk($inserts, 500) as $chunk) {
-                PowerbiRow::query()->insert($chunk);
-            }
-
-            $inserted = count($inserts);
         });
 
+        $firstParsed = $sheets[0]['parsed'];
+
         return [
-            'dataset' => $dataset,
+            'dataset' => $datasets[0],
+            'datasets' => $datasets,
             'rows_inserted' => $inserted,
             'source_file' => $file->getClientOriginalName(),
-            'columns' => $columns,
-            'preview_rows' => $parsed['preview_rows'],
-            'delimiter' => $parsed['delimiter'],
-            'encoding' => $parsed['encoding'],
+            'columns' => $firstParsed['columns'],
+            'preview_rows' => $firstParsed['preview_rows'],
+            'delimiter' => $firstParsed['delimiter'],
+            'encoding' => $firstParsed['encoding'],
         ];
+    }
+
+    /**
+     * @return array<int, array{name: string|null, parsed: array<string, mixed>}>
+     */
+    private function parseUpload(UploadedFile $file): array
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        if (! in_array($extension, ['xlsx', 'xls'], true)) {
+            return [[
+                'name' => null,
+                'parsed' => $this->csvService->parse($this->readFile($file)),
+            ]];
+        }
+
+        $spreadsheet = IOFactory::load($file->getRealPath());
+        $parsedSheets = [];
+
+        foreach ($spreadsheet->getWorksheetIterator() as $worksheet) {
+            $csv = $this->worksheetAsCsv($worksheet);
+
+            if ($csv !== '') {
+                $parsedSheets[] = [
+                    'name' => $worksheet->getTitle(),
+                    'parsed' => $this->csvService->parse($csv),
+                ];
+            }
+        }
+
+        $spreadsheet->disconnectWorksheets();
+
+        if ($parsedSheets === []) {
+            throw new RuntimeException('El libro de Excel no contiene pestañas con datos utilizables.');
+        }
+
+        return $parsedSheets;
+    }
+
+    private function worksheetAsCsv(Worksheet $worksheet): string
+    {
+        $stream = fopen('php://temp', 'r+');
+        $headerFound = false;
+        $hasData = false;
+
+        foreach ($worksheet->toArray(null, true, true, false) as $row) {
+            $values = array_map(static function (mixed $value): string|int|float|bool {
+                if ($value instanceof \DateTimeInterface) {
+                    return $value->format('Y-m-d H:i:s');
+                }
+
+                if (is_scalar($value) || $value === null) {
+                    return $value ?? '';
+                }
+
+                return (string) $value;
+            }, $row);
+
+            while ($values !== [] && trim((string) $values[count($values) - 1]) === '') {
+                array_pop($values);
+            }
+
+            if ($values === []) {
+                continue;
+            }
+
+            if (count(array_filter($values, fn (mixed $value): bool => trim((string) $value) !== '')) === 0) {
+                continue;
+            }
+
+            if ($headerFound) {
+                $hasData = true;
+            }
+            $headerFound = true;
+            fputcsv($stream, $values);
+        }
+
+        rewind($stream);
+        $csv = stream_get_contents($stream) ?: '';
+        fclose($stream);
+
+        return $hasData ? $csv : '';
     }
 
     /**
@@ -251,6 +361,7 @@ class PowerbiProjectService
                 'datasets' => [],
                 'dataset' => null,
                 'visualizations' => [],
+                'sst_indicators' => null,
                 'filter_options' => [],
                 'row_count' => 0,
             ];
@@ -300,6 +411,7 @@ class PowerbiProjectService
                 'columns' => $columns,
             ],
             'visualizations' => $visualizationResults->values()->all(),
+            'sst_indicators' => $this->sstIndicators($datasets),
             'filter_options' => $this->analytics->filterOptions($columns, $filteredRows),
             'row_count' => count($filteredRows),
         ];
@@ -383,7 +495,222 @@ class PowerbiProjectService
                 ? $this->analytics->filterOptions($activeDataset->columns ?? [], $activeFilteredRows)
                 : [],
             'row_count' => count($activeFilteredRows),
+            'sst_indicators' => $this->sstIndicators($datasets),
             'datasets' => $datasetResults->values()->all(),
+        ];
+    }
+
+    /**
+     * Calcula indicadores específicos del libro Datos ASA a partir de sus
+     * pestañas importadas como datasets independientes.
+     *
+     * @param  Collection<int, PowerbiDataset>  $datasets
+     * @return array<string, mixed>|null
+     */
+    private function sstIndicators(Collection $datasets): ?array
+    {
+        $datasetForSheet = static function (string $sheet) use ($datasets): ?PowerbiDataset {
+            return $datasets->first(fn (PowerbiDataset $dataset): bool =>
+                str_contains(mb_strtolower($dataset->source_file), '— '.mb_strtolower($sheet))
+                || str_ends_with(mb_strtolower($dataset->source_file), mb_strtolower($sheet))
+            );
+        };
+
+        $workersDataset = $datasetForSheet('Trabajadores');
+        $accidentsDataset = $datasetForSheet('Accidentalidad');
+        $absenceDataset = $datasetForSheet('Ausentismo');
+
+        if (! $workersDataset || ! $accidentsDataset) {
+            return null;
+        }
+
+        $rowsFor = static fn (PowerbiDataset $dataset): array => $dataset->rows()
+            ->orderBy('source_row_number')
+            ->get(['data'])
+            ->map(fn (PowerbiRow $row): array => $row->data ?? [])
+            ->all();
+        $workerRows = $rowsFor($workersDataset);
+        $accidentRows = $rowsFor($accidentsDataset);
+        $workerColumns = $workersDataset->columns ?? [];
+        $accidentColumns = $accidentsDataset->columns ?? [];
+
+        $findColumn = static function (array $columns, string $pattern): ?string {
+            foreach ($columns as $column) {
+                $label = mb_strtolower(preg_replace('/\s+/u', ' ', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $column['label'] ?? '') ?: ($column['label'] ?? '')));
+                if (preg_match($pattern, $label)) {
+                    return $column['key'] ?? null;
+                }
+            }
+
+            return null;
+        };
+
+        $hireDateColumn = $findColumn($workerColumns, '/fecha.*ingreso/');
+        $accidentDateColumn = $findColumn($accidentColumns, '/fecha.*(siniestro|accidente|evento|\\bat\\b)/');
+        $incapacityDaysColumn = $findColumn($accidentColumns, '/dias.*incapacidad/');
+        $accidentTypeColumn = $findColumn($accidentColumns, '/tipo.*at|mortal|fatal/');
+        $fatalFlagColumn = $findColumn($accidentColumns, '/mortal|fatal/');
+        $absenceDateColumn = $absenceDataset ? $findColumn($absenceDataset->columns ?? [], '/fecha.*ausencia/') : null;
+        $absenceDaysColumn = $absenceDataset ? $findColumn($absenceDataset->columns ?? [], '/dias.*ausencia/') : null;
+        $absenceTypeColumn = $absenceDataset ? $findColumn($absenceDataset->columns ?? [], '/contingencia/') : null;
+
+        if (! $hireDateColumn || ! $accidentDateColumn) {
+            return null;
+        }
+
+        $parseDate = static function (mixed $value): ?\DateTimeImmutable {
+            if (! is_string($value) || trim($value) === '') {
+                return null;
+            }
+
+            $value = trim($value);
+            foreach (['!d/m/Y H:i:s', '!Y-m-d H:i:s', '!Y-m-d\\TH:i:s', '!j M Y', '!j F Y', '!d/m/Y', '!Y-m-d', '!d-m-Y', '!m/d/Y'] as $format) {
+                $date = \DateTimeImmutable::createFromFormat($format, $value);
+                $errors = \DateTimeImmutable::getLastErrors();
+                if ($date && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
+                    return $date;
+                }
+            }
+
+            return null;
+        };
+
+        $workerStarts = [];
+        foreach ($workerRows as $row) {
+            $date = $parseDate($row[$hireDateColumn] ?? null);
+            if ($date) {
+                $workerStarts[] = $date;
+            }
+        }
+
+        $accidentsByMonth = [];
+        $medicalAbsenceByMonth = [];
+        $latestAccidentDate = null;
+        $fatalColumnPresent = false;
+        foreach ($accidentColumns as $column) {
+            $label = mb_strtolower(preg_replace('/\s+/u', ' ', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $column['label'] ?? '') ?: ($column['label'] ?? '')));
+            if (preg_match('/mortal|fatal/', $label)) {
+                $fatalColumnPresent = true;
+                break;
+            }
+        }
+
+        foreach ($accidentRows as $row) {
+            $date = $parseDate($row[$accidentDateColumn] ?? null);
+            if (! $date) {
+                continue;
+            }
+
+            $month = $date->format('Y-m');
+            $latestAccidentDate = $latestAccidentDate === null || $date > $latestAccidentDate ? $date : $latestAccidentDate;
+            $accidentsByMonth[$month] ??= ['accidents' => 0, 'incapacity_days' => 0, 'fatal_accidents' => 0];
+            $accidentsByMonth[$month]['accidents']++;
+
+            $days = $incapacityDaysColumn ? $row[$incapacityDaysColumn] ?? null : null;
+            if (is_numeric($days)) {
+                $accidentsByMonth[$month]['incapacity_days'] += (float) $days;
+            }
+
+            $classification = $accidentTypeColumn ? mb_strtolower(trim((string) ($row[$accidentTypeColumn] ?? ''))) : '';
+            $fatalFlag = $fatalFlagColumn ? mb_strtolower(trim((string) ($row[$fatalFlagColumn] ?? ''))) : '';
+            $isFatal = $fatalFlagColumn
+                ? in_array($fatalFlag, ['1', 'si', 'sí', 'yes', 'true', 'x', 'mortal', 'fatal'], true)
+                : (bool) preg_match('/\b(mortal|fatal|muerte|fallecido)\b/u', $classification);
+            if ($isFatal) {
+                $fatalColumnPresent = true;
+                $accidentsByMonth[$month]['fatal_accidents']++;
+            }
+        }
+
+        if ($absenceDataset && $absenceDateColumn && $absenceDaysColumn && $absenceTypeColumn) {
+            foreach ($rowsFor($absenceDataset) as $row) {
+                $date = $parseDate($row[$absenceDateColumn] ?? null);
+                $contingency = mb_strtoupper(trim((string) ($row[$absenceTypeColumn] ?? '')));
+                $days = $row[$absenceDaysColumn] ?? null;
+                if (! $date || ! in_array($contingency, ['EG', 'AT'], true) || ! is_numeric($days)) {
+                    continue;
+                }
+
+                $monthKey = $date->format('Y-m');
+                $medicalAbsenceByMonth[$monthKey] = ($medicalAbsenceByMonth[$monthKey] ?? 0) + (float) $days;
+            }
+        }
+
+        if ($workerStarts === [] || $latestAccidentDate === null || $accidentsByMonth === []) {
+            return null;
+        }
+
+        $firstMonth = min(array_keys($accidentsByMonth));
+        $lastMonth = max(array_keys($accidentsByMonth));
+        $month = new \DateTimeImmutable($firstMonth.'-01');
+        $last = new \DateTimeImmutable($lastMonth.'-01');
+        $monthly = [];
+
+        while ($month <= $last) {
+            $monthKey = $month->format('Y-m');
+            $monthStart = $month;
+            $monthEnd = $month->modify('last day of this month');
+            $workers = 0;
+            $scheduledDays = 0;
+
+            foreach ($workerStarts as $start) {
+                if ($start > $monthEnd) {
+                    continue;
+                }
+
+                $workers++;
+                $workday = $start > $monthStart ? $start : $monthStart;
+                for (; $workday <= $monthEnd; $workday = $workday->modify('+1 day')) {
+                    if ((int) $workday->format('w') !== 0) {
+                        $scheduledDays++;
+                    }
+                }
+            }
+
+            $stats = $accidentsByMonth[$monthKey] ?? ['accidents' => 0, 'incapacity_days' => 0, 'fatal_accidents' => 0];
+            $medicalAbsenceDays = $medicalAbsenceByMonth[$monthKey] ?? 0;
+            $monthly[] = [
+                'month' => $monthKey,
+                'workers' => $workers,
+                'scheduled_days_estimated' => $scheduledDays,
+                'accidents' => $stats['accidents'],
+                'incapacity_days_recorded' => $stats['incapacity_days'],
+                'fatal_accidents' => $stats['fatal_accidents'],
+                'medical_absence_days' => $medicalAbsenceDays,
+                'medical_absenteeism_percentage' => $scheduledDays > 0 ? ($medicalAbsenceDays / $scheduledDays) * 100 : 0,
+            ];
+            $month = $month->modify('first day of next month');
+        }
+
+        $totalScheduledDays = array_sum(array_column($monthly, 'scheduled_days_estimated'));
+        $totalMedicalAbsenceDays = array_sum(array_column($monthly, 'medical_absence_days'));
+
+        return [
+            'monthly' => $monthly,
+            'medical_absenteeism' => [
+                'absence_days' => $totalMedicalAbsenceDays,
+                'scheduled_days_estimated' => $totalScheduledDays,
+                'percentage' => $totalScheduledDays > 0 ? ($totalMedicalAbsenceDays / $totalScheduledDays) * 100 : 0,
+                'by_month' => array_map(fn (array $item): array => [
+                    'month' => $item['month'],
+                    'absence_days' => $item['medical_absence_days'],
+                    'scheduled_days_estimated' => $item['scheduled_days_estimated'],
+                    'percentage' => $item['medical_absenteeism_percentage'],
+                ], $monthly),
+            ],
+            'fatal_accidents_identified' => $fatalColumnPresent,
+            'fatal_accidents_total' => array_sum(array_column($monthly, 'fatal_accidents')),
+            'fatal_accidents_by_month' => array_map(fn (array $item): array => [
+                'label' => $item['month'],
+                'value' => $item['fatal_accidents'],
+            ], $monthly),
+            'notes' => [
+                'workers' => 'Conteo acumulado de todas las personas con fecha de ingreso hasta cada mes; no hay fecha de retiro en la base.',
+                'scheduled_days' => 'Estimación con seis días laborables por semana, excluyendo domingos, según el patrón de DIAS PROGRAMADOS. No descuenta festivos ni turnos individuales.',
+                'incapacity_days' => 'Suma de días de incapacidad registrados; no equivale a días cargados por fatalidad o pérdida de capacidad laboral.',
+                'medical_absenteeism' => 'Incluye contingencias EG y AT. El cálculo usa días de ausencia de esas incapacidades sobre días programados estimados; excluye LUTO, LM y LP.',
+                'fatal_accidents' => $fatalColumnPresent ? 'Casos identificados en la clasificación disponible.' : 'La base no tiene una clasificación o columna que identifique accidentes mortales.',
+            ],
         ];
     }
 

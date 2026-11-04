@@ -114,12 +114,46 @@ export interface PowerbiDashboardResponse {
     columns: PowerbiColumn[];
   } | null;
   visualizations: PowerbiVisualizationResult[];
+  sst_indicators: PowerbiSstIndicators | null;
   filter_options: Record<string, PowerbiFilterOption>;
   row_count: number;
 }
 
+export interface PowerbiSstMonthlyIndicator {
+  month: string;
+  workers: number;
+  scheduled_days_estimated: number;
+  accidents: number;
+  incapacity_days_recorded: number;
+  fatal_accidents: number;
+  medical_absence_days: number;
+  medical_absenteeism_percentage: number;
+}
+
+export interface PowerbiSstIndicators {
+  monthly: PowerbiSstMonthlyIndicator[];
+  medical_absenteeism: {
+    absence_days: number;
+    scheduled_days_estimated: number;
+    percentage: number;
+    by_month: Array<{ month: string; absence_days: number; scheduled_days_estimated: number; percentage: number }>;
+  } | null;
+  fatal_accidents_identified: boolean;
+  fatal_accidents_total: number;
+  fatal_accidents_by_month: PowerbiChartPoint[];
+  notes: Record<string, string>;
+}
+
+export interface PowerbiPreviewSheet {
+  name: string | null;
+  columns: PowerbiColumn[];
+  row_count: number;
+  preview_rows: PowerbiRow[];
+}
+
 export interface PowerbiPreviewResponse {
   message: string;
+  format?: 'csv' | 'excel';
   file: {
     original_name: string;
     mime_type: string | null;
@@ -130,6 +164,7 @@ export interface PowerbiPreviewResponse {
   columns: PowerbiColumn[];
   row_count: number;
   preview_rows: PowerbiRow[];
+  sheets?: PowerbiPreviewSheet[];
 }
 
 export interface PowerbiImportResponse {
@@ -137,6 +172,7 @@ export interface PowerbiImportResponse {
   rows_inserted: number;
   source_file: string;
   dataset: PowerbiDataset;
+  datasets?: PowerbiDataset[];
   columns: PowerbiColumn[];
   preview_rows: PowerbiRow[];
   delimiter: string;
@@ -162,6 +198,7 @@ export interface PowerbiPublicResponse {
   empresa: { id: number; name: string; logo_url: string | null } | null;
   filter_options: Record<string, PowerbiFilterOption>;
   row_count: number;
+  sst_indicators: PowerbiSstIndicators | null;
   datasets: PowerbiPublicDataset[];
 }
 

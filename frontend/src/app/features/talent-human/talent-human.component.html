@@ -1,0 +1,122 @@
+<app-page-header
+  title="Talento humano"
+  subtitle="Gestiona el desarrollo, los objetivos y la comunicación de tu equipo."
+  [showDateFilter]="false"
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/dashboard">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Talento humano</li>
+    </ol>
+  </nav>
+</app-page-header>
+
+<section class="talent-submodules" aria-label="Submódulos de Talento humano">
+  <div class="talent-submodules__intro">
+    <span class="talent-submodules__eyebrow">ÁREAS DE GESTIÓN</span>
+    <h2>Submódulos</h2>
+    <p>Elige un área para explorar sus herramientas.</p>
+  </div>
+
+  <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
+    <div class="col" *ngFor="let item of submodules; let index = index">
+      <article
+        #card
+        class="talent-submodule-card h-100"
+        [ngClass]="'talent-submodule-card--' + item.tone"
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="'Ver información de ' + item.name"
+        (click)="openSubmodule(item, card)"
+        (keydown.enter)="openSubmodule(item, card)"
+        (keydown.space)="$event.preventDefault(); openSubmodule(item, card)"
+      >
+        <div class="talent-submodule-card__top">
+          <div class="talent-submodule-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <ng-container [ngSwitch]="item.icon">
+                <ng-container *ngSwitchCase="'organization'"><circle cx="12" cy="5" r="2.2"></circle><circle cx="6" cy="18" r="2.2"></circle><circle cx="18" cy="18" r="2.2"></circle><path d="M12 7.2v4.2M6 15.8v-4.4h12v4.4"></path></ng-container>
+                <ng-container *ngSwitchCase="'training'"><path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"></path><path d="M6.5 11.2v5.3c3.5 2.6 7.5 2.6 11 0v-5.3M21.5 9v6"></path></ng-container>
+                <ng-container *ngSwitchCase="'communication'"><path d="M4 5.5h16v11H9l-5 3z"></path><path d="M8 9h8M8 13h5"></path></ng-container>
+              </ng-container>
+            </svg>
+          </div>
+          <span class="talent-submodule-card__number">{{ (index + 1) | number:'2.0-0' }}</span>
+        </div>
+        <h3>{{ item.name }}</h3>
+        <p>{{ item.description }}</p>
+        <ul class="talent-submodule-card__items" aria-label="Elementos del submódulo">
+          <li *ngFor="let entry of item.items">
+            <div class="talent-submodule-card__item"><span aria-hidden="true">›</span>{{ entry.name }}</div>
+            <ul *ngIf="entry.children?.length" class="talent-submodule-card__nested">
+              <li *ngFor="let child of entry.children">{{ child.name }}</li>
+            </ul>
+          </li>
+        </ul>
+        <div class="talent-submodule-card__footer"><span>Talento humano</span><span class="talent-submodule-card__dot"></span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div
+  *ngIf="selectedSubmodule as selected"
+  class="talent-modal-backdrop"
+  (click)="closeModal()"
+>
+  <section
+    class="talent-modal"
+    [ngClass]="'talent-modal--' + selected.tone"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="talent-modal-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="talent-modal__header" [ngClass]="'talent-modal__header--' + selected.tone">
+      <div>
+        <span class="talent-modal__eyebrow">ALCANCE REPRESENTADO EN EL DIAGRAMA</span>
+        <h2 id="talent-modal-title">{{ selected.name }}</h2>
+      </div>
+      <button #modalCloseButton class="talent-modal__close" type="button" aria-label="Cerrar ventana" (click)="closeModal()">×</button>
+    </header>
+
+    <div class="talent-modal__body">
+      <p class="talent-modal__description">{{ selected.description }}</p>
+
+      <section class="talent-modal__purpose">
+        <span class="talent-modal__section-label">PROPÓSITO</span>
+        <p>{{ selected.purpose }}</p>
+      </section>
+
+      <section class="talent-modal__section">
+        <h3>Áreas y contenidos</h3>
+        <div class="talent-modal__details">
+          <article class="talent-modal__detail" *ngFor="let entry of selected.items">
+            <div class="talent-modal__item"><span aria-hidden="true">✓</span>{{ entry.name }}</div>
+            <p>{{ entry.description }}</p>
+            <div *ngIf="entry.children?.length" class="talent-modal__children">
+              <article class="talent-modal__child" *ngFor="let child of entry.children">
+                <h4>{{ child.name }}</h4>
+                <p>{{ child.description }}</p>
+              </article>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="talent-modal__section">
+        <h3>Recorrido sugerido</h3>
+        <ol class="talent-modal__workflow">
+          <li *ngFor="let step of selected.workflow"><span>{{ step }}</span></li>
+        </ol>
+      </section>
+
+      <p class="talent-modal__source-note">Las descripciones amplían los nombres y relaciones que aparecen en el diagrama del proyecto. No confirman que cada herramienta o proceso ya esté implementado en la plataforma.</p>
+    </div>
+
+    <footer class="talent-modal__footer">
+      <span>ASXENTIQ <span aria-hidden="true">·</span> TALENTO HUMANO</span>
+      <button type="button" class="talent-modal__done" (click)="closeModal()">Cerrar</button>
+    </footer>
+  </section>
+</div>

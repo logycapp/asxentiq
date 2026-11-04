@@ -1,0 +1,99 @@
+<app-page-header
+  title="SARLAFT"
+  subtitle="Consulta las vistas de indicadores gerenciales y operativos."
+  [showDateFilter]="false"
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/dashboard">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">SARLAFT</li>
+    </ol>
+  </nav>
+</app-page-header>
+
+<section class="sarlaft-submodules" aria-label="Submódulos SARLAFT">
+  <div class="sarlaft-submodules__intro">
+    <span class="sarlaft-submodules__eyebrow">GESTIÓN SARLAFT</span>
+    <h2>Áreas del módulo</h2>
+    <p>Abre la tarjeta para consultar la estructura de indicadores del diagrama.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-md-8 col-xl-6" *ngFor="let item of submodules">
+      <article
+        #card
+        class="sarlaft-submodule-card h-100"
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="'Ver información de ' + item.name"
+        (click)="openSubmodule(item, card)"
+        (keydown.enter)="openSubmodule(item, card)"
+        (keydown.space)="$event.preventDefault(); openSubmodule(item, card)"
+      >
+        <div class="sarlaft-submodule-card__top">
+          <div class="sarlaft-submodule-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19V5M4 19h16"></path>
+              <path d="m7 15 4-4 3 2 5-6"></path>
+              <path d="M16 7h3v3"></path>
+            </svg>
+          </div>
+          <span class="sarlaft-submodule-card__number">01</span>
+        </div>
+        <h3>{{ item.name }}</h3>
+        <p>{{ item.description }}</p>
+        <ul class="sarlaft-submodule-card__items" aria-label="Tableros incluidos">
+          <li *ngFor="let entry of item.items"><span aria-hidden="true">›</span>{{ entry.name }}</li>
+        </ul>
+        <div class="sarlaft-submodule-card__footer"><span>SARLAFT</span><span class="sarlaft-submodule-card__dot"></span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="selectedSubmodule as selected" class="sarlaft-modal-backdrop" (click)="closeModal()">
+  <section
+    class="sarlaft-modal sarlaft-modal--blue"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="sarlaft-modal-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="sarlaft-modal__header sarlaft-modal__header--blue">
+      <div>
+        <span class="sarlaft-modal__eyebrow">ALCANCE REPRESENTADO EN EL DIAGRAMA</span>
+        <h2 id="sarlaft-modal-title">{{ selected.name }}</h2>
+      </div>
+      <button #modalCloseButton class="sarlaft-modal__close" type="button" aria-label="Cerrar ventana" (click)="closeModal()">×</button>
+    </header>
+
+    <div class="sarlaft-modal__body">
+      <p class="sarlaft-modal__description">{{ selected.description }}</p>
+      <section class="sarlaft-modal__purpose">
+        <span class="sarlaft-modal__section-label">PROPÓSITO</span>
+        <p>{{ selected.purpose }}</p>
+      </section>
+      <section class="sarlaft-modal__section">
+        <h3>Vistas incluidas</h3>
+        <div class="sarlaft-modal__details">
+          <article class="sarlaft-modal__detail" *ngFor="let entry of selected.items">
+            <div class="sarlaft-modal__item"><span aria-hidden="true">✓</span>{{ entry.name }}</div>
+            <p>{{ entry.description }}</p>
+          </article>
+        </div>
+      </section>
+      <section class="sarlaft-modal__section">
+        <h3>Recorrido sugerido</h3>
+        <ol class="sarlaft-modal__workflow">
+          <li *ngFor="let step of selected.workflow"><span>{{ step }}</span></li>
+        </ol>
+      </section>
+      <p class="sarlaft-modal__source-note">El diagrama identifica los tableros gerenciales y operativos, pero no detalla indicadores, fuentes de datos ni métricas. Las descripciones son explicativas y no confirman que los tableros ya estén implementados.</p>
+    </div>
+
+    <footer class="sarlaft-modal__footer">
+      <span>ASXENTIQ <span aria-hidden="true">·</span> SARLAFT</span>
+      <button type="button" class="sarlaft-modal__done" (click)="closeModal()">Cerrar</button>
+    </footer>
+  </section>
+</div>

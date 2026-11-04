@@ -13,6 +13,7 @@ import {
   PowerbiDataset,
   PowerbiFilters,
   PowerbiPreviewResponse,
+  PowerbiPreviewSheet,
   PowerbiProject,
   PowerbiService,
   PowerbiVisualizationConfig,
@@ -139,6 +140,40 @@ const VISIBLE_FILTER_KEYS = [
       overflow: hidden;
     }
 
+    :host .sst-monthly-chart {
+      padding: 1rem 1.25rem 1.25rem;
+    }
+
+    :host .sst-chart-title {
+      margin: 0 0 1rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #132238;
+    }
+
+    :host .sst-bar-row {
+      display: grid;
+      grid-template-columns: 4.5rem minmax(4rem, 1fr) 4rem;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.78rem;
+    }
+
+    :host .sst-bar-month { color: #64748b; }
+    :host .sst-bar-value { color: #132238; text-align: right; font-weight: 700; }
+    :host .sst-bar-track { height: 0.7rem; background: #e9eff8; border-radius: 999px; overflow: hidden; }
+    :host .sst-bar-fill { height: 100%; min-width: 2px; border-radius: inherit; background: #2563eb; }
+    :host .sst-bar-fill.days { background: #06b6d4; }
+    :host .sst-bar-fill.incapacity { background: #f97316; }
+
+    :host .sst-medical-card {
+      border: 1px solid rgba(14, 165, 233, 0.18) !important;
+      background: linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(236, 254, 255, 0.94));
+    }
+
+    :host .sst-medical-value { color: #075985; font-size: 2rem; line-height: 1; font-weight: 800; }
+
     :host .powerbi-filter-card {
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.92));
       border: 1px solid rgba(37, 99, 235, 0.14) !important;
@@ -245,6 +280,7 @@ export class PowerbiProjectDetailComponent implements OnInit {
 
   selectedFile: File | null = null;
   preview: PowerbiPreviewResponse | null = null;
+  previewSheetIndex = 0;
   previewLoading = false;
   importing = false;
   uploadError = '';
@@ -288,6 +324,34 @@ export class PowerbiProjectDetailComponent implements OnInit {
 
       return Boolean(value?.from || value?.to);
     }).length;
+  }
+
+  get sstWorkersPoints(): Array<{ label: string; value: number }> {
+    return this.dashboard?.sst_indicators?.monthly.map((item) => ({ label: item.month, value: item.workers })) ?? [];
+  }
+
+  get sstScheduledDaysPoints(): Array<{ label: string; value: number }> {
+    return this.dashboard?.sst_indicators?.monthly.map((item) => ({ label: item.month, value: item.scheduled_days_estimated })) ?? [];
+  }
+
+  get sstIncapacityPoints(): Array<{ label: string; value: number }> {
+    return this.dashboard?.sst_indicators?.monthly.map((item) => ({ label: item.month, value: item.incapacity_days_recorded })) ?? [];
+  }
+
+  get sstFatalPoints(): Array<{ label: string; value: number }> {
+    return this.dashboard?.sst_indicators?.fatal_accidents_by_month ?? [];
+  }
+
+  get sstMaxWorkers(): number {
+    return Math.max(0, ...(this.dashboard?.sst_indicators?.monthly.map((item) => item.workers) ?? []));
+  }
+
+  get sstMaxScheduledDays(): number {
+    return Math.max(0, ...(this.dashboard?.sst_indicators?.monthly.map((item) => item.scheduled_days_estimated) ?? []));
+  }
+
+  get sstMaxIncapacityDays(): number {
+    return Math.max(0, ...(this.dashboard?.sst_indicators?.monthly.map((item) => item.incapacity_days_recorded) ?? []));
   }
 
   private cachedFilterOptions: FilterOptionEntry[] = [];
@@ -451,6 +515,7 @@ export class PowerbiProjectDetailComponent implements OnInit {
 
     this.selectedFile = file;
     this.preview = null;
+    this.previewSheetIndex = 0;
     this.uploadError = '';
 
     if (file) {
@@ -476,6 +541,7 @@ export class PowerbiProjectDetailComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.preview = response;
+          this.previewSheetIndex = 0;
         },
         error: (error) => {
           this.preview = null;
@@ -515,6 +581,26 @@ export class PowerbiProjectDetailComponent implements OnInit {
     this.preview = null;
     this.selectedFile = null;
     this.uploadError = '';
+  }
+
+  get activePreviewSheet(): PowerbiPreviewSheet | null {
+    return this.preview?.sheets?.[this.previewSheetIndex] ?? null;
+  }
+
+  get activePreviewColumns(): PowerbiColumn[] {
+    return this.activePreviewSheet?.columns ?? this.preview?.columns ?? [];
+  }
+
+  get activePreviewRows() {
+    return this.activePreviewSheet?.preview_rows ?? this.preview?.preview_rows ?? [];
+  }
+
+  get activePreviewRowCount(): number {
+    return this.activePreviewSheet?.row_count ?? this.preview?.row_count ?? 0;
+  }
+
+  selectPreviewSheet(index: number): void {
+    this.previewSheetIndex = index;
   }
 
   deleteDataset(dataset: PowerbiDataset): void {

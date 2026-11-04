@@ -1,6 +1,6 @@
 <app-page-header
-  title="Capacitaciones"
-  subtitle="Resumen de los 8 indicadores principales del módulo."
+  title="Plataforma Asxentiq"
+  subtitle="Selecciona un módulo para consultar sus herramientas y procesos."
   [showDateFilter]="false"
 >
   <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
@@ -19,22 +19,52 @@
   </nav>
 </app-page-header>
 
-<div class="mb-5">
-  <div *ngIf="loading" class="text-on-surface-variant font-body-md py-4">Cargando indicadores de capacitaciones...</div>
-  <div *ngIf="errorMessage" class="alert alert-warning">{{ errorMessage }}</div>
-  <div *ngIf="!loading && !errorMessage" class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-4 dashboard-kpi-grid">
-    <div *ngFor="let metric of trainingMetrics" class="glass-card p-4 rounded-4 h-100 group dashboard-kpi-card dashboard-kpi-card--vivid">
-      <div class="dashboard-kpi-glow" [ngClass]="metric.accent"></div>
-      <div class="flex justify-between items-start mb-sm position-relative z-1">
-        <span
-          class="material-symbols-outlined dashboard-kpi-icon"
-          [ngStyle]="{ color: metric.iconColor, '-webkit-text-fill-color': metric.iconColor }"
-        >{{ metric.icon }}</span>
-        <span class="badge rounded-pill dashboard-kpi-badge">{{ metric.helper }}</span>
+<section class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-3 dashboard-module-grid" aria-label="Módulos de Asxentiq">
+  <div class="col" *ngFor="let module of modules">
+    <article class="dashboard-module-card h-100" [ngClass]="'dashboard-module-card--' + module.tone">
+      <div class="dashboard-module-card__wash" aria-hidden="true"></div>
+      <a
+        *ngIf="module.route"
+        class="dashboard-module-card__link"
+        [routerLink]="module.route"
+        [attr.aria-label]="'Abrir módulo ' + module.name"
+      ></a>
+      <div class="dashboard-module-card__content">
+        <div class="dashboard-module-card__top">
+          <div class="dashboard-module-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <ng-container [ngSwitch]="module.icon">
+                <ng-container *ngSwitchCase="'people'">
+                  <circle cx="9" cy="8" r="3.2"></circle>
+                  <path d="M3.5 19v-1.2a5.5 5.5 0 0 1 11 0V19"></path>
+                  <path d="M16 5.2a3.2 3.2 0 0 1 0 6.2M17.2 14a4.7 4.7 0 0 1 3.3 4.5V19"></path>
+                </ng-container>
+                <ng-container *ngSwitchCase="'shield'">
+                  <path d="M12 3 19 6v5.3c0 4.5-2.9 7.8-7 9.7-4.1-1.9-7-5.2-7-9.7V6l7-3Z"></path>
+                  <path d="m8.8 12.1 2.1 2.1 4.4-4.5"></path>
+                </ng-container>
+                <ng-container *ngSwitchCase="'risk'">
+                  <path d="M12 3 19 6v5.3c0 4.5-2.9 7.8-7 9.7-4.1-1.9-7-5.2-7-9.7V6l7-3Z"></path>
+                  <circle cx="11" cy="11" r="2.7"></circle>
+                  <path d="m13 13 2.3 2.3M11 9.7v1.7l1.1.7"></path>
+                </ng-container>
+              </ng-container>
+            </svg>
+          </div>
+          <span class="dashboard-module-card__badge">Módulo</span>
+        </div>
+
+        <h2 class="dashboard-module-card__title">{{ module.name }}</h2>
+        <p class="dashboard-module-card__description">{{ module.description }}</p>
+
+        <ul class="dashboard-module-card__highlights" aria-label="Funciones principales">
+          <li *ngFor="let highlight of module.highlights">{{ highlight }}</li>
+        </ul>
       </div>
-      <p class="dashboard-kpi-label text-on-surface-variant font-label-sm uppercase tracking-[0.18em] text-[10px] font-bold position-relative z-1">{{ metric.label }}</p>
-      <p class="dashboard-kpi-value font-headline-md text-on-surface mt-1 position-relative z-1">{{ metric.value }}</p>
-      <p class="dashboard-kpi-note font-body-sm text-on-surface-variant mt-2 mb-0 position-relative z-1">{{ metric.note }}</p>
-    </div>
+      <div class="dashboard-module-card__bottom" aria-hidden="true">
+        <span>Plataforma Asxentiq</span>
+        <span class="dashboard-module-card__footer-mark"></span>
+      </div>
+    </article>
   </div>
-</div>
+</section>

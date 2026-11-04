@@ -1,0 +1,104 @@
+<app-page-header
+  title="Seguridad y Salud en el Trabajo"
+  subtitle="Consulta los indicadores, la formación y los recursos de seguimiento del SG-SST."
+  [showDateFilter]="false"
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/dashboard">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">SST</li>
+    </ol>
+  </nav>
+</app-page-header>
+
+<section class="sst-submodules" aria-label="Submódulos de SST">
+  <div class="sst-submodules__intro">
+    <span class="sst-submodules__eyebrow">SISTEMA DE GESTIÓN</span>
+    <h2>Áreas de SST</h2>
+    <p>Abre una tarjeta para consultar su alcance y los temas relacionados.</p>
+  </div>
+
+  <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-4">
+    <div class="col" *ngFor="let item of submodules; let index = index">
+      <article
+        #card
+        class="sst-submodule-card h-100"
+        [ngClass]="'sst-submodule-card--' + item.tone"
+        role="button"
+        tabindex="0"
+        [attr.aria-label]="'Ver información de ' + item.name"
+        (click)="openSubmodule(item, card)"
+        (keydown.enter)="openSubmodule(item, card)"
+        (keydown.space)="$event.preventDefault(); openSubmodule(item, card)"
+      >
+        <div class="sst-submodule-card__top">
+          <div class="sst-submodule-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <ng-container [ngSwitch]="item.icon">
+                <ng-container *ngSwitchCase="'indicators'"><path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-6"></path><path d="M16 7h3v3"></path></ng-container>
+                <ng-container *ngSwitchCase="'training'"><path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"></path><path d="M6.5 11.2v5.3c3.5 2.6 7.5 2.6 11 0v-5.3M21.5 9v6"></path></ng-container>
+                <ng-container *ngSwitchCase="'monitoring'"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5M10.5 7v4l2.5 1.5"></path></ng-container>
+                <ng-container *ngSwitchCase="'infographic'"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M8 15v-3M12 15V8M16 15v-5M7 17h10"></path></ng-container>
+              </ng-container>
+            </svg>
+          </div>
+          <span class="sst-submodule-card__number">{{ (index + 1) | number:'2.0-0' }}</span>
+        </div>
+        <h3>{{ item.name }}</h3>
+        <p>{{ item.description }}</p>
+        <ul class="sst-submodule-card__items" aria-label="Temas incluidos">
+          <li *ngFor="let entry of item.items"><span aria-hidden="true">›</span>{{ entry.name }}</li>
+        </ul>
+        <div class="sst-submodule-card__footer"><span>Seguridad y salud en el trabajo</span><span class="sst-submodule-card__dot"></span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="selectedSubmodule as selected" class="sst-modal-backdrop" (click)="closeModal()">
+  <section
+    class="sst-modal"
+    [ngClass]="'sst-modal--' + selected.tone"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="sst-modal-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="sst-modal__header" [ngClass]="'sst-modal__header--' + selected.tone">
+      <div>
+        <span class="sst-modal__eyebrow">ALCANCE REPRESENTADO EN EL DIAGRAMA</span>
+        <h2 id="sst-modal-title">{{ selected.name }}</h2>
+      </div>
+      <button #modalCloseButton class="sst-modal__close" type="button" aria-label="Cerrar ventana" (click)="closeModal()">×</button>
+    </header>
+
+    <div class="sst-modal__body">
+      <p class="sst-modal__description">{{ selected.description }}</p>
+      <section class="sst-modal__purpose">
+        <span class="sst-modal__section-label">PROPÓSITO</span>
+        <p>{{ selected.purpose }}</p>
+      </section>
+      <section class="sst-modal__section">
+        <h3>Temas y componentes</h3>
+        <div class="sst-modal__details">
+          <article class="sst-modal__detail" *ngFor="let entry of selected.items">
+            <div class="sst-modal__item"><span aria-hidden="true">✓</span>{{ entry.name }}</div>
+            <p>{{ entry.description }}</p>
+          </article>
+        </div>
+      </section>
+      <section class="sst-modal__section">
+        <h3>Recorrido sugerido</h3>
+        <ol class="sst-modal__workflow">
+          <li *ngFor="let step of selected.workflow"><span>{{ step }}</span></li>
+        </ol>
+      </section>
+      <p class="sst-modal__source-note">Las descripciones amplían las etiquetas del diagrama. No confirman que cada tablero, bot, capacitación o recurso ya esté implementado en la plataforma.</p>
+    </div>
+
+    <footer class="sst-modal__footer">
+      <span>ASXENTIQ <span aria-hidden="true">·</span> SST</span>
+      <button type="button" class="sst-modal__done" (click)="closeModal()">Cerrar</button>
+    </footer>
+  </section>
+</div>
