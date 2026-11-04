@@ -1,4 +1,4 @@
-<div class="px-lg mb-xl sidebar-logo relative">
+<div class="sidebar-brand sidebar-logo relative">
     <img
       class="sidebar-brand-logo sidebar-text"
       id="sidebar-brand-logo"
@@ -6,12 +6,10 @@
       alt="Asxentiq"
     />
     <div class="sidebar-brand-copy sidebar-text">
-      <p class="text-[10px] text-on-surface-variant font-medium uppercase tracking-[0.2em] mt-1">
-        Platform Access
-      </p>
+      <p class="sidebar-kicker"><span class="sidebar-kicker__dot"></span> PLATAFORMA DE GESTIÓN</p>
     </div>
     <button
-      class="absolute -right-3 top-2 w-8 h-8 bg-surface-container/95 border border-white/10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all z-10 shadow-lg sidebar-toggle-button"
+      class="sidebar-toggle-button absolute -right-3 top-2 z-10"
       id="sidebar-toggle"
       type="button"
       (click)="toggleSidebar.emit()"
@@ -20,42 +18,46 @@
     </button>
   </div>
 
-  <div class="px-md mb-md sidebar-text">
-    <div class="flex items-center bg-white/5 border border-white/10 rounded-lg px-3 py-2 focus-within:border-primary/50 transition-all">
-      <span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-2">search</span>
+  <div class="sidebar-search-wrap sidebar-text">
+    <label class="sidebar-search-shell">
+      <span class="material-symbols-outlined sidebar-search-icon" aria-hidden="true">search</span>
       <input
-        class="bg-transparent border-none focus:ring-0 text-body-sm text-on-surface w-full p-0 placeholder:text-on-surface-variant"
-        placeholder="Search..."
+        class="sidebar-search-input"
+        aria-label="Buscar en el menú"
+        placeholder="Buscar en el menú"
         type="text"
       />
-    </div>
+    </label>
   </div>
 
-  <nav class="flex-1 space-y-1 px-md overflow-y-auto" id="sidebar-nav">
+  <div class="sidebar-nav-heading sidebar-text">MENÚ PRINCIPAL</div>
+  <nav class="sidebar-nav flex-1 overflow-y-auto" id="sidebar-nav" aria-label="Navegación principal">
     <ng-container *ngFor="let item of menuItems; trackBy: trackByRoute">
       <!-- Item with children (submenu) -->
       <div *ngIf="item.children && item.children.length > 0" class="has-submenu" [attr.data-submenu-id]="submenuId(item)">
         <button
           #submenuBtn
-          class="sidebar-item w-full flex items-center justify-between text-on-surface-variant pl-4 pr-2 py-3 hover:bg-white/5 hover:text-on-surface transition-all group"
+          class="sidebar-item sidebar-item--parent group"
+          [class.sidebar-item-active]="isSubmenuOpen(submenuId(item))"
+          [attr.title]="isSidebarCollapsed ? item.label : null"
           type="button"
           (click)="onToggleSubmenu(submenuId(item), submenuBtn)"
         >
-          <div class="flex items-center gap-md">
-            <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 group-hover:text-primary">{{ mapIcon(item.icon) }}</span>
-            <span class="font-label-md sidebar-text tracking-wider">{{ item.label }}</span>
-          </div>
-          <span class="material-symbols-outlined text-[18px] expand-icon group-hover:text-primary" [class.rotated]="isSubmenuOpen(submenuId(item))">expand_more</span>
+          <span class="sidebar-item__main">
+            <span class="sidebar-item__icon"><span class="material-symbols-outlined">{{ mapIcon(item.icon) }}</span></span>
+            <span class="sidebar-item__label sidebar-text">{{ item.label }}</span>
+          </span>
+          <span class="material-symbols-outlined sidebar-item__chevron expand-icon" [class.rotated]="isSubmenuOpen(submenuId(item))">expand_more</span>
         </button>
         <div
-          class="submenu submenu-outer ml-4 mt-2"
+          class="submenu submenu-outer"
           [id]="submenuId(item)"
           [class.open]="isSubmenuOpen(submenuId(item))"
         >
-          <div class="submenu-panel rounded-2xl border p-2">
+          <div class="submenu-panel">
             <a
               *ngFor="let child of item.children; trackBy: trackByChildRoute"
-              class="submenu-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant transition-all duration-200"
+              class="submenu-link"
               [routerLink]="child.route"
               routerLinkActive="submenu-link-active"
               [routerLinkActiveOptions]="{ exact: true }"
@@ -70,13 +72,14 @@
       <!-- Item without children -->
       <a
         *ngIf="!item.children || item.children.length === 0"
-        class="sidebar-item flex items-center gap-md text-on-surface-variant pl-4 py-3 hover:bg-white/5 hover:text-on-surface transition-all group"
+        class="sidebar-item sidebar-item--link group"
         [routerLink]="item.route"
-        routerLinkActive="sidebar-item-active text-primary font-semibold bg-primary/5 glow-accent-cyan border-l-2 border-primary"
+        routerLinkActive="sidebar-item-active"
         [routerLinkActiveOptions]="{ exact: item.exact }"
+        [attr.title]="isSidebarCollapsed ? item.label : null"
       >
-        <span class="material-symbols-outlined opacity-70 group-hover:opacity-100 group-hover:text-primary">{{ mapIcon(item.icon) }}</span>
-        <span class="font-label-md sidebar-text tracking-wider">{{ item.label }}</span>
+        <span class="sidebar-item__icon"><span class="material-symbols-outlined">{{ mapIcon(item.icon) }}</span></span>
+        <span class="sidebar-item__label sidebar-text">{{ item.label }}</span>
       </a>
     </ng-container>
   </nav>

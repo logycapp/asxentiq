@@ -439,7 +439,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     localStorage.setItem(this.themeStorageKey, isDark ? 'dark' : 'light');
     this.sidebarBrandLogo = isDark
       ? 'assets/template/logos/logo_principal/logo_dark.png'
-      : 'assets/template/logos/logo_principal/logo_light.png';
+      : 'assets/template/logos/logo_principal/logo_light_v2.png';
 
     const mode = isDark ? 'dark' : 'light';
     this.authService.me().pipe(
@@ -483,7 +483,7 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     localStorage.setItem(this.themeStorageKey, preferredMode);
     this.sidebarBrandLogo = preferredMode === 'dark'
       ? 'assets/template/logos/logo_principal/logo_dark.png'
-      : 'assets/template/logos/logo_principal/logo_light.png';
+      : 'assets/template/logos/logo_principal/logo_light_v2.png';
   }
 
   private loadServerClock(): void {
