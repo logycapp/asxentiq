@@ -377,3 +377,42 @@
   background: #78e2c6;
   box-shadow: 0 0 0 4px rgba(84, 207, 178, 0.13), 0 0 10px rgba(111, 221, 196, 0.35);
 }
+
+
+/* Keep the open group quiet; reserve the bright accent for the selected page. */
+.sidebar-item--open {
+  border-color: rgba(191, 220, 239, 0.1);
+  background: rgba(218, 238, 250, 0.065);
+  color: #f0f7fc;
+}
+.sidebar-item--open::before { display: none; }
+.sidebar-item--open .sidebar-item__icon {
+  border-color: rgba(122, 204, 217, 0.18);
+  background: rgba(122, 204, 217, 0.09);
+  color: #9acbd5;
+}
+.sidebar-item--open .sidebar-item__chevron { color: rgba(215, 235, 247, 0.76); }
+
+.sidebar-brand {
+  margin-bottom: 0.8rem;
+  padding: 0.68rem 1rem 0.9rem;
+}
+:host .sidebar-brand-logo { width: 151px; }
+.sidebar-kicker { margin-top: 0.48rem; font-size: 0.58rem; }
+.sidebar-search-wrap { margin-bottom: 1.05rem; }
+.sidebar-nav { gap: 0.34rem; }
+.submenu-outer { margin-top: 0.2rem; padding-left: 0.65rem; border-left-color: rgba(186, 216, 235, 0.13); }
+.submenu-panel { gap: 0.16rem; padding-left: 0.4rem; }
+.submenu-link { min-height: 2.4rem; padding: 0.48rem 0.65rem; }
+
+:host-context(html.light) .sidebar-item--open {
+  border-color: rgba(191, 220, 239, 0.1);
+  background: rgba(218, 238, 250, 0.065);
+  color: #f0f7fc;
+}
+:host-context(html.light) .sidebar-item--open .sidebar-item__icon { color: #9acbd5; }
+
+@media (max-width: 480px) {
+  .sidebar-brand { padding-top: 0.5rem; padding-bottom: 0.7rem; }
+  :host .sidebar-brand-logo { width: 140px; }
+}

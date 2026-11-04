@@ -38,7 +38,7 @@
         <button
           #submenuBtn
           class="sidebar-item sidebar-item--parent group"
-          [class.sidebar-item-active]="isSubmenuOpen(submenuId(item))"
+          [class.sidebar-item--open]="isSubmenuOpen(submenuId(item))"
           [attr.title]="isSidebarCollapsed ? item.label : null"
           type="button"
           (click)="onToggleSubmenu(submenuId(item), submenuBtn)"
