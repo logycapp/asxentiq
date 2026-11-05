@@ -7,8 +7,8 @@ interface DashboardModule {
   name: string;
   description: string;
   highlights: string[];
-  icon: 'people' | 'shield' | 'risk';
-  tone: 'people' | 'sst' | 'sarlaft';
+  icon: 'people' | 'shield' | 'analytics';
+  tone: 'people' | 'sst' | 'business-intelligence';
   route?: string;
 }
 
@@ -38,12 +38,12 @@ export class DashboardComponent {
       route: '/sst'
     },
     {
-      name: 'SARLAFT',
-      description: 'Consulta los indicadores de SARLAFT en vistas gerenciales y operativas.',
-      highlights: ['Indicadores', 'Tableros gerenciales', 'Tableros operativos'],
-      icon: 'risk',
-      tone: 'sarlaft',
-      route: '/sarlaft'
+      name: 'Business intelligence',
+      description: 'Explora los proyectos y tableros analíticos de la organización.',
+      highlights: ['Power BI', 'Tableros gerenciales', 'Tableros operativos'],
+      icon: 'analytics',
+      tone: 'business-intelligence',
+      route: '/powerbi'
     }
   ];
 }

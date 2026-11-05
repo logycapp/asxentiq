@@ -8,6 +8,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { TalentHumanComponent } from './features/talent-human/talent-human.component';
 import { SstComponent } from './features/sst/sst.component';
 import { SarlaftComponent } from './features/sarlaft/sarlaft.component';
+import { IndicadoresAccidentalesComponent } from './features/indicadores-accidentales/indicadores-accidentales.component';
 import { LandingComponent } from './features/landing/landing.component';
 import { LayoutComponent } from './features/layout/layout.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
@@ -66,6 +67,7 @@ export const appRoutes: Routes = [
       { path: 'dashboard', component: DashboardComponent, data: { pageTitle: 'Dashboard' } },
       { path: 'talento-humano', component: TalentHumanComponent, data: { pageTitle: 'Talento humano' } },
       { path: 'sst', component: SstComponent, data: { pageTitle: 'SST' } },
+      { path: 'indicadores_accidentales', component: IndicadoresAccidentalesComponent, data: { pageTitle: 'Indicadores accidentales' } },
       { path: 'sarlaft', component: SarlaftComponent, data: { pageTitle: 'SARLAFT' } },
       { path: 'admin', component: AdminPanelComponent, data: { pageTitle: 'Administracion' } },
       { path: 'profile', component: ProfileComponent, data: { pageTitle: 'Perfil' } },

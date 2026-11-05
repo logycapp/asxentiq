@@ -1,0 +1,208 @@
+<app-page-header
+  title="Indicadores de accidentalidad y ausentismo"
+  subtitle="Consulta los eventos de SST, el seguimiento mensual de la Resolución 0312 y los indicadores de ausentismo."
+  [showDateFilter]="false"
+>
+  <nav header-breadcrumbs aria-label="breadcrumb" class="page-header-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="d-inline-flex align-items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">home</span>
+          Inicio
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a routerLink="/sst">SST</a>
+      </li>
+      <li class="breadcrumb-item active d-inline-flex align-items-center gap-1" aria-current="page">
+        Indicadores accidentales
+      </li>
+    </ol>
+  </nav>
+</app-page-header>
+
+<section class="card glass-card border-0 rounded-4 p-3 p-lg-4 mb-4 indicators-filters" aria-label="Filtros de accidentalidad">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h2 class="font-headline-sm text-on-surface mb-1">Accidentalidad</h2>
+      <p class="text-on-surface-variant font-body-sm mb-0">Filtra los eventos por empresa, ubicación, clasificación o periodo.</p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2" (click)="clearFilters()">
+      <span class="material-symbols-outlined">filter_alt_off</span>
+      Limpiar filtros
+    </button>
+  </div>
+  <div class="row g-3">
+    <div class="col-12 col-sm-6 col-xl-2">
+      <label for="indicator-company" class="form-label font-label-sm text-on-surface-variant">Empresa</label>
+      <select id="indicator-company" class="form-select" [(ngModel)]="filters.empresa" (ngModelChange)="onFiltersChanged()">
+        <option value="">Todas</option>
+        <option *ngFor="let item of companies" [value]="item">{{ item }}</option>
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-2">
+      <label for="indicator-municipality" class="form-label font-label-sm text-on-surface-variant">Municipio</label>
+      <select id="indicator-municipality" class="form-select" [(ngModel)]="filters.municipio" (ngModelChange)="onFiltersChanged()">
+        <option value="">Todos</option>
+        <option *ngFor="let item of municipalities" [value]="item">{{ item }}</option>
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-2">
+      <label for="indicator-qualification" class="form-label font-label-sm text-on-surface-variant">Calificación</label>
+      <select id="indicator-qualification" class="form-select" [(ngModel)]="filters.calificacion" (ngModelChange)="onFiltersChanged()">
+        <option value="">Todas</option>
+        <option *ngFor="let item of qualifications" [value]="item">{{ item }}</option>
+      </select>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-2">
+      <label for="indicator-type" class="form-label font-label-sm text-on-surface-variant">Tipo de AT</label>
+      <select id="indicator-type" class="form-select" [(ngModel)]="filters.tipo_at" (ngModelChange)="onFiltersChanged()">
+        <option value="">Todos</option>
+        <option *ngFor="let item of accidentTypes" [value]="item">{{ item }}</option>
+      </select>
+    </div>
+    <div class="col-6 col-xl-2">
+      <label for="indicator-from" class="form-label font-label-sm text-on-surface-variant">Fecha desde</label>
+      <input id="indicator-from" type="date" class="form-control" [min]="dateMin" [max]="dateMax" [(ngModel)]="filters.desde" (ngModelChange)="onFiltersChanged()">
+    </div>
+    <div class="col-6 col-xl-2">
+      <label for="indicator-to" class="form-label font-label-sm text-on-surface-variant">Fecha hasta</label>
+      <input id="indicator-to" type="date" class="form-control" [min]="dateMin" [max]="dateMax" [(ngModel)]="filters.hasta" (ngModelChange)="onFiltersChanged()">
+    </div>
+  </div>
+</section>
+
+
+
+<section class="mb-4" aria-label="Indicadores de accidentalidad">
+  <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-xl-4">
+    <div class="col" *ngFor="let item of kpis">
+      <article class="card glass-card border-0 rounded-4 h-100 indicator-kpi" [style.--indicator-accent]="item.accent">
+        <span class="indicator-kpi__label">{{ item.label }}</span>
+        <strong class="indicator-kpi__value">{{ item.value }}</strong>
+        <span class="indicator-kpi__period">Acumulado {{ year }}</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="mb-4" aria-label="Gráficas de accidentalidad">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div>
+      <span class="indicator-section-kicker">SST · {{ year }}</span>
+      <h2 class="font-headline-sm text-on-surface mb-0">Comportamiento de accidentalidad</h2>
+    </div>
+    <span class="badge rounded-pill text-bg-light">{{ filteredRows.length }} eventos</span>
+  </div>
+  <div class="row g-3">
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c1')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Accidentes por mes</h3><div #chart data-chart="c1" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c2')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Días de incapacidad por mes</h3><div #chart data-chart="c2" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-md-6 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c3')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Tipo de AT</h3><div #chart data-chart="c3" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-md-6 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c4')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Mecanismo del accidente</h3><div #chart data-chart="c4" class="indicator-chart"></div></article></div>
+  </div>
+</section>
+
+<section class="mb-4" aria-label="Indicadores de la Resolución 0312">
+  <div class="mb-3">
+    <span class="indicator-section-kicker">Seguimiento mensual · {{ year }}</span>
+    <h2 class="font-headline-sm text-on-surface mb-1">Indicadores Resolución 0312</h2>
+    <p class="text-on-surface-variant font-body-sm mb-0">Frecuencia, severidad y proporción de mortales respetan los filtros de accidentalidad. Los trabajadores del mes son quienes ingresaron en ese mes o antes.</p>
+  </div>
+  <div class="row g-3">
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('r1')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">% Frecuencia de accidentalidad mensual</h3><p class="indicator-formula">AT del mes ÷ trabajadores del mes × 100</p><div #chart data-chart="r1" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('r2')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">% Severidad de accidentalidad mensual</h3><p class="indicator-formula">(Días de incapacidad + días cargados) ÷ trabajadores del mes × 100</p><div #chart data-chart="r2" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('r3')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">% Ausentismo por causa médica</h3><p class="indicator-formula">Días de ausencia por incapacidad laboral o común ÷ días programados × 100</p><div #chart data-chart="r3" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('r4')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">% Proporción de AT mortales</h3><p class="indicator-formula">AT mortales ÷ total de AT × 100 · acumulado del año</p><div #chart data-chart="r4" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('r5')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Prevalencia de enfermedad laboral</h3><p class="indicator-formula">Casos nuevos acumulados ÷ promedio de trabajadores × 100.000</p><div #chart data-chart="r5" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('r6')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Incidencia de enfermedad laboral</h3><p class="indicator-formula">Casos nuevos ÷ trabajadores del mes × 100.000</p><div #chart data-chart="r6" class="indicator-chart"></div></article></div>
+  </div>
+</section>
+
+<section class="mb-4" aria-label="Indicadores de ausentismo">
+  <div class="mb-3">
+    <span class="indicator-section-kicker">Salud laboral · {{ year }}</span>
+    <h2 class="font-headline-sm text-on-surface mb-1">Ausentismo</h2>
+    <p class="text-on-surface-variant font-body-sm mb-0">Resumen cargado para el año {{ year }}.</p>
+  </div>
+  <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-xl-4 mb-3">
+    <div class="col"><article class="card glass-card border-0 rounded-4 h-100 indicator-kpi"><span class="indicator-kpi__label">Eventos de ausentismo</span><strong class="indicator-kpi__value">{{ number(absenceKpis['total_ausentismo'], 0) }}</strong><span class="indicator-kpi__period">Registros del año</span></article></div>
+    <div class="col"><article class="card glass-card border-0 rounded-4 h-100 indicator-kpi"><span class="indicator-kpi__label">Días de ausencia</span><strong class="indicator-kpi__value">{{ number(absenceKpis['dias_ausencia'], 0) }}</strong><span class="indicator-kpi__period">Promedio {{ number(absenceKpis['promedio_dias']) }} por evento</span></article></div>
+    <div class="col"><article class="card glass-card border-0 rounded-4 h-100 indicator-kpi"><span class="indicator-kpi__label">Valor reconocido</span><strong class="indicator-kpi__value indicator-kpi__value--currency">{{ currency(absenceKpis['valor_reconocido']) }}</strong><span class="indicator-kpi__period">Por ausentismo</span></article></div>
+    <div class="col"><article class="card glass-card border-0 rounded-4 h-100 indicator-kpi"><span class="indicator-kpi__label">Valor asumido</span><strong class="indicator-kpi__value indicator-kpi__value--currency">{{ currency(absenceKpis['valor_asumido']) }}</strong><span class="indicator-kpi__period">Por la organización</span></article></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c5')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Valor reconocido vs. total ausentismo</h3><div #chart data-chart="c5" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-md-6 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c6')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Descripción de contingencia</h3><div #chart data-chart="c6" class="indicator-chart"></div></article></div>
+    <div class="col-12 col-xl-4"><article class="card glass-card border-0 rounded-4 h-100 indicator-chart-card"><button type="button" class="btn btn-sm btn-outline-primary indicator-chart-expand" aria-label="Ampliar gráfica" title="Ver gráfica a pantalla completa" (click)="openChart('c7')"><span class="material-symbols-outlined">open_in_full</span></button><h3 class="indicator-chart-title">Principales diagnósticos</h3><div #chart data-chart="c7" class="indicator-chart indicator-chart--ranking"></div></article></div>
+  </div>
+</section>
+
+<section class="card glass-card dashboard-table-card border-0 rounded-4 overflow-hidden mb-4" aria-label="Detalle de accidentes">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 px-3 px-md-4 py-3">
+    <div>
+      <span class="indicator-section-kicker">Detalle</span>
+      <h2 class="font-headline-sm text-on-surface mb-0">Accidentes registrados</h2>
+    </div>
+    <div class="d-flex flex-column flex-sm-row gap-2">
+      <input type="search" class="form-control" placeholder="Buscar en los registros" aria-label="Buscar accidentes" [(ngModel)]="search" (ngModelChange)="onSearchChanged()">
+      <button type="button" class="btn btn-primary fw-semibold text-nowrap d-inline-flex align-items-center justify-content-center gap-2" (click)="downloadCsv()">
+        <span class="material-symbols-outlined">download</span>
+        Descargar CSV
+      </button>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 dashboard-table indicator-table">
+      <thead class="empresa-table-head">
+        <tr class="border-bottom border-white/10">
+          <th class="ps-4 py-3 font-label-sm text-on-surface-variant text-uppercase">Fecha accidente</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Cédula</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">Nombre</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase text-end">Días de incapacidad</th>
+          <th class="py-3 font-label-sm text-on-surface-variant text-uppercase">CIE 10</th>
+          <th class="pe-4 py-3 font-label-sm text-on-surface-variant text-uppercase">Parte del cuerpo afectada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of paginatedRows">
+          <td class="ps-4 py-3 text-on-surface text-nowrap">{{ dateLabel(row.fecha) }}</td>
+          <td class="py-3 text-on-surface-variant">{{ row.cedula }}</td>
+          <td class="py-3 text-on-surface fw-semibold">{{ row.nombre }}</td>
+          <td class="py-3 text-on-surface text-end">{{ row.dias }}</td>
+          <td class="py-3 text-on-surface-variant">{{ row.cie10 }}</td>
+          <td class="pe-4 py-3 text-on-surface-variant">{{ row.parte }}</td>
+        </tr>
+        <tr *ngIf="paginatedRows.length === 0">
+          <td colspan="6" class="text-center text-on-surface-variant py-5">No hay accidentes que coincidan con la búsqueda o los filtros.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="px-3 px-md-4 py-3 border-top border-white/10 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <p class="text-on-surface-variant font-label-sm mb-0">Mostrando {{ startRecord }}-{{ endRecord }} de {{ searchedRows.length }} registros</p>
+    <nav *ngIf="totalPages > 1" aria-label="Paginación de accidentes">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="page === 1"><button type="button" class="page-link" aria-label="Página anterior" (click)="changePage(page - 1)">‹</button></li>
+        <li class="page-item" *ngFor="let pageNumber of visiblePages" [class.active]="page === pageNumber"><button type="button" class="page-link" (click)="changePage(pageNumber)">{{ pageNumber }}</button></li>
+        <li class="page-item" [class.disabled]="page === totalPages"><button type="button" class="page-link" aria-label="Página siguiente" (click)="changePage(page + 1)">›</button></li>
+      </ul>
+    </nav>
+  </div>
+</section>
+
+<app-modal-shell
+  *ngIf="activeChartId"
+  kicker="Indicadores SST"
+  [title]="activeChartTitle"
+  [subtitle]="activeChartNote"
+  headerVariant="info"
+  size="fullscreen"
+  surfaceVariant="light"
+  [showHeaderClose]="true"
+  [showFooter]="false"
+  (closeRequested)="closeChart()"
+>
+  <div modal-body class="indicator-expanded-body">
+    <div #expandedChart class="indicator-expanded-chart" role="img" [attr.aria-label]="activeChartTitle"></div>
+  </div>
+</app-modal-shell>

@@ -144,3 +144,28 @@
 
 .sst-submodule-card[role="button"] { cursor: pointer; }
 .sst-submodule-card[role="button"]:focus-visible { outline: 3px solid var(--submodule-accent); outline-offset: 3px; }
+
+
+.sst-modal__detail--button {
+  display: block;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.sst-modal__detail--button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--modal-accent, #4569e8) 34%, transparent);
+  background: color-mix(in srgb, var(--modal-accent, #4569e8) 5%, #fbfcfe);
+  box-shadow: 0 8px 18px rgba(30, 50, 85, 0.07);
+}
+.sst-modal__detail--button:focus-visible { outline: 2px solid var(--modal-accent, #4569e8); outline-offset: 2px; }
+.sst-modal__detail--button .sst-modal__item { display: flex; }
+.sst-modal__action-icon { margin-left: auto; color: var(--modal-accent, #4569e8); font-family: 'Material Symbols Outlined'; font-size: 1.1rem; }
+.sst-modal__detail-description { display: block; margin: 0.55rem 0 0 2.2rem; color: #64758c; font-size: 0.83rem; line-height: 1.55; }
+:host-context(html.dark) .sst-modal__detail-description { color: #aab9ce; }
+:host-context(html.dark) .sst-modal__detail--button:hover { background: color-mix(in srgb, var(--modal-accent, #4569e8) 11%, #172238); }
+
+@media (prefers-reduced-motion: reduce) { .sst-modal__detail--button { transition: none; } .sst-modal__detail--button:hover { transform: none; } }

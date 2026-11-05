@@ -283,7 +283,7 @@
 
 .dashboard-module-card--people { --module-accent: #4569e8; --module-accent-soft: rgba(69, 105, 232, 0.12); }
 .dashboard-module-card--sst { --module-accent: #078daf; --module-accent-soft: rgba(7, 141, 175, 0.12); }
-.dashboard-module-card--sarlaft { --module-accent: #168c70; --module-accent-soft: rgba(22, 140, 112, 0.12); }
+.dashboard-module-card--business-intelligence { --module-accent: #6559d9; --module-accent-soft: rgba(101, 89, 217, 0.12); }
 
 .dashboard-module-card__wash {
   position: absolute;

@@ -128,6 +128,21 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       overflow: visible;
     }
 
+    .modal-shell-dialog.modal-fullscreen {
+      width: 100%;
+      max-width: none;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .modal-shell-dialog.modal-fullscreen .modal-shell-content {
+      border-radius: 0 !important;
+    }
+
     .modal-shell-content .modal-footer {
       flex-shrink: 0;
     }
@@ -192,7 +207,7 @@ export class ModalShellComponent {
   @Input() headerVariant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' = 'primary';
   @Input() footerVariant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' | '' = '';
   @Input() surfaceVariant: 'glass' | 'light' = 'glass';
-  @Input() size: 'sm' | 'md' | 'lg' | 'xl' = 'lg';
+  @Input() size: 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen' = 'lg';
   @Input() showPrimaryButton = false;
   @Input() showSecondaryButton = false;
   @Input() primaryDisabled = false;
@@ -207,6 +222,8 @@ export class ModalShellComponent {
         return 'modal-sm';
       case 'xl':
         return 'modal-xl';
+      case 'fullscreen':
+        return 'modal-fullscreen';
       case 'lg':
         return 'modal-lg';
       default:

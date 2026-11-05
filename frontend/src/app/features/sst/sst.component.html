@@ -81,10 +81,23 @@
       <section class="sst-modal__section">
         <h3>Temas y componentes</h3>
         <div class="sst-modal__details">
-          <article class="sst-modal__detail" *ngFor="let entry of selected.items">
-            <div class="sst-modal__item"><span aria-hidden="true">✓</span>{{ entry.name }}</div>
-            <p>{{ entry.description }}</p>
-          </article>
+          <ng-container *ngFor="let entry of selected.items">
+            <button
+              *ngIf="entry.route; else detailCard"
+              type="button"
+              class="sst-modal__detail sst-modal__detail--button"
+              (click)="openModule(entry.route!)"
+            >
+              <span class="sst-modal__item"><span aria-hidden="true">✓</span>{{ entry.name }}<span class="sst-modal__action-icon" aria-hidden="true">arrow_forward</span></span>
+              <span class="sst-modal__detail-description">{{ entry.description }}</span>
+            </button>
+            <ng-template #detailCard>
+              <article class="sst-modal__detail">
+                <div class="sst-modal__item"><span aria-hidden="true">✓</span>{{ entry.name }}</div>
+                <p>{{ entry.description }}</p>
+              </article>
+            </ng-template>
+          </ng-container>
         </div>
       </section>
       <section class="sst-modal__section">

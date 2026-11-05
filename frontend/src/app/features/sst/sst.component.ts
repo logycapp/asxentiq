@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { PageHeaderComponent } from '../admin/layout/page-header/page-header.component';
 
 interface SstDetail {
   name: string;
   description: string;
+  route?: string;
 }
 
 interface SstSubmodule {
@@ -26,6 +27,8 @@ interface SstSubmodule {
   styleUrl: './sst.component.css'
 })
 export class SstComponent {
+  private readonly router = inject(Router);
+
   @ViewChild('modalCloseButton') private modalCloseButton?: ElementRef<HTMLButtonElement>;
 
   selectedSubmodule: SstSubmodule | null = null;
@@ -37,7 +40,7 @@ export class SstComponent {
       description: 'Reúne los tableros de seguimiento de requisitos y estándares del Sistema de Gestión de Seguridad y Salud en el Trabajo.',
       purpose: 'Facilitar la consulta del avance del SG-SST frente a los referentes normativos que aparecen en el diagrama.',
       items: [
-        { name: 'Tablero de seguimiento — Resolución 0312', description: 'Da seguimiento a los estándares mínimos del SG-SST establecidos en la Resolución 0312 y permite consultar su estado.' },
+        { name: 'Tablero de seguimiento — Resolución 0312', description: 'Da seguimiento a los estándares mínimos del SG-SST establecidos en la Resolución 0312 y permite consultar su estado.', route: '/indicadores_accidentales' },
         { name: 'Tablero de seguimiento — Decreto 1072', description: 'Organiza el seguimiento de los requisitos del SG-SST asociados al Decreto 1072 de 2015.' }
       ],
       workflow: ['Seleccionar el referente normativo que se desea consultar.', 'Revisar los requisitos o estándares incluidos en el seguimiento.', 'Identificar avances y aspectos que requieren atención.', 'Usar los resultados como apoyo a la revisión y mejora del SG-SST.'],
@@ -89,6 +92,11 @@ export class SstComponent {
     this.returnFocusTo = trigger;
     this.selectedSubmodule = item;
     window.setTimeout(() => this.modalCloseButton?.nativeElement.focus(), 0);
+  }
+
+  openModule(route: string): void {
+    this.closeModal();
+    void this.router.navigateByUrl(route);
   }
 
   closeModal(): void {
